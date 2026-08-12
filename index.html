@@ -44,6 +44,12 @@
         <span>CORRUPTION</span><b id="corruption-tier">DORMANT</b><i><em id="corruption-fill"></em></i><small id="corruption-copy">THE GROVE IS QUIET</small>
       </section>
 
+      <section class="minimap-panel" id="minimap-panel" aria-label="Arena minimap">
+        <canvas id="minimap" width="228" height="164" aria-hidden="true"></canvas>
+        <div><b id="minimap-label">ARENA MAP</b><span id="minimap-count">0 ACTIVE</span></div>
+        <small>PLAYER <i></i> OBJECTIVE <em></em> THREAT</small>
+      </section>
+
       <section class="combo-panel" id="combo-panel">
         <b id="combo-count">3</b><span>HIT COMBO!</span>
       </section>
@@ -189,6 +195,12 @@
             <div><strong>AMBIENT MOTION</strong><p>Animates drifting wisps, motes, water, lanterns, and scenery.</p></div>
             <div class="setting-options" data-setting-group="ambientMotion">
               <button data-setting="ambientMotion" data-value="true">ON</button><button data-setting="ambientMotion" data-value="false">OFF</button>
+            </div>
+          </article>
+          <article class="setting-row">
+            <div><strong>ARENA MINIMAP</strong><p>Tracks active threats, allies, objectives, shrines, rewards, and guardians.</p></div>
+            <div class="setting-options" data-setting-group="minimap">
+              <button data-setting="minimap" data-value="true">ON</button><button data-setting="minimap" data-value="false">OFF</button>
             </div>
           </article>
         </div>

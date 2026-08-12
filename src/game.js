@@ -3,6 +3,8 @@ import { HEROES, WEAPONS, ABILITIES, STATUS_EFFECTS, ELITE_MODIFIERS, BOSS_PATTE
 
 const canvas = document.querySelector('#game');
 const ctx = canvas.getContext('2d', { alpha: false });
+const minimapCanvas = document.querySelector('#minimap');
+const minimapCtx = minimapCanvas.getContext('2d');
 const shell = document.querySelector('#game-shell');
 const startScreen = document.querySelector('#start-screen');
 const resultScreen = document.querySelector('#result-screen');
@@ -129,6 +131,7 @@ const ui = {
   healthFill: document.querySelector('#health-fill'), healthText: document.querySelector('#health-text'),
   timer: document.querySelector('#timer'), objective: document.querySelector('#objective-text'),
   corruptionPanel:document.querySelector('#corruption-panel'),corruptionTier:document.querySelector('#corruption-tier'),corruptionFill:document.querySelector('#corruption-fill'),corruptionCopy:document.querySelector('#corruption-copy'),
+  minimapPanel:document.querySelector('#minimap-panel'),minimapLabel:document.querySelector('#minimap-label'),minimapCount:document.querySelector('#minimap-count'),
   roomState: document.querySelector('#room-state'), comboPanel: document.querySelector('#combo-panel'),
   comboCount: document.querySelector('#combo-count'), dashCard: document.querySelector('#dash-card'),sprintCard:document.querySelector('#sprint-card'),sprintFill:document.querySelector('#sprint-fill'),
   dashCooldown: document.querySelector('#dash-cooldown'), resultTitle: document.querySelector('#result-title'),
@@ -172,7 +175,7 @@ const ui = {
 const PROFILE_KEY='brawlpaws-profile-v1';
 const RUN_KEY='brawlpaws-run-v1';
 const RUN_VERSION=1;
-const DEFAULT_SETTINGS={screenShake:1,flashIntensity:1,damageNumbers:true,ambientMotion:true};
+const DEFAULT_SETTINGS={screenShake:1,flashIntensity:1,damageNumbers:true,ambientMotion:true,minimap:true};
 const DEFAULT_CONTRACT_PROGRESS={spiritCull:0,eliteBreakers:0,foxfireHunt:0,sealRunner:0,guardianOath:0};
 const DEFAULT_PROFILE={spiritShards:0,campaignClears:0,runsStarted:0,bestDifficulty:'',lastDifficulty:'ferocious',selectedHero:'kitsune',highestLevel:1,vitalityRank:0,forgeRank:0,attunementRank:0,purseRank:0,ascensionRank:1,ascensionClears:0,unlockedHeroes:['kitsune','bamboo'],discoveredEnemies:['groveMinion'],discoveredGuardians:[],contractProgress:DEFAULT_CONTRACT_PROGRESS,claimedContracts:[],settings:DEFAULT_SETTINGS};
 function loadProfile(){
@@ -183,6 +186,7 @@ function loadProfile(){
     loaded.settings.flashIntensity=[0,.35,1].includes(Number(loaded.settings.flashIntensity))?Number(loaded.settings.flashIntensity):1;
     loaded.settings.damageNumbers=loaded.settings.damageNumbers!==false;
     loaded.settings.ambientMotion=loaded.settings.ambientMotion!==false;
+    loaded.settings.minimap=loaded.settings.minimap!==false;
     loaded.discoveredEnemies=Array.isArray(loaded.discoveredEnemies)?loaded.discoveredEnemies:['groveMinion'];
     loaded.discoveredGuardians=Array.isArray(loaded.discoveredGuardians)?loaded.discoveredGuardians:[];
     loaded.unlockedHeroes=Array.isArray(loaded.unlockedHeroes)?loaded.unlockedHeroes:['kitsune','bamboo'];
@@ -2610,6 +2614,46 @@ function draw(screen) {
   if(room.id==='jadeCourtyard')for (const prop of props.filter((item) => item.foreground)) drawProp(prop, .94);
   drawForegroundHaze();
   if(player?.ultimateFlash>0&&profile.settings.flashIntensity>0){ctx.setTransform(screen.dpr,0,0,screen.dpr,0,0);const a=clamp(player.ultimateFlash/.16,0,1)*profile.settings.flashIntensity;const flash=ctx.createRadialGradient(screen.width/2,screen.height/2,20,screen.width/2,screen.height/2,screen.width*.7);flash.addColorStop(0,`rgba(255,214,126,${a*.42})`);flash.addColorStop(.45,`rgba(201,53,255,${a*.26})`);flash.addColorStop(1,'rgba(82,10,122,0)');ctx.fillStyle=flash;ctx.fillRect(0,0,screen.width,screen.height);}
+  drawMinimap();
+}
+
+function minimapPoint(entity,bounds,geometry){
+  const nx=clamp((entity.x-bounds.x)/bounds.radiusX,-1,1),ny=clamp((entity.y-bounds.y)/bounds.radiusY,-1,1);
+  return {x:geometry.cx+nx*geometry.rx,y:geometry.cy+ny*geometry.ry};
+}
+
+function drawMinimapMarker(map,entity,color,size=3,shape='dot'){
+  const point=minimapPoint(entity,room.combatBounds,map);minimapCtx.save();minimapCtx.translate(point.x,point.y);minimapCtx.fillStyle=color;minimapCtx.strokeStyle='#070711';minimapCtx.lineWidth=1.5;minimapCtx.shadowColor=color;minimapCtx.shadowBlur=size*1.8;
+  minimapCtx.beginPath();
+  if(shape==='diamond'){minimapCtx.moveTo(0,-size);minimapCtx.lineTo(size,0);minimapCtx.lineTo(0,size);minimapCtx.lineTo(-size,0);minimapCtx.closePath();}
+  else if(shape==='triangle'){minimapCtx.rotate(entity.facing||0);minimapCtx.moveTo(size*1.35,0);minimapCtx.lineTo(-size*.9,-size);minimapCtx.lineTo(-size*.55,0);minimapCtx.lineTo(-size*.9,size);minimapCtx.closePath();}
+  else minimapCtx.arc(0,0,size,0,Math.PI*2);
+  minimapCtx.fill();minimapCtx.stroke();minimapCtx.restore();
+}
+
+function drawMinimap(){
+  const visible=Boolean(profile.settings.minimap&&player&&['playing','hub','dojo'].includes(state));ui.minimapPanel.classList.toggle('map-hidden',!visible);if(!visible)return;
+  const rect=minimapCanvas.getBoundingClientRect(),width=Math.max(1,Math.round(rect.width)),height=Math.max(1,Math.round(rect.height)),dpr=Math.min(window.devicePixelRatio||1,2);
+  if(minimapCanvas.width!==Math.round(width*dpr)||minimapCanvas.height!==Math.round(height*dpr)){minimapCanvas.width=Math.round(width*dpr);minimapCanvas.height=Math.round(height*dpr);}
+  minimapCtx.setTransform(dpr,0,0,dpr,0,0);minimapCtx.clearRect(0,0,width,height);
+  const map={cx:width/2,cy:height/2+1,rx:width*.43,ry:height*.42};const crimson=room.id.includes('crimson')||room.id.includes('pyre'),bamboo=room.id.includes('bamboo')||room.id.includes('moonfang'),accent=crimson?'#ff4c79':bamboo?'#62e99b':'#42eaf4';
+  minimapCtx.save();minimapCtx.beginPath();minimapCtx.ellipse(map.cx,map.cy,map.rx,map.ry,0,0,Math.PI*2);minimapCtx.clip();
+  const background=minimapCtx.createRadialGradient(map.cx,map.cy,5,map.cx,map.cy,map.rx);background.addColorStop(0,crimson?'#24101d':bamboo?'#10241f':'#101d25');background.addColorStop(1,'#04050d');minimapCtx.fillStyle=background;minimapCtx.fillRect(0,0,width,height);
+  minimapCtx.strokeStyle=`${accent}24`;minimapCtx.lineWidth=1;for(const scale of [.35,.68,1]){minimapCtx.beginPath();minimapCtx.ellipse(map.cx,map.cy,map.rx*scale,map.ry*scale,0,0,Math.PI*2);minimapCtx.stroke();}minimapCtx.beginPath();minimapCtx.moveTo(map.cx-map.rx,map.cy);minimapCtx.lineTo(map.cx+map.rx,map.cy);minimapCtx.moveTo(map.cx,map.cy-map.ry);minimapCtx.lineTo(map.cx,map.cy+map.ry);minimapCtx.stroke();
+  if(room.id==='spiritVillage'){
+    for(const station of HUB_STATIONS)drawMinimapMarker(map,station,station.color,station.id==='portal'?5:3.5,'diamond');
+    ui.minimapLabel.textContent='VILLAGE SERVICES';ui.minimapCount.textContent=`${HUB_STATIONS.length} STATIONS`;
+  }else{
+    const activeEnemies=enemies.filter((enemy)=>enemy.state!=='waiting'&&!enemy.dead&&enemy.deathTime<=0);
+    for(const enemy of activeEnemies){const boss=enemy.def.behavior==='boss';drawMinimapMarker(map,enemy,boss?'#ffcf3d':enemy.eliteDef?.color||'#ff466d',boss?7:enemy.eliteDef?4.2:2.6,boss?'diamond':'dot');}
+    for(const actor of roomMission?.actors||[])if(!actor.broken&&!actor.released)drawMinimapMarker(map,actor,roomMission.color||'#55efff',4.2,'diamond');
+    if(roomMission?.ward&&!roomMission.complete)drawMinimapMarker(map,roomMission.ward,roomMission.color||'#55efff',5.2,'diamond');
+    if(roomInteractable&&!roomInteractable.used)drawMinimapMarker(map,roomInteractable,roomInteractable.color||'#ffd142',5,'diamond');
+    ui.minimapLabel.textContent=encounter.bossActive?'GUARDIAN DOMAIN':'ARENA MAP';ui.minimapCount.textContent=encounter.bossActive?'BOSS ACTIVE':`${activeEnemies.length} ACTIVE`;
+  }
+  for(const member of coop.remotePlayers.values())if(member.room===room.id&&member.state!=='preview')drawMinimapMarker(map,member,'#65f2ff',4,'triangle');
+  drawMinimapMarker(map,player,'#fff18c',5.2,'triangle');minimapCtx.restore();
+  minimapCtx.strokeStyle=accent;minimapCtx.lineWidth=2;minimapCtx.shadowColor=accent;minimapCtx.shadowBlur=8;minimapCtx.beginPath();minimapCtx.ellipse(map.cx,map.cy,map.rx,map.ry,0,0,Math.PI*2);minimapCtx.stroke();minimapCtx.shadowBlur=0;
 }
 
 function drawRoomInteractable(){

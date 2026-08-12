@@ -365,6 +365,20 @@ test('the walkable hub exposes permanent progression without pre-unlocking run a
   assert.match(game,/if\(!directDebug\)\{enterHub\(\);return;\}/);
 });
 
+test('the circular minimap tracks live navigation without exposing waiting reserves',()=>{
+  for(const id of ['minimap-panel','minimap','minimap-label','minimap-count'])assert.match(html,new RegExp(`id="${id}"`));
+  assert.match(html,/data-setting="minimap"/);
+  for(const fn of ['minimapPoint','drawMinimapMarker','drawMinimap'])assert.match(game,new RegExp(`function ${fn}\\(`));
+  assert.match(game,/enemies\.filter\(\(enemy\)=>enemy\.state!=='waiting'&&!enemy\.dead/);
+  assert.match(game,/roomMission\?\.actors/);
+  assert.match(game,/roomMission\?\.ward/);
+  assert.match(game,/roomInteractable&&!roomInteractable\.used/);
+  assert.match(game,/coop\.remotePlayers\.values\(\)/);
+  assert.match(game,/for\(const station of HUB_STATIONS\)drawMinimapMarker/);
+  assert.match(styles,/\.minimap-panel\{/);
+  assert.match(styles,/border-radius:50%/);
+});
+
 test('the Spirit Dojo is an isolated interactive combat laboratory',()=>{
   for(const id of ['dojo-panel','dojo-target-name','dojo-dps','dojo-total-damage','dojo-best-dps','dojo-kills','dojo-cycle-target','dojo-toggle-ai','dojo-toggle-dual','dojo-reset','dojo-exit'])assert.match(html,new RegExp(`id="${id}"`));
   for(const fn of ['enterDojo','exitDojo','spawnDojoTarget','cycleDojoTarget','toggleDojoAi','toggleDojoDual','recordDojoDamage','updateDojo','updateDojoHud'])assert.match(game,new RegExp(`function ${fn}\\(`));

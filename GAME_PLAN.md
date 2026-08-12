@@ -149,7 +149,8 @@ Initial upgrade set:
 - Combat, elite, treasure, shop, shrine, heal, authored event, authored secret, and boss nodes are playable
 - Route constraints guarantee useful pacing, one shop, one heal opportunity, elite risk/reward, and a boss approach
 - Physical shop room, shrine interactions, treasure chest animation, destructible pots/crates/lanterns, secret triggers, and rewards
-- Full brush-styled route selection screen with progress track, build summary, three-way node choices, and keyboard/mouse selection is playable; circular minimap remains next
+- Full brush-styled route selection screen with progress track, build summary, three-way node choices, and keyboard/mouse selection is playable
+- Circular in-run minimap now tracks the player, active threats, co-op allies, mission targets, physical rewards, village services, and giant guardians without revealing unreleased army reserves
 - Functional Moon Market spends run gold on healing, Dual-Wield, weapon, health, and ability upgrades
 
 **Exit gate:** two consecutive runs differ meaningfully while every room still feels handcrafted and visually dense.
