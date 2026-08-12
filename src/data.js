@@ -333,6 +333,11 @@ export const ENEMIES = {
     radius:55, contactDamage:36, windup:.74, attackRange:195, attackCooldown:1.82, slamRadius:194, stunDuration:1.42,
     color:'#56dfff', spriteColumn:2, scale:1.68, behavior:'heavy', biome:'storm'
   },
+  tidechantHeron: {
+    id:'tidechantHeron', name:'Tidechant Heron', maxHealth:390, speed:178,
+    radius:35, contactDamage:27, windup:1.05, attackRange:680, attackCooldown:4.25,
+    surgeWidth:88, surgeDamage:24, color:'#74f5ff', scale:1.12, behavior:'conductor', biome:'storm'
+  },
   raijinKirin: {
     id:'raijinKirin', name:'Raijin Kirin, Eater of Skies', maxHealth:11200, speed:138,
     radius:142, contactDamage:46, windup:.82, attackRange:435, attackCooldown:1.46, slamRadius:410, stunDuration:1.5,
@@ -353,6 +358,11 @@ export const ENEMIES = {
     radius:58, contactDamage:42, windup:.66, attackRange:208, attackCooldown:1.62, slamRadius:212, stunDuration:1.48,
     color:'#b94cff', spriteColumn:2, scale:1.72, behavior:'heavy', biome:'neon'
   },
+  kernelHackerTanuki: {
+    id:'kernelHackerTanuki', name:'Kernel Hacker Tanuki', maxHealth:480, speed:204,
+    radius:34, contactDamage:31, windup:.9, attackRange:640, attackCooldown:3.8,
+    snareRadius:126, snareDamage:28, snareDrain:48, color:'#ff4bd8', scale:1.08, behavior:'hacker', biome:'neon'
+  },
   daikyoOni: {
     id:'daikyoOni', name:'Daikyo Oni, Shogun of the Core', maxHealth:14800, speed:152,
     radius:152, contactDamage:54, windup:.72, attackRange:470, attackCooldown:1.28, slamRadius:445, stunDuration:1.58,
@@ -372,6 +382,11 @@ export const ENEMIES = {
     id:'gravebackBear', name:'Graveback Bear', maxHealth:980, speed:180,
     radius:62, contactDamage:50, windup:.56, attackRange:225, attackCooldown:1.42, slamRadius:228, stunDuration:1.55,
     color:'#d459ff', spriteColumn:2, scale:1.82, behavior:'heavy', biome:'shadow'
+  },
+  moonveilSeer: {
+    id:'moonveilSeer', name:'Moonveil Seer', maxHealth:560, speed:226,
+    radius:35, contactDamage:36, windup:.78, attackRange:760, attackCooldown:3.35,
+    curseDuration:6.5, curseMultiplier:1.35, color:'#c36cff', scale:1.1, behavior:'curser', biome:'shadow'
   },
   tsukikoEmpress: {
     id:'tsukikoEmpress', name:'Tsukiko, Empress of the Hollow Moon', maxHealth:19000, speed:165,
@@ -423,10 +438,10 @@ export const ENCOUNTERS = {
     waves:[
       {name:'Tempest Harbor Raiders',roster:['tidebladeOtter','galecrestGull','tidebladeOtter','galecrestGull'],targetCount:20,spawnRate:.31,healthScale:1.28,speedScale:1.2,damageScale:1.2,mission:{type:'eliminate',title:'RETAKE TEMPEST HARBOR'}},
       {name:'Tideglass Hunting Fleet',roster:['tidebladeOtter','galecrestGull','tidebladeOtter','reefbreakerWalrus','galecrestGull'],targetCount:34,spawnRate:.18,healthScale:1.58,speedScale:1.38,damageScale:1.42,mission:{type:'rescue',title:'FREE THE TIDEKEEPERS',count:4}},
-      {name:'Drowned Bell Armada',roster:['tidebladeOtter','galecrestGull','reefbreakerWalrus','galecrestGull','tidebladeOtter'],targetCount:54,spawnRate:.105,healthScale:1.92,speedScale:1.6,damageScale:1.68,mission:{type:'anchors',title:'BREAK THE DROWNED BELLS',count:4,health:148}},
-      {name:'Siren Reef War Choir',roster:['galecrestGull','tidebladeOtter','reefbreakerWalrus','galecrestGull','tidebladeOtter','reefbreakerWalrus'],targetCount:82,spawnRate:.062,healthScale:2.32,speedScale:1.85,damageScale:1.94,mission:{type:'defend',title:'DEFEND THE SIREN BEACON',duration:36,health:560}},
-      {name:'Thunderbreak Legion',roster:['reefbreakerWalrus','galecrestGull','tidebladeOtter','galecrestGull','tidebladeOtter'],targetCount:138,spawnRate:.032,healthScale:2.76,speedScale:2.18,damageScale:2.24,mission:{type:'anchors',title:'GROUND THE STORM CHAINS',count:5,health:182}},
-      {name:'Skyfang Cataclysm',roster:['reefbreakerWalrus','tidebladeOtter','galecrestGull','tidebladeOtter','reefbreakerWalrus','galecrestGull'],targetCount:186,spawnRate:.019,healthScale:3.22,speedScale:2.52,damageScale:2.55,mission:{type:'defend',title:'HOLD THE EYE OF HEAVEN',duration:44,health:680}}
+      {name:'Drowned Bell Armada',roster:['tidebladeOtter','galecrestGull','tidechantHeron','reefbreakerWalrus','galecrestGull','tidebladeOtter'],targetCount:54,spawnRate:.105,healthScale:1.92,speedScale:1.6,damageScale:1.68,mission:{type:'anchors',title:'BREAK THE DROWNED BELLS',count:4,health:148}},
+      {name:'Siren Reef War Choir',roster:['tidechantHeron','galecrestGull','tidebladeOtter','reefbreakerWalrus','galecrestGull','tidebladeOtter','reefbreakerWalrus'],targetCount:82,spawnRate:.062,healthScale:2.32,speedScale:1.85,damageScale:1.94,mission:{type:'defend',title:'DEFEND THE SIREN BEACON',duration:36,health:560}},
+      {name:'Thunderbreak Legion',roster:['reefbreakerWalrus','tidechantHeron','galecrestGull','tidebladeOtter','galecrestGull','tidebladeOtter'],targetCount:138,spawnRate:.032,healthScale:2.76,speedScale:2.18,damageScale:2.24,mission:{type:'anchors',title:'GROUND THE STORM CHAINS',count:5,health:182}},
+      {name:'Skyfang Cataclysm',roster:['reefbreakerWalrus','tidechantHeron','tidebladeOtter','galecrestGull','tidebladeOtter','reefbreakerWalrus','galecrestGull'],targetCount:186,spawnRate:.019,healthScale:3.22,speedScale:2.52,damageScale:2.55,mission:{type:'defend',title:'HOLD THE EYE OF HEAVEN',duration:44,health:680}}
     ]
   },
   neonChapter: {
@@ -435,10 +450,10 @@ export const ENCOUNTERS = {
     waves:[
       {name:'Rain Gate Sweepers',roster:['circuitJackal','pulsewingCrow','circuitJackal','pulsewingCrow'],targetCount:24,spawnRate:.27,healthScale:1.38,speedScale:1.26,damageScale:1.28,mission:{type:'eliminate',title:'BREACH THE RAIN GATE'}},
       {name:'Circuit Market Blackout',roster:['circuitJackal','pulsewingCrow','chromebackGorilla','circuitJackal','pulsewingCrow'],targetCount:42,spawnRate:.15,healthScale:1.72,speedScale:1.46,damageScale:1.52,mission:{type:'rescue',title:'FREE THE MARKET SPIRITS',count:4}},
-      {name:'Arcade Ghost Protocol',roster:['pulsewingCrow','circuitJackal','chromebackGorilla','pulsewingCrow','circuitJackal'],targetCount:68,spawnRate:.082,healthScale:2.08,speedScale:1.7,damageScale:1.8,mission:{type:'anchors',title:'CRASH THE GHOST SERVERS',count:4,health:172}},
-      {name:'Skyrail Execution Loop',roster:['circuitJackal','pulsewingCrow','chromebackGorilla','circuitJackal','pulsewingCrow','chromebackGorilla'],targetCount:104,spawnRate:.047,healthScale:2.5,speedScale:1.98,damageScale:2.1,mission:{type:'defend',title:'DEFEND THE SKYRAIL SHRINE',duration:39,health:650}},
-      {name:'Data Lotus Purge',roster:['chromebackGorilla','pulsewingCrow','circuitJackal','pulsewingCrow','circuitJackal'],targetCount:164,spawnRate:.025,healthScale:2.98,speedScale:2.32,damageScale:2.42,mission:{type:'anchors',title:'SEVER THE ONI CIRCUITS',count:6,health:208}},
-      {name:'Shogun Tower Override',roster:['chromebackGorilla','circuitJackal','pulsewingCrow','circuitJackal','chromebackGorilla','pulsewingCrow'],targetCount:218,spawnRate:.015,healthScale:3.52,speedScale:2.68,damageScale:2.78,mission:{type:'defend',title:'HOLD THE KERNEL GATE',duration:48,health:790}}
+      {name:'Arcade Ghost Protocol',roster:['pulsewingCrow','circuitJackal','kernelHackerTanuki','chromebackGorilla','pulsewingCrow','circuitJackal'],targetCount:68,spawnRate:.082,healthScale:2.08,speedScale:1.7,damageScale:1.8,mission:{type:'anchors',title:'CRASH THE GHOST SERVERS',count:4,health:172}},
+      {name:'Skyrail Execution Loop',roster:['circuitJackal','kernelHackerTanuki','pulsewingCrow','chromebackGorilla','circuitJackal','pulsewingCrow','chromebackGorilla'],targetCount:104,spawnRate:.047,healthScale:2.5,speedScale:1.98,damageScale:2.1,mission:{type:'defend',title:'DEFEND THE SKYRAIL SHRINE',duration:39,health:650}},
+      {name:'Data Lotus Purge',roster:['chromebackGorilla','kernelHackerTanuki','pulsewingCrow','circuitJackal','pulsewingCrow','circuitJackal'],targetCount:164,spawnRate:.025,healthScale:2.98,speedScale:2.32,damageScale:2.42,mission:{type:'anchors',title:'SEVER THE ONI CIRCUITS',count:6,health:208}},
+      {name:'Shogun Tower Override',roster:['chromebackGorilla','kernelHackerTanuki','circuitJackal','pulsewingCrow','circuitJackal','chromebackGorilla','pulsewingCrow'],targetCount:218,spawnRate:.015,healthScale:3.52,speedScale:2.68,damageScale:2.78,mission:{type:'defend',title:'HOLD THE KERNEL GATE',duration:48,health:790}}
     ]
   },
   shadowChapter: {
@@ -447,10 +462,10 @@ export const ENCOUNTERS = {
     waves:[
       {name:'Obsidian Lantern Hunt',roster:['shadowstepFerret','veilwingOwl','shadowstepFerret','veilwingOwl'],targetCount:30,spawnRate:.23,healthScale:1.5,speedScale:1.32,damageScale:1.42,mission:{type:'eliminate',title:'LIGHT THE OBSIDIAN ROAD'}},
       {name:'Mirrorgrave Awakening',roster:['shadowstepFerret','veilwingOwl','gravebackBear','shadowstepFerret','veilwingOwl'],targetCount:54,spawnRate:.125,healthScale:1.86,speedScale:1.55,damageScale:1.7,mission:{type:'rescue',title:'FREE THE FORGOTTEN SELVES',count:5}},
-      {name:'Wraithwood Pursuit',roster:['veilwingOwl','shadowstepFerret','gravebackBear','shadowstepFerret','veilwingOwl'],targetCount:88,spawnRate:.068,healthScale:2.25,speedScale:1.82,damageScale:2.02,mission:{type:'anchors',title:'SHATTER THE SHADOW MIRRORS',count:5,health:204}},
-      {name:'Eclipse Archive Legion',roster:['shadowstepFerret','veilwingOwl','gravebackBear','shadowstepFerret','veilwingOwl','gravebackBear'],targetCount:136,spawnRate:.038,healthScale:2.72,speedScale:2.12,damageScale:2.38,mission:{type:'defend',title:'DEFEND THE UNWRITTEN OATH',duration:43,health:760}},
-      {name:'Moonless Processional',roster:['gravebackBear','veilwingOwl','shadowstepFerret','veilwingOwl','shadowstepFerret'],targetCount:208,spawnRate:.02,healthScale:3.35,speedScale:2.5,damageScale:2.8,mission:{type:'anchors',title:'BREAK THE SIX MOON CHAINS',count:6,health:244}},
-      {name:'Palace of Ten Thousand Shadows',roster:['gravebackBear','shadowstepFerret','veilwingOwl','shadowstepFerret','gravebackBear','veilwingOwl'],targetCount:280,spawnRate:.012,healthScale:4.15,speedScale:2.92,damageScale:3.2,mission:{type:'defend',title:'HOLD THE LAST FREE SHADOW',duration:54,health:920}}
+      {name:'Wraithwood Pursuit',roster:['veilwingOwl','shadowstepFerret','moonveilSeer','gravebackBear','shadowstepFerret','veilwingOwl'],targetCount:88,spawnRate:.068,healthScale:2.25,speedScale:1.82,damageScale:2.02,mission:{type:'anchors',title:'SHATTER THE SHADOW MIRRORS',count:5,health:204}},
+      {name:'Eclipse Archive Legion',roster:['shadowstepFerret','moonveilSeer','veilwingOwl','gravebackBear','shadowstepFerret','veilwingOwl','gravebackBear'],targetCount:136,spawnRate:.038,healthScale:2.72,speedScale:2.12,damageScale:2.38,mission:{type:'defend',title:'DEFEND THE UNWRITTEN OATH',duration:43,health:760}},
+      {name:'Moonless Processional',roster:['gravebackBear','moonveilSeer','veilwingOwl','shadowstepFerret','veilwingOwl','shadowstepFerret'],targetCount:208,spawnRate:.02,healthScale:3.35,speedScale:2.5,damageScale:2.8,mission:{type:'anchors',title:'BREAK THE SIX MOON CHAINS',count:6,health:244}},
+      {name:'Palace of Ten Thousand Shadows',roster:['gravebackBear','moonveilSeer','shadowstepFerret','veilwingOwl','shadowstepFerret','gravebackBear','veilwingOwl'],targetCount:280,spawnRate:.012,healthScale:4.15,speedScale:2.92,damageScale:3.2,mission:{type:'defend',title:'HOLD THE LAST FREE SHADOW',duration:54,health:920}}
     ]
   }
 };

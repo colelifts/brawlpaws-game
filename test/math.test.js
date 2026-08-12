@@ -122,6 +122,19 @@ test('authored specialist enemies expose distinct counterplay contracts',()=>{
   assert.ok(ENCOUNTERS.crimsonChapter.waves[0].roster.includes('mistclawLynx'));
 });
 
+test('late chapters introduce animated battlefield-control specialists',()=>{
+  assert.equal(ENEMIES.tidechantHeron.behavior,'conductor');
+  assert.ok(ENEMIES.tidechantHeron.surgeWidth>70);
+  assert.equal(ENEMIES.kernelHackerTanuki.behavior,'hacker');
+  assert.ok(ENEMIES.kernelHackerTanuki.snareDrain>=40);
+  assert.equal(ENEMIES.moonveilSeer.behavior,'curser');
+  assert.ok(ENEMIES.moonveilSeer.curseMultiplier>1.25);
+  assert.ok(!ENCOUNTERS.stormChapter.waves[0].roster.includes('tidechantHeron'));
+  assert.ok(ENCOUNTERS.stormChapter.waves[2].roster.includes('tidechantHeron'));
+  assert.ok(ENCOUNTERS.neonChapter.waves[2].roster.includes('kernelHackerTanuki'));
+  assert.ok(ENCOUNTERS.shadowChapter.waves[2].roster.includes('moonveilSeer'));
+});
+
 test('boss profiles expose reusable timing and phase schedules',()=>{
   assert.deepEqual(Object.keys(BOSS_PATTERNS),['sweep','slam','channel','crossfire','signature']);
   assert.deepEqual(Object.keys(BOSS_PROFILES),['jadeguardTanuki','moonfangKomainu','pyreclawShogun','raijinKirin','daikyoOni','tsukikoEmpress']);

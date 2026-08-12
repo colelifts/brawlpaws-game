@@ -240,6 +240,15 @@ test('specialist enemies use dedicated animation and attack assets',()=>{
   assert.match(game,/debugSystem==='specialists'/);
 });
 
+test('late specialist bodies cast counterable world-space attacks',()=>{
+  for(const asset of ['tidechant-heron-v1.png','kernel-hacker-tanuki-v1.png','moonveil-seer-v1.png'])assert.match(game,new RegExp(asset.replace('.','\\.')));
+  for(const fn of ['castTidechantSurge','plantKernelSnare','castMoonveilCurse'])assert.match(game,new RegExp(`function ${fn}\\(`));
+  assert.match(game,/type:'kernelSnare'/);
+  assert.match(game,/SPRINT TO CLEANSE!/);
+  assert.match(game,/CURSE CLEANSED!/);
+  assert.match(game,/debugParams\.get\('set'\)==='late'/);
+});
+
 test('story and secret route events present consequential branching choices',()=>{
   for(const id of ['event-screen','event-title','event-copy','event-quote','event-choice-grid'])assert.match(html,new RegExp(`id="${id}"`));
   for(const fn of ['openRouteEvent','chooseRouteEvent','finishRouteEvent'])assert.match(game,new RegExp(`function ${fn}\\(`));
