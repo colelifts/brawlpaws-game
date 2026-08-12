@@ -1,6 +1,6 @@
 # BrawlPaws — Five-Chapter Roguelite Campaign
 
-A dependency-free playable browser roguelite with a walkable hub, permanent profile progression, five escalating chapters, branching routes, five production heroes, post-clear Ascension ranks, and five giant guardian bosses. Its 4,800×2,700 rooms include a circular live minimap for active threats, mission objectives, co-op allies, rewards, village services, and guardian chambers; players can disable it under Accessibility.
+A dependency-free playable browser roguelite with a walkable hub, permanent profile progression, six escalating chapters, branching routes, five production heroes, post-clear Ascension ranks, and six giant guardian bosses. Its 4,800×2,700 rooms include a circular live minimap for active threats, mission objectives, co-op allies, rewards, village services, and guardian chambers; players can disable it under Accessibility.
 
 ## Run it
 
@@ -53,7 +53,7 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - Jade Brawler enemies with pursuit, separation, telegraphed lunges, health, knockback, and death
 - Hit-stop, damage numbers, impact rings, sparks, comic attack words, directional whole-body enemy reactions, speed-scaled run cycles, recorded combat SFX with anti-stacking mix limits, and an independently adjustable soft looping score (licensed sources are listed in `assets/audio/CREDITS.md`)
 - Ability hits drive target-specific burn recoil, wet squash, and shock jitter/tint reactions instead of placing the whole effect over the enemy body
-- Grounded fade-and-rise enemy entrances, reduced normal-enemy scale, and authored locomotion cycles for every enemy family and all five guardians
+- Grounded fade-and-rise enemy entrances, reduced normal-enemy scale, and authored locomotion cycles for every enemy family and all six guardians
 - Compact illustrated upgrade cards with a dedicated nine-emblem atlas and one-line outcome summaries
 - Responsive BrawlPaws HUD, title screen, room-clear screen, and death/restart loop
 - Data definitions for the hero, weapon, enemy, and room
@@ -70,7 +70,7 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - Depth-sorted Jade Grove prop atlas, prop collision, foreground occlusion, light pools, ambient petals, cracks, spirit gates, and haze
 - Neon blaster trails, impact stars, elemental ability VFX, ink death bursts, enemy projectiles, and magnetizing XP shards
 - Four unlockable active abilities with locked-slot HUD states, directional targeting, damage, healing, damage reduction, burn damage, and distinct VFX
-- Thirty escalating pre-boss combats across five chapters: Chapter I grows from 4 slow scouts to 72 enemies, Chapter II reaches 112, Chapter III reaches 150, Storm Coast reaches 186, and Neon City culminates in a 218-enemy Shogun Tower override
+- Thirty-six escalating pre-boss combats across six chapters: Chapter I grows from 4 slow scouts to 72 enemies, Chapter II reaches 112, Chapter III reaches 150, Storm Coast reaches 186, Neon City reaches 218, and Shadow Realm culminates in a 280-enemy Umbral Palace siege
 - Every pre-boss room now carries an authored mission: eliminate a named warband, shoot and shatter curse anchors, reach and free captive spirits, or defend a damageable ward until its seal stabilizes. Mission progress is visible in the HUD, gates room completion, grants gold/XP, fails the run when a ward breaks, and persists in room-safe checkpoints.
 - Physical Sacred Springs, Spirit Vaults, and Hero Shrines selected from the route screen must be reached and activated inside combat rooms; destructible pots and crates provide optional gold and XP
 - Real level progression with rising XP thresholds, combat-pausing three-card choices, 45 upgrade definitions, repeatable ranks, Dual-Wield, hero-specific branches, piercing, critical-draw, conductive chaining, guardian-hunter, mobility, economy, five earned weapon capstones, and four behavior-changing ability evolutions
@@ -79,7 +79,7 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - Six escalating Jade Grove waves: 4 teaching scouts, then 10, 18, 30, 48, and a 72-enemy siege; Bamboo and Crimson finales reach 112 and 150 enemies before difficulty, corruption, and co-op multipliers
 - Large armies use a difficulty-, chapter-, wave-, and party-scaled active combat budget. The opening lesson remains capped at eight simultaneous enemies, while the Chapter III finale can sustain 54 on Ferocious, 61 on solo Nightmare, and 72 in high-rank/co-op pressure. The budget ramps during each room, distributes arrivals around the arena, and keeps the rest of the authored army in visible perimeter reserves instead of forming an unreadable instant pileup.
 - Ward-defense missions have a short opening grace period, limited simultaneous ward attackers, and a survival-scaled damage ceiling. Ignoring the ward still loses the room, while active defense has a fair reaction window.
-- Each chapter has four checkpoint-safe story beats: the opening, revelations after seals two and four, and the guardian confrontation. Every scene carries seal progress plus a one-line next objective so the five-chapter plot remains legible between route choices.
+- Each chapter has four checkpoint-safe story beats: the opening, revelations after seals two and four, and the guardian confrontation. Every scene carries seal progress plus a one-line next objective so the six-chapter plot remains legible between route choices.
 - Dedicated Jadeguard Tanuki boss artwork, a 2,600-HP boss HUD, three phases, staff sweep, stunning ground slam, radial jade projectiles, phase summons, enrage, and chapter-clear story payoff
 - A branching Choose Your Path screen between waves with Combat, Elite, Heal, Shop, Treasure, and Shrine nodes
 - Enemy gold rewards, mutation-scaled elite routes, twelve run relics, and a functional Moon Market with persistent purchases
@@ -96,7 +96,9 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - A giant 11,200-HP Raijin Kirin guardian with authored locomotion, sweep, slam, channel, crossfire, phase summons, Tempest Eye domains, and Heaven-Splitter Judgment.
 - Chapter 5: Neon City, with six production-painted rain-soaked arenas; Circuit Jackal, Pulsewing Crow, and Chromeback Gorilla armies; animated rain and holograms; Firewall Override lanes; and a dedicated Shogun Core guardian court.
 - A giant 14,800-HP Daikyo Oni guardian with authored movement, cyber-weapon attacks, phase legions, System Override domains, six-lane crossfire, and Oni Kernel Collapse.
-- Pyreclaw and Raijin now grant carry-forward oaths; Daikyo’s defeat ends with three final vows—Mercy, Power, or Freedom—each granting a permanent shard payout and authored five-guardian epilogue.
+- Chapter 6: Shadow Realm, with six production-painted moonless arenas; Shadowstep Ferret, Veilwing Owl, and Graveback Bear armies; animated shadow fog; predictive Eclipse Rifts; and a dedicated Throne Beyond the Moon guardian court.
+- A giant 19,000-HP Tsukiko guardian with six spectral tails, authored movement, crescent-chain attacks, phase legions, Eclipse Sovereignty domains, seven-lane crossfire, and Hollow Moon Descent.
+- Daikyo now grants a carry-forward Core Oath; Tsukiko’s defeat ends with three final vows—Mercy, Power, or Freedom—each granting a permanent shard payout and authored six-guardian epilogue.
 - Spirited, Ferocious, and Nightmare difficulty selection with real health, speed, damage, and reward scaling
 - Ten post-clear Ascension ranks that compound enemy health, pursuit speed, damage, pack size, spawn cadence, and shard rewards after every successful clear
 - Persistent spirit shards, campaign clears, best-difficulty records, highest level, and capped legacy health/gold bonuses
@@ -123,9 +125,9 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - Weighted Common, Rare, and Epic level-up offers with a guaranteed early ability option, one free reroll, escalating paid rerolls, and a recovery-focused skip choice. Cards now prioritize offer class, rank, concise effect, and a live current-to-new stat comparison; relevant new synergies are called out directly on the choice.
 - Four combat-changing build recipes: Steam Burst, Storm Current, Guardian Tempest, and Twin Cinders, with persistent HUD badges
 - Authored Story Event and Secret route nodes with branching costs, relics, weapon evolutions, ability-power rewards, curses, and harder high-reward follow-up waves
-- Reusable boss-pattern and boss-profile data now owns windup/action/recovery timing, damage identity, phase labels, and per-phase schedules for all five guardians
+- Reusable boss-pattern and boss-profile data now owns windup/action/recovery timing, damage identity, phase labels, and per-phase schedules for all six guardians
 - A persistent Spirit Archive Codex records enemies and guardians when first encountered, with data-driven hero/weapon stats, status interactions, enemy counterplay, and each guardian's actual phase patterns
-- All five guardians gain Sealing Crossfire in later phases: a profile-scaled set of intersecting floor lanes that locks to the player's position, clearly warns, then converges with a stunning impact
+- All six guardians gain Sealing Crossfire in later phases: a profile-scaled set of intersecting floor lanes that locks to the player's position, clearly warns, then converges with a stunning impact
 
 For direct boss QA, open `http://127.0.0.1:4174/?boss=1`; normal play always requires clearing the full chapter first.
 Route QA checkpoints are available at `?route=1`, `?route=2`, and `?route=3`; they are not used during normal play.

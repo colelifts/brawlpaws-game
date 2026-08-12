@@ -163,6 +163,13 @@ export const BOSS_PROFILES = {
     signatureName:'Oni Kernel Collapse',signatureRow:0,signatureDamage:63,signatureDescription:'Daikyo brands six circuits around your predicted route, then crashes the entire arena kernel in sequence. Keep a diagonal escape lane open.',
     phaseNames:{1:'CORE SENTINEL',2:'OVERRIDE PROTOCOL',3:'ONI KERNEL UNBOUND'},
     schedules:{1:['sweep','channel','slam','signature'],2:['signature','crossfire','sweep','channel','slam','crossfire'],3:['signature','crossfire','channel','sweep','signature','slam','crossfire','channel']}
+  },
+  tsukikoEmpress: {
+    id:'tsukikoEmpress', sweepRange:640, sweepDamage:48, slamDamage:58, radialBase:28, crossfireDamage:63, crossfireWidth:108, crossfireLanes:7,
+    phaseTempo:{1:.84,2:.69,3:.54},domainIntervals:{2:5.15,3:3.15},domainName:'ECLIPSE SOVEREIGNTY',
+    signatureName:'Hollow Moon Descent',signatureRow:0,signatureDamage:72,signatureDescription:'Tsukiko seals your predicted route beneath a hollow moon, then collapses every shadow inward. Break direction after the last seal locks.',
+    phaseNames:{1:'HOLLOW EMPRESS',2:'SIX-TAIL ECLIPSE',3:'MOON WITHOUT DAWN'},
+    schedules:{1:['sweep','signature','channel','slam'],2:['signature','crossfire','sweep','channel','slam','signature'],3:['signature','crossfire','channel','sweep','signature','slam','crossfire','signature','channel']}
   }
 };
 
@@ -307,6 +314,26 @@ export const ENEMIES = {
     id:'daikyoOni', name:'Daikyo Oni, Shogun of the Core', maxHealth:14800, speed:152,
     radius:152, contactDamage:54, windup:.72, attackRange:470, attackCooldown:1.28, slamRadius:445, stunDuration:1.58,
     color:'#ff3ab8', scale:5.15, behavior:'boss', biome:'neon'
+  },
+  shadowstepFerret: {
+    id:'shadowstepFerret', name:'Shadowstep Ferret', maxHealth:350, speed:315,
+    radius:31, contactDamage:30, windup:.18, attackRange:345, attackCooldown:.62,
+    color:'#b84dff', spriteColumn:0, scale:1.14, behavior:'melee', biome:'shadow'
+  },
+  veilwingOwl: {
+    id:'veilwingOwl', name:'Veilwing Owl', maxHealth:290, speed:255,
+    radius:31, contactDamage:29, windup:.29, attackRange:710, attackCooldown:.79,
+    color:'#54e9ff', spriteColumn:1, scale:1.16, behavior:'ranged', biome:'shadow'
+  },
+  gravebackBear: {
+    id:'gravebackBear', name:'Graveback Bear', maxHealth:980, speed:180,
+    radius:62, contactDamage:50, windup:.56, attackRange:225, attackCooldown:1.42, slamRadius:228, stunDuration:1.55,
+    color:'#d459ff', spriteColumn:2, scale:1.82, behavior:'heavy', biome:'shadow'
+  },
+  tsukikoEmpress: {
+    id:'tsukikoEmpress', name:'Tsukiko, Empress of the Hollow Moon', maxHealth:19000, speed:165,
+    radius:164, contactDamage:62, windup:.65, attackRange:505, attackCooldown:1.12, slamRadius:480, stunDuration:1.68,
+    color:'#b84dff', scale:5.45, behavior:'boss', biome:'shadow'
   }
 };
 
@@ -369,6 +396,18 @@ export const ENCOUNTERS = {
       {name:'Skyrail Execution Loop',roster:['circuitJackal','pulsewingCrow','chromebackGorilla','circuitJackal','pulsewingCrow','chromebackGorilla'],targetCount:104,spawnRate:.047,healthScale:2.5,speedScale:1.98,damageScale:2.1,mission:{type:'defend',title:'DEFEND THE SKYRAIL SHRINE',duration:39,health:650}},
       {name:'Data Lotus Purge',roster:['chromebackGorilla','pulsewingCrow','circuitJackal','pulsewingCrow','circuitJackal'],targetCount:164,spawnRate:.025,healthScale:2.98,speedScale:2.32,damageScale:2.42,mission:{type:'anchors',title:'SEVER THE ONI CIRCUITS',count:6,health:208}},
       {name:'Shogun Tower Override',roster:['chromebackGorilla','circuitJackal','pulsewingCrow','circuitJackal','chromebackGorilla','pulsewingCrow'],targetCount:218,spawnRate:.015,healthScale:3.52,speedScale:2.68,damageScale:2.78,mission:{type:'defend',title:'HOLD THE KERNEL GATE',duration:48,health:790}}
+    ]
+  },
+  shadowChapter: {
+    id:'shadowChapter', name:'The Realm Behind Every Shadow', room:'shadowObsidianPath', rooms:['shadowObsidianPath','shadowMirrorgraveVillage','shadowWraithwoodCrossing','shadowEclipseArchive','shadowMoonlessProcessional','shadowUmbralPalaceSteps'], bossRoom:'shadowThroneBeyondMoon', boss:'tsukikoEmpress',
+    pressure:{id:'eclipseRift',name:'ECLIPSE RIFT',startWave:0,baseInterval:5.9,minInterval:2.75,warning:.9,activeDuration:1.15,radius:188,damage:23,slow:.28,color:'#b84dff'},
+    waves:[
+      {name:'Obsidian Lantern Hunt',roster:['shadowstepFerret','veilwingOwl','shadowstepFerret','veilwingOwl'],targetCount:30,spawnRate:.23,healthScale:1.5,speedScale:1.32,damageScale:1.42,mission:{type:'eliminate',title:'LIGHT THE OBSIDIAN ROAD'}},
+      {name:'Mirrorgrave Awakening',roster:['shadowstepFerret','veilwingOwl','gravebackBear','shadowstepFerret','veilwingOwl'],targetCount:54,spawnRate:.125,healthScale:1.86,speedScale:1.55,damageScale:1.7,mission:{type:'rescue',title:'FREE THE FORGOTTEN SELVES',count:5}},
+      {name:'Wraithwood Pursuit',roster:['veilwingOwl','shadowstepFerret','gravebackBear','shadowstepFerret','veilwingOwl'],targetCount:88,spawnRate:.068,healthScale:2.25,speedScale:1.82,damageScale:2.02,mission:{type:'anchors',title:'SHATTER THE SHADOW MIRRORS',count:5,health:204}},
+      {name:'Eclipse Archive Legion',roster:['shadowstepFerret','veilwingOwl','gravebackBear','shadowstepFerret','veilwingOwl','gravebackBear'],targetCount:136,spawnRate:.038,healthScale:2.72,speedScale:2.12,damageScale:2.38,mission:{type:'defend',title:'DEFEND THE UNWRITTEN OATH',duration:43,health:760}},
+      {name:'Moonless Processional',roster:['gravebackBear','veilwingOwl','shadowstepFerret','veilwingOwl','shadowstepFerret'],targetCount:208,spawnRate:.02,healthScale:3.35,speedScale:2.5,damageScale:2.8,mission:{type:'anchors',title:'BREAK THE SIX MOON CHAINS',count:6,health:244}},
+      {name:'Palace of Ten Thousand Shadows',roster:['gravebackBear','shadowstepFerret','veilwingOwl','shadowstepFerret','gravebackBear','veilwingOwl'],targetCount:280,spawnRate:.012,healthScale:4.15,speedScale:2.92,damageScale:3.2,mission:{type:'defend',title:'HOLD THE LAST FREE SHADOW',duration:54,health:920}}
     ]
   }
 };
@@ -537,6 +576,12 @@ export const ROOMS = {
   neonSkyrailShrine:{id:'neonSkyrailShrine',name:'Skyrail Shrine',width:4800,height:2700,background:'assets/environment/neon-skyrail-shrine-v1.png',playerSpawn:{x:2380,y:1840},enemySpawns:[],ambient:'skyrail',spawnLane:.6,spawnLaneStep:.036,combatBounds:{x:2400,y:1450,radiusX:1800,radiusY:930}},
   neonDataLotusGardens:{id:'neonDataLotusGardens',name:'Data Lotus Gardens',width:4800,height:2700,background:'assets/environment/neon-data-lotus-gardens-v1.png',playerSpawn:{x:2420,y:1840},enemySpawns:[],ambient:'hologram',spawnLane:.59,spawnLaneStep:.035,combatBounds:{x:2400,y:1440,radiusX:1810,radiusY:940}},
   neonShogunTower:{id:'neonShogunTower',name:'Shogun Tower',width:4800,height:2700,background:'assets/environment/neon-shogun-tower-v1.png',playerSpawn:{x:2400,y:1870},enemySpawns:[],ambient:'override',spawnLane:.59,spawnLaneStep:.034,combatBounds:{x:2400,y:1450,radiusX:1830,radiusY:945}},
-  neonShogunCore:{id:'neonShogunCore',name:'Neon Shogun Core',width:4800,height:2700,background:'assets/environment/neon-shogun-core-v1.png',playerSpawn:{x:2400,y:1930},enemySpawns:[],ambient:'override',spawnLane:.61,spawnLaneStep:.032,combatBounds:{x:2400,y:1500,radiusX:1660,radiusY:830}
-  }
+  neonShogunCore:{id:'neonShogunCore',name:'Neon Shogun Core',width:4800,height:2700,background:'assets/environment/neon-shogun-core-v1.png',playerSpawn:{x:2400,y:1930},enemySpawns:[],ambient:'override',spawnLane:.61,spawnLaneStep:.032,combatBounds:{x:2400,y:1500,radiusX:1660,radiusY:830}},
+  shadowObsidianPath:{id:'shadowObsidianPath',name:'Obsidian Lantern Path',width:4800,height:2700,background:'assets/environment/shadow-obsidian-lantern-path-v1.png',playerSpawn:{x:2400,y:1840},enemySpawns:[],ambient:'shadow',spawnLane:.62,spawnLaneStep:.038,combatBounds:{x:2400,y:1450,radiusX:1920,radiusY:1000}},
+  shadowMirrorgraveVillage:{id:'shadowMirrorgraveVillage',name:'Mirrorgrave Village',width:4800,height:2700,background:'assets/environment/shadow-mirrorgrave-village-v1.png',playerSpawn:{x:2200,y:1840},enemySpawns:[],ambient:'mirrorgrave',spawnLane:.61,spawnLaneStep:.036,combatBounds:{x:2400,y:1440,radiusX:1880,radiusY:980}},
+  shadowWraithwoodCrossing:{id:'shadowWraithwoodCrossing',name:'Wraithwood Crossing',width:4800,height:2700,background:'assets/environment/shadow-wraithwood-crossing-v1.png',playerSpawn:{x:2400,y:1850},enemySpawns:[],ambient:'wraithwood',spawnLane:.6,spawnLaneStep:.035,combatBounds:{x:2400,y:1450,radiusX:1860,radiusY:960}},
+  shadowEclipseArchive:{id:'shadowEclipseArchive',name:'Eclipse Archive',width:4800,height:2700,background:'assets/environment/shadow-eclipse-archive-v1.png',playerSpawn:{x:2380,y:1840},enemySpawns:[],ambient:'eclipse',spawnLane:.59,spawnLaneStep:.034,combatBounds:{x:2400,y:1450,radiusX:1840,radiusY:950}},
+  shadowMoonlessProcessional:{id:'shadowMoonlessProcessional',name:'Moonless Processional',width:4800,height:2700,background:'assets/environment/shadow-moonless-processional-v1.png',playerSpawn:{x:2420,y:1840},enemySpawns:[],ambient:'shadow',spawnLane:.59,spawnLaneStep:.033,combatBounds:{x:2400,y:1440,radiusX:1860,radiusY:960}},
+  shadowUmbralPalaceSteps:{id:'shadowUmbralPalaceSteps',name:'Umbral Palace Steps',width:4800,height:2700,background:'assets/environment/shadow-umbral-palace-steps-v1.png',playerSpawn:{x:2400,y:1870},enemySpawns:[],ambient:'eclipse',spawnLane:.58,spawnLaneStep:.032,combatBounds:{x:2400,y:1450,radiusX:1870,radiusY:965}},
+  shadowThroneBeyondMoon:{id:'shadowThroneBeyondMoon',name:'Throne Beyond the Moon',width:4800,height:2700,background:'assets/environment/shadow-throne-beyond-moon-v1.png',playerSpawn:{x:2400,y:1940},enemySpawns:[],ambient:'hollowMoon',spawnLane:.6,spawnLaneStep:.03,combatBounds:{x:2400,y:1500,radiusX:1700,radiusY:850}}
 };

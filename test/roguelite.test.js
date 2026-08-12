@@ -342,7 +342,7 @@ test('active campaigns persist a versioned room-safe checkpoint and can resume',
 
 test('rooms carry first-class rescue, curse-anchor, and ward-defense missions',()=>{
   const waves=Object.values(ENCOUNTERS).flatMap((chapter)=>chapter.waves);
-  assert.equal(waves.length,30);
+  assert.equal(waves.length,36);
   for(const type of ['eliminate','rescue','anchors','defend'])assert.ok(waves.some((wave)=>wave.mission?.type===type),`missing ${type} mission`);
   for(const wave of waves){assert.ok(wave.mission?.title);if(wave.mission.type==='rescue'||wave.mission.type==='anchors')assert.ok(wave.mission.count>=2);if(wave.mission.type==='defend'){assert.ok(wave.mission.duration>=20);assert.ok(wave.mission.health>=200);}}
   for(const fn of ['spawnRoomMission','serializeMissionState','saveMissionCheckpoint','completeRoomMission','failRoomMission','nearestMissionCaptive','useMissionInteraction','damageRoomMissionObjects','updateRoomMission','missionObjectiveText','drawMissionAnchor','drawMissionCaptive','drawMissionWard'])assert.match(game,new RegExp(`function ${fn}\\(`));
@@ -426,6 +426,7 @@ test('every campaign wave advances into its own production-painted combat locati
     crimsonChapter:['crimsonDojo','crimsonBellCourt','crimsonWarYard','crimsonCinderRooftops','crimsonDrumFoundry','crimsonWarProcessional']
     ,stormChapter:['stormTempestHarbor','stormTideglassCauseway','stormDrownedBellSanctum','stormSirenReefMonastery','stormThunderbreakLighthouse','stormSkyfangAscent']
     ,neonChapter:['neonRainGate','neonCircuitMarket','neonHologramArcade','neonSkyrailShrine','neonDataLotusGardens','neonShogunTower']
+    ,shadowChapter:['shadowObsidianPath','shadowMirrorgraveVillage','shadowWraithwoodCrossing','shadowEclipseArchive','shadowMoonlessProcessional','shadowUmbralPalaceSteps']
   };
   for(const [chapter,rooms] of Object.entries(chapterRooms)){
     assert.match(data,new RegExp(`id:\\s*'${chapter}'[\\s\\S]{0,260}rooms:\\s*\\[${rooms.map(room=>`'${room}'`).join(',')}\\]`));
@@ -439,17 +440,19 @@ test('every campaign wave advances into its own production-painted combat locati
   assert.match(data,/bossRoom:'jadeGuardianApproach'/);
   assert.match(data,/bossRoom:'stormEyeOfTempest'/);
   assert.match(data,/bossRoom:'neonShogunCore'/);
+  assert.match(data,/bossRoom:'shadowThroneBeyondMoon'/);
   assert.doesNotMatch(data,/rooms: \[[^\]]*'jadeGuardianApproach'/);
   assert.doesNotMatch(data,/rooms: \[[^\]]*'bambooMoonfangBurrow'/);
   assert.doesNotMatch(data,/rooms: \[[^\]]*'crimsonOniGate'/);
   assert.doesNotMatch(data,/rooms: \[[^\]]*'stormEyeOfTempest'/);
   assert.doesNotMatch(data,/rooms: \[[^\]]*'neonShogunCore'/);
-  for(const asset of ['jade-bell-terraces.png','jade-lantern-canals.png','jade-warden-processional.png','bamboo-moonlotus-reservoir.png','bamboo-sporelight-monastery.png','bamboo-moonstone-causeway.png','crimson-cinder-rooftops.png','crimson-drum-foundry.png','crimson-war-processional.png','storm-tempest-harbor-v1.png','storm-skyfang-ascent-v1.png','neon-rain-gate-v1.png','neon-shogun-tower-v1.png'])assert.match(data,new RegExp(asset.replace('.','\\.')));
+  assert.doesNotMatch(data,/rooms: \[[^\]]*'shadowThroneBeyondMoon'/);
+  for(const asset of ['jade-bell-terraces.png','jade-lantern-canals.png','jade-warden-processional.png','bamboo-moonlotus-reservoir.png','bamboo-sporelight-monastery.png','bamboo-moonstone-causeway.png','crimson-cinder-rooftops.png','crimson-drum-foundry.png','crimson-war-processional.png','storm-tempest-harbor-v1.png','storm-skyfang-ascent-v1.png','neon-rain-gate-v1.png','neon-shogun-tower-v1.png','shadow-obsidian-lantern-path-v1.png','shadow-umbral-palace-steps-v1.png','shadow-throne-beyond-moon-v1.png'])assert.match(data,new RegExp(asset.replace('.','\\.')));
 });
 
 test('each chapter escalates through a unique biome pressure mechanic',()=>{
   const pressures=Object.values(ENCOUNTERS).map((chapter)=>chapter.pressure);
-  assert.deepEqual(pressures.map((pressure)=>pressure.id),['bellEcho','sporeBloom','emberLane','stormSurge','firewallGrid']);
+  assert.deepEqual(pressures.map((pressure)=>pressure.id),['bellEcho','sporeBloom','emberLane','stormSurge','firewallGrid','eclipseRift']);
   for(const pressure of pressures){assert.ok(pressure.baseInterval>pressure.minInterval);assert.ok(pressure.warning>=.9);assert.ok(pressure.damage>0);}
   assert.match(game,/function scheduleBiomePressure/);assert.match(game,/function updateBiomePressure/);assert.match(game,/effects\.biomePressures/);
 });
@@ -481,8 +484,8 @@ test('late armies and guardians escalate pressure without changing the tutorial 
   assert.match(game,/enemy\.patternWindup=pattern\.windup\*tempo/);
 });
 
-test('Bamboo, Crimson, and guardian locomotion use authored pose atlases',()=>{
-  for(const asset of ['bamboo-enemies-move-v1.png','crimson-enemies-move-v1.png','jadeguard-tanuki-move-v1.png','moonfang-komainu-move-v1.png','pyreclaw-shogun-move-v1.png'])assert.match(game,new RegExp(asset.replace('.','\\.')));
+test('every late chapter and guardian locomotion uses authored pose atlases',()=>{
+  for(const asset of ['bamboo-enemies-move-v1.png','crimson-enemies-move-v1.png','storm-enemies-move-v1.png','neon-enemies-move-v1.png','shadow-enemies-move-v1.png','jadeguard-tanuki-move-v1.png','moonfang-komainu-move-v1.png','pyreclaw-shogun-move-v1.png','raijin-kirin-move-v1.png','daikyo-oni-move-v1.png','tsukiko-empress-move-v1.png'])assert.match(game,new RegExp(asset.replace('.','\\.')));
   assert.match(game,/const useMove=!attacking&&motion\.moving/);
   assert.match(game,/const frame=definition\.spriteColumn\+\(attacking\?3:useMove\?walkRow\*3:0\)/);
   assert.match(game,/const useMove=motion\.moving&&enemy\.state==='bossIdle'/);

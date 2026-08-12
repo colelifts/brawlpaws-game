@@ -40,7 +40,7 @@ The current Visual Combat Prototype V2 provides the first quality gate:
 - Bellweaver Cat, Powderkeg Toad, and Gatewarden Rhino now form a reusable authored specialist family with dedicated 24-cell directional/action atlases and a separate six-frame ritual, bomb, explosion, and shield-impact VFX sheet
 - Specialist mechanics now add bounded reinforcements, predictive delayed area denial, and front-only regenerating guard counterplay to later waves without changing the intentionally simple opening encounter
 - The title screen now compares the selected hero and starting weapon using data-driven power, toughness, mobility, control, weapon tags, damage, fire rate, projectile count, and critical chance
-- Guardian timing, damage identity, phase labels, and phase schedules now live in reusable BossPattern and BossProfile definitions consumed by all five current boss fights
+- Guardian timing, damage identity, phase labels, and phase schedules now live in reusable BossPattern and BossProfile definitions consumed by all six current boss fights
 - Guardian profiles now also own per-phase tempo and recurring arena-domain cadence: predictive Bellstorms, persistent Moonblooms, Oni-fire corridors, Tempest Eyes, and Firewall Overrides create five mechanically distinct late-fight pressure tests
 - Mistclaw Lynx is the fourth authored specialist: a full directional movement/strike atlas, visible destination mark, fading windup, committed blink relocation, and readable twin-dagger follow-through
 - The Spirit Archive Codex is playable from the title, Mission Board, and `K` pause shortcut; its hero, enemy, guardian, and status panels consume live definitions while encounter discoveries persist in the profile
@@ -113,7 +113,7 @@ Next ability work:
 
 - XP thresholds, level progression, and combat pause during selection are playable
 - Three-card level-up presentation, weighted Common/Rare/Epic rarity, keyboard/mouse selection, one free reroll, escalating gold rerolls, and a recovery skip are playable. Every offer now labels its role/rank, states the concise effect, compares the live current and resulting stat, and previews any immediately unlocked synergy.
-- All five chapters now carry four checkpoint-safe narrative beats—opening, post-seal-two revelation, post-seal-four escalation, and guardian confrontation—with visible seal progress and a concise next objective
+- All six chapters now carry four checkpoint-safe narrative beats—opening, post-seal-two revelation, post-seal-four escalation, and guardian confrontation—with visible seal progress and a concise next objective
 - 45 meaningful upgrade definitions now cover five hero weapon capstones, four ability evolutions, weapon evolution, four ability unlocks, hero-specific mastery, damage, speed, health, per-ability ranks, shield breaking, elite and guardian hunting, critical mastery, piercing, Conductive chaining, economy, and bonus projectiles
 - Twelve functional relics: Lucky Coin, Spirit Mask, Thunder Seal, Blood Vial, Dragon Scale, Rainbow Feather, Ward Bell, Oni Contract, Moon Pearl, Phoenix Plume, River Mirror, and Guardian Fang
 - Four automatic recipe synergies are playable and visible in the HUD: Steam Burst, Storm Current, Guardian Tempest, and Twin Cinders
@@ -137,10 +137,10 @@ Initial upgrade set:
 
 **Exit gate:** at least three noticeably different viable builds can emerge from one short run; choices are more interesting than tiny percentage-only increases.
 
-## Phase 5 — Rooms, routes, and rewards (five-chapter multi-room foundation complete)
+## Phase 5 — Rooms, routes, and rewards (six-chapter multi-room foundation complete)
 
 - Handcrafted room-template data separated into floor, collision, walls, props, decorations, foreground, lights, gates, spawns, and interactables
-- Thirty-five production-painted combat rooms are playable across five chapters: every one of the thirty pre-boss waves has its own location and all five giant guardians have dedicated courts.
+- Forty-two production-painted combat rooms are playable across six chapters: every one of the thirty-six pre-boss waves has its own location and all six giant guardians have dedicated courts.
 - Six escalating combat seals per chapter now create thirty pre-boss encounters, scaling from four opening scouts to 72/112/150/186/218-enemy chapter finales before difficulty multipliers. A staged chapter-, wave-, difficulty-, route-, and co-op-scaled active budget grows from an eight-enemy tutorial ceiling into high-pressure late-chapter armies. Golden-angle arrival distribution and continuous reserves preserve the full army without an instant unreadable pileup.
 - All thirty combat seals now have authored objectives: named elimination packs, destructible curse anchors, spatial spirit rescues, and timed wards with real health. Objectives own HUD progress, arena actors, completion gates, rewards, checkpoint state, and ward-break failure consequences. Ward missions use a brief grace window, an eight-attacker pressure budget, and a duration-scaled maximum DPS so they demand active defense without mathematically failing before the player can react.
 - Route-selected Sacred Springs, Spirit Vaults, and Hero Shrines now exist as physical room objectives, while breakable pots and crates provide optional gold and experience
@@ -242,4 +242,4 @@ Systems communicate through gameplay events such as `attackStarted`, `hitResolve
 
 ## Immediate next milestone
 
-Build Shadow Realm, finish Nomi and the remaining weapon roster, deepen hero-specific upgrade trees, add further earned evolutions, and tune the full five-chapter difficulty curve from the low-power opening through Daikyo and Ascension without weakening the current animation, telegraph, and combat-feedback bar. Neon City is complete; Shadow Realm is the next biome milestone.
+Finish Nomi and the remaining weapon roster, deepen hero-specific upgrade trees, add further earned evolutions, and tune the full six-chapter difficulty curve from the low-power opening through Tsukiko and Ascension without weakening the current animation, telegraph, and combat-feedback bar. Shadow Realm is complete; the next content milestone is the final hero/weapon roster and deeper mastery progression.

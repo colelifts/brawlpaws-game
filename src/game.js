@@ -42,7 +42,7 @@ const loading = document.querySelector('#loading');
 let selectedHeroId = 'kitsune';
 let heroDef = HEROES[selectedHeroId];
 let weapon = WEAPONS[heroDef.weapon];
-const CHAPTER_ORDER = ['jadeChapter', 'bambooChapter', 'crimsonChapter', 'stormChapter', 'neonChapter'];
+const CHAPTER_ORDER = ['jadeChapter', 'bambooChapter', 'crimsonChapter', 'stormChapter', 'neonChapter', 'shadowChapter'];
 let chapterIndex = 0;
 let chapter = ENCOUNTERS[CHAPTER_ORDER[chapterIndex]];
 let room = ROOMS[chapter.room];
@@ -67,6 +67,7 @@ const assets = {
   crimsonEnemies: new Image(), crimsonEnemiesMove: new Image(), pyreclawShogun: new Image(), pyreclawShogunMove: new Image(), crimsonCombatVfx: new Image(),
   stormEnemies: new Image(), stormEnemiesMove: new Image(), raijinKirin: new Image(), raijinKirinMove: new Image(), stormCoastVfx: new Image(),
   neonEnemies: new Image(), neonEnemiesMove: new Image(), daikyoOni: new Image(), daikyoOniMove: new Image(), neonCityVfx: new Image(),
+  shadowEnemies: new Image(), shadowEnemiesMove: new Image(), tsukikoEmpress: new Image(), tsukikoEmpressMove: new Image(), shadowRealmVfx: new Image(),
   bellweaverCat: new Image(), powderkegToad: new Image(), gatewardenRhino: new Image(), mistclawLynx: new Image(), specialEnemyVfx: new Image(), guardianSignatureVfx: new Image()
 };
 const assetSources = {
@@ -132,6 +133,11 @@ const assetSources = {
   daikyoOni: 'assets/characters/daikyo-oni-v1.png',
   daikyoOniMove: 'assets/characters/daikyo-oni-move-v1.png',
   neonCityVfx: 'assets/vfx/neon-city-vfx-v1.png',
+  shadowEnemies: 'assets/characters/shadow-enemies-v1.png',
+  shadowEnemiesMove: 'assets/characters/shadow-enemies-move-v1.png',
+  tsukikoEmpress: 'assets/characters/tsukiko-empress-v1.png',
+  tsukikoEmpressMove: 'assets/characters/tsukiko-empress-move-v1.png',
+  shadowRealmVfx: 'assets/vfx/shadow-realm-vfx-v1.png',
   bellweaverCat: 'assets/characters/bellweaver-cat.png',
   powderkegToad: 'assets/characters/powderkeg-toad.png',
   gatewardenRhino: 'assets/characters/gatewarden-rhino.png',
@@ -602,12 +608,15 @@ const ENEMY_CODEX_NOTES = {
   ,circuitJackal:{lore:'A city executioner whose twin energy tonfa cross before its whole body flashes through a target.',counter:'Step outside the crossed warning and punish the Jackal after both tonfa finish their arc.'}
   ,pulsewingCrow:{lore:'A masked data archer that draws corrupted city light directly into its bow.',counter:'Watch the visible full draw, change direction at release, then rush the exposed Crow.'}
   ,chromebackGorilla:{lore:'A reactor-backed enforcer whose pile-driver fist crashes entire circuit blocks.',counter:'Leave the large kernel marker before impact. Its overheated arm creates a long damage window.'}
+  ,shadowstepFerret:{lore:'A twin-blade hunter woven from the choices abandoned by earlier runs.',counter:'Its crescent lunge is brutally fast but commits to one line. Cross the warning instead of outrunning it.'}
+  ,veilwingOwl:{lore:'An archive seer that turns forgotten futures into long-range moon bolts.',counter:'Break direction at full draw, then close before the next hollow-moon orb forms.'}
+  ,gravebackBear:{lore:'A palace executioner carrying a tombstone hammer heavy enough to stun an entire squad.',counter:'Leave the eclipse marker early. The hammer cannot redirect after the Bear lifts both feet.'}
 };
 
 const BEHAVIOR_LABELS={basic:'SWARMER',melee:'DUELIST',ranged:'MARKSMAN',heavy:'BRUISER',summoner:'SUMMONER',bomber:'BOMBER',assassin:'ASSASSIN',shield:'WARDEN',boss:'GUARDIAN'};
 const STATUS_ART={burn:'assets/vfx/burn-status.png',wet:'assets/vfx/water-impact.png',shock:'assets/vfx/shock-paws-impact.png',stun:'assets/vfx/hammer-slam.png'};
 const SPECIALIST_ART={bellweaverCat:'bellweaver-cat',powderkegToad:'powderkeg-toad',gatewardenRhino:'gatewarden-rhino',mistclawLynx:'mistclaw-lynx'};
-const BOSS_ART={jadeguardTanuki:'jadeguard-tanuki-v2',moonfangKomainu:'moonfang-komainu',pyreclawShogun:'pyreclaw-shogun',raijinKirin:'raijin-kirin-v1',daikyoOni:'daikyo-oni-v1'};
+const BOSS_ART={jadeguardTanuki:'jadeguard-tanuki-v2',moonfangKomainu:'moonfang-komainu',pyreclawShogun:'pyreclaw-shogun',raijinKirin:'raijin-kirin-v1',daikyoOni:'daikyo-oni-v1',tsukikoEmpress:'tsukiko-empress-v1'};
 
 function codexArtFor(entry,tab){
   if(tab==='heroes')return {image:entry.portrait,size:'cover',position:'center'};
@@ -619,6 +628,7 @@ function codexArtFor(entry,tab){
   if(entry.biome==='crimson')return {image:'assets/characters/crimson-enemies.png',size:'300% 200%',position:`${x}% 0%`};
   if(entry.biome==='storm')return {image:'assets/characters/storm-enemies-v1.png',size:'300% 200%',position:`${x}% 0%`};
   if(entry.biome==='neon')return {image:'assets/characters/neon-enemies-v1.png',size:'300% 200%',position:`${x}% 0%`};
+  if(entry.biome==='shadow')return {image:'assets/characters/shadow-enemies-v1.png',size:'300% 200%',position:`${x}% 0%`};
   return {image:'assets/characters/enemy-roster-animated.png',size:'300% 400%',position:`${x}% 0%`};
 }
 
@@ -650,7 +660,7 @@ function codexStyle(entry,tab){
 function renderCodexDetail(entry,tab,unlocked){
   const style=codexStyle(entry,tab);
   codexDetail.className=`codex-detail${unlocked?'':' locked'}`;codexDetail.setAttribute('style',style);
-  if(!unlocked){const heroLock=tab==='heroes';const heroNote=entry.id==='rusty'?'Complete one full Ascension campaign to prove you can handle Rusty"s twin Trickshots.':entry.id==='zap'?'Complete two full campaigns to unlock Zap and the Twin Arc Casters.':'Defeat Daikyo Oni and finish all five chapters to add this BrawlPaw to the roster.';codexDetail.innerHTML=`<div class="codex-detail-hero"><div class="codex-detail-art"></div><div><h3>${heroLock?'LOCKED BRAWLPAW':'UNRECORDED SPIRIT'}</h3><span class="codex-role">${heroLock?(entry.id==='rusty'?'ASCENSION CLEAR REQUIRED':entry.id==='zap'?'TWO CAMPAIGN CLEARS REQUIRED':'CAMPAIGN CLEAR REQUIRED'):'ENCOUNTER REQUIRED'}</span><p>${heroLock?(entry.unlockRequirement||'Complete a campaign challenge to unlock this hero.'):'This archive entry will reveal itself after the spirit appears in a run.'}</p></div></div><div class="codex-tip"><small>ARCHIVIST NOTE</small><b>${heroLock?heroNote:'Explore later chapters, elite routes, and guardian chambers to complete the record.'}</b></div>`;return;}
+  if(!unlocked){const heroLock=tab==='heroes';const heroNote=entry.id==='rusty'?'Complete one full Ascension campaign to prove you can handle Rusty"s twin Trickshots.':entry.id==='zap'?'Complete two full campaigns to unlock Zap and the Twin Arc Casters.':'Defeat Tsukiko and finish all six chapters to add this BrawlPaw to the roster.';codexDetail.innerHTML=`<div class="codex-detail-hero"><div class="codex-detail-art"></div><div><h3>${heroLock?'LOCKED BRAWLPAW':'UNRECORDED SPIRIT'}</h3><span class="codex-role">${heroLock?(entry.id==='rusty'?'ASCENSION CLEAR REQUIRED':entry.id==='zap'?'TWO CAMPAIGN CLEARS REQUIRED':'CAMPAIGN CLEAR REQUIRED'):'ENCOUNTER REQUIRED'}</span><p>${heroLock?(entry.unlockRequirement||'Complete a campaign challenge to unlock this hero.'):'This archive entry will reveal itself after the spirit appears in a run.'}</p></div></div><div class="codex-tip"><small>ARCHIVIST NOTE</small><b>${heroLock?heroNote:'Explore later chapters, elite routes, and guardian chambers to complete the record.'}</b></div>`;return;}
   if(tab==='heroes'){
     const heroWeapon=WEAPONS[entry.weapon];const capstones={kitsune:['PHASE NOVA','After Spirit Cylinder II and Phase Rounds I at level 7, every fifth volley pierces deeply and detonates the surrounding pack.'],bamboo:['SIEGE LOTUS','After Scatter Bore I and Guardian Hide I at level 7, every third blast loads a giant central shell with explosive knockback.'],hopscotch:['MOON CONSTELLATION','After Moon Piercer II and Perfect Draw I at level 7, every fourth full draw splits into two seeking moon arrows.'],rusty:['DEADEYE CIRCUIT','After Bank Shot II and Loaded Dice I at level 7, every sixth volley becomes a guaranteed critical execution chain.'],zap:['THUNDERHEAD ARRAY','After Capacitor Bank II and Chain Logic I at level 7, every third discharge overloads and chains through the entire nearby pack.']};const capstone=capstones[entry.id];
     codexDetail.innerHTML=`<div class="codex-detail-hero"><div class="codex-detail-art"></div><div><h3>${entry.name.toUpperCase()}</h3><span class="codex-role">${entry.role.toUpperCase()} / ${entry.difficulty.toUpperCase()}</span><p>${entry.summary}</p></div></div><div class="codex-stats"><span><small>HEALTH</small><b>${entry.maxHealth}</b></span><span><small>SPEED</small><b>${entry.speed}</b></span><span><small>POWER</small><b>${entry.ratings.power}/5</b></span><span><small>CONTROL</small><b>${entry.ratings.control}/5</b></span></div><div class="codex-tip"><small>STARTING WEAPON / ${heroWeapon.name.toUpperCase()}</small><b>${heroWeapon.summary} ${heroWeapon.damage} base damage, ${(1/heroWeapon.fireRate).toFixed(1)} volleys per second.</b></div><div class="codex-tip"><small>EARNED CAPSTONE / ${capstone[0]}</small><b>${capstone[1]}</b></div>`;
@@ -785,11 +795,19 @@ const GUARDIAN_REWARDS={
     ]
   },
   daikyoOni:{
-    kicker:'THE NEON CORE FALLS SILENT',title:'CHOOSE YOUR FINAL VOW',copy:'Daikyo tears the city’s dream from his reactor. Decide what the five freed guardians will awaken to.',final:true,
+    kicker:'DAIKYO ONI IS FREED',title:'CLAIM THE CORE OATH',copy:'The city wakes, but every restored light casts a shadow that runs toward the moon. Daikyo offers one command fragment for the final road.',
     choices:[
-      {id:'mercy',name:'Vow of Mercy',icon:'HEART',type:'WAKE THE FIVE GUARDIANS',color:'#71f09a',description:'Return every stolen memory and let the guardians choose their sacred watch anew.',detail:'+35 victory shards / hopeful epilogue',shardBonus:35,ending:'mercy'},
-      {id:'power',name:'Vow of Power',icon:'CORE',type:'CLAIM THE ONI KERNEL',color:'#ff3ab8',description:'Bind the city’s dreaming core to yourself and become keeper of every spirit road.',detail:'+75 victory shards / power epilogue',shardBonus:75,ending:'power'},
-      {id:'freedom',name:'Vow of Freedom',icon:'WING',type:'DELETE EVERY CHAIN',color:'#8f63ff',description:'Erase the ancient command that ever allowed a guardian to be chained to duty.',detail:'+50 victory shards / freedom epilogue',shardBonus:50,ending:'freedom'}
+      {id:'coreMemory',name:'Memory Breaker',icon:'CORE',type:'WEAPON / EXECUTION',color:'#55efff',description:'Daikyo writes every defeated pattern into your weapon before Tsukiko can erase it.',detail:'+38% weapon damage / +2 pierce / +15% critical',apply:()=>{player.damageMultiplier*=1.38;player.bonusPierces+=2;player.critBonus+=.15;}},
+      {id:'coreOverclock',name:'Unwritten Protocol',icon:'STORM',type:'ABILITY / SPEED',color:'#ff3ab8',description:'Burn the last command and route its power through every awakened technique.',detail:'+42% ability power / +16% speed',apply:()=>{for(const id of Object.keys(ABILITIES))player.abilityPower[id]*=1.42;player.speedMultiplier*=1.16;}},
+      {id:'coreShell',name:'Oni Kernel Shell',icon:'WARD',type:'SURVIVAL / GUARDIAN',color:'#f7ef69',description:'Carry the waking city as armor into the realm where every shadow hunts.',detail:'+100 max HP / -17% damage / +32% guardian damage',apply:()=>{player.maxHealth+=100;player.health+=100;player.damageTakenMultiplier*=.83;player.guardianDamageMultiplier*=1.32;}}
+    ]
+  },
+  tsukikoEmpress:{
+    kicker:'THE HOLLOW MOON BREAKS',title:'CHOOSE YOUR FINAL VOW',copy:'Tsukiko releases every life she tried to preserve by force. Decide what the six freed guardians will build from the dawn.',final:true,
+    choices:[
+      {id:'mercy',name:'Vow of Mercy',icon:'HEART',type:'HEAL THE SIX REALMS',color:'#71f09a',description:'Return every lost self and let each guardian choose a new sacred watch.',detail:'+45 victory shards / hopeful epilogue',shardBonus:45,ending:'mercy'},
+      {id:'power',name:'Vow of Power',icon:'MOON',type:'CLAIM THE HOLLOW MOON',color:'#d459ff',description:'Take command of every abandoned future and become keeper of all six spirit roads.',detail:'+90 victory shards / power epilogue',shardBonus:90,ending:'power'},
+      {id:'freedom',name:'Vow of Freedom',icon:'WING',type:'FREE EVERY POSSIBLE SELF',color:'#54e9ff',description:'Destroy the throne and return every choice, failure, and future to the paws that must live it.',detail:'+65 victory shards / freedom epilogue',shardBonus:65,ending:'freedom'}
     ]
   }
 };
@@ -875,8 +893,8 @@ const CAMPAIGN_CONTRACTS=[
   {id:'spiritCull',name:'Thin the Curse',tag:'HUNTER CONTRACT',color:'#42eaff',target:120,reward:55,description:'Defeat 120 hostile spirits across any number of runs.',bonus:'START EACH RUN WITH +15 GOLD'},
   {id:'eliteBreakers',name:'Break the Mutated',tag:'ELITE CONTRACT',color:'#ff4f91',target:18,reward:70,description:'Defeat 18 Swift, Bulwark, Frenzied, Volatile, or Splitter enemies.',bonus:'PERMANENT +8% ELITE DAMAGE'},
   {id:'foxfireHunt',name:'Ashes Remember',tag:'FOXFIRE CONTRACT',color:'#ff6a24',target:35,reward:75,description:'Finish 35 burning enemies after awakening Foxfire Volley.',bonus:'PERMANENT +6% FOXFIRE POWER'},
-  {id:'sealRunner',name:'Road of Thirty Seals',tag:'CAMPAIGN CONTRACT',color:'#8cff58',target:30,reward:150,description:'Clear 30 combat seals across the five chapters.',bonus:'START EACH RUN WITH +1 REROLL'},
-  {id:'guardianOath',name:'Free the Five',tag:'GUARDIAN CONTRACT',color:'#d95cff',target:5,reward:185,description:'Defeat five corrupted guardians across any number of runs.',bonus:'PERMANENT +8% GUARDIAN DAMAGE'}
+  {id:'sealRunner',name:'Road of Thirty-Six Seals',tag:'CAMPAIGN CONTRACT',color:'#8cff58',target:36,reward:180,description:'Clear 36 combat seals across the six chapters.',bonus:'START EACH RUN WITH +1 REROLL'},
+  {id:'guardianOath',name:'Free the Six',tag:'GUARDIAN CONTRACT',color:'#d95cff',target:6,reward:220,description:'Defeat six corrupted guardians across any number of runs.',bonus:'PERMANENT +8% GUARDIAN DAMAGE'}
 ];
 
 function contractClaimed(id){return profile.claimedContracts.includes(id);}
@@ -1125,7 +1143,8 @@ const CHAPTER_STORY_BEATS={
   bambooChapter:{accent:'#41f5da',intro:['CHAPTER II  BREATH BENEATH THE REEDS','THE HOLLOW BREATHES','Jadeguard opens the moon gate, but the path exhales a poisoned mist. Reedblade hunters and spore archers gather around something enormous moving below the roots.','The curse ran downstream. Follow it before the Hollow closes.','ENTER BAMBOO HOLLOW','TRACE THE POISONED CURRENT'],interlude2:['CHAPTER II  THE HUNGER BELOW','THE ROOTS HAVE TEETH','Rescued hollow spirits reveal that Moonfang has been fighting the curse from underground. Every victory tears more poison from the reeds—and drives it deeper into the guardian’s starving heart.','He is not hunting us. He is hunting what we carry.','DESCEND THROUGH THE REEDS','FOLLOW MOONFANG’S TRAIL'],interlude4:['CHAPTER II  THE MOON CHAIN','THE HOLLOW STOPS BREATHING','At the Moonstone Causeway, the curse tightens around Moonfang’s sacred collar. The guardian can no longer tell prey from ally, and the whole forest bends toward his first strike.','Stand your ground, {hero}. Make him remember his oath.','ENTER THE MOONSTONE ROAD','SURVIVE THE MOON HUNT'],boss:['CHAPTER II  THE MOONFANG AWAKENS','TEETH BENEATH THE MOON','The Hollow stops breathing. Every bamboo stalk bends toward the moon gate as its ancient lion-dog guardian tears free of the corrupted roots.','Your fire freed the grove. Now prove it can survive the moon.','FACE MOONFANG','FREE MOONFANG KOMAINU']},
   crimsonChapter:{accent:'#ff5b27',intro:['CHAPTER III  THE GATE OF ASH','THE DOJO DEMANDS A TRIAL','Beyond Bamboo Hollow stands a monastery that trains spirits for war. The corruption has turned every duel into an execution and sealed the final road behind an ancient oni gate.','Ring all four bells. Survive what answers.','ENTER THE CRIMSON DOJO','RING THE ASHEN BELLS'],interlude2:['CHAPTER III  THE BURNING OATH','THE SHOGUN CHOSE THE CURSE','The first war bells reveal the truth: Pyreclaw bound the corruption to his own heart to stop it reaching Spirit Lantern Village. Every spirit slain weakens the prison—and strengthens the prisoner.','The gate held because its guardian agreed to burn.','CROSS THE CINDER ROOFS','FIND PYRECLAW’S OATH'],interlude4:['CHAPTER III  NO ROAD BACK','THE ONI GATE OPENS','The final bell answers with Pyreclaw’s voice. He will not abandon the gate, even if his living fire consumes every warrior who comes to free him. The last two seals are a declaration of war.','Come armed, {hero}. Mercy will not survive this throne.','MARCH ON THE ONI GATE','BREAK THE SHOGUN’S CHAINS'],boss:['CHAPTER III  THE SHOGUN’S OATH','THE LAST BELL BURNS','The oni gate splits open. Pyreclaw Shogun Tora has chained the curse to his own heart, and every bell in the dojo answers with a wave of living fire.','If the curse must pass this gate, it will pass through me.','CHALLENGE PYRECLAW','FREE PYRECLAW SHOGUN TORA']},
   stormChapter:{accent:'#37dfff',intro:['CHAPTER IV  THE SEA THAT EATS THE SKY','THE HORIZON HAS TEETH','Beyond Pyreclaw’s oni gate, the spirit road ends at a drowned harbor. A living tempest has swallowed the stars, and every wave carries warriors wearing Raijin Kirin’s storm mark.','The sea is not flooding the road. The sky is dragging it upward.','ENTER TEMPEST HARBOR','FOLLOW THE STOLEN LIGHTNING'],interlude2:['CHAPTER IV  THE DROWNED BELLS','THE STORM REMEMBERS YOUR NAME','Freed tidekeepers reveal that Raijin Kirin once carried every prayer safely across the ocean. The curse reversed the current. Now every desperate voice feeds the storm crown instead.','Silence the drowned bells before the guardian hears us coming.','CROSS THE TIDEGLASS ROAD','BREAK THE STORM CHOIR'],interlude4:['CHAPTER IV  THE LAST HORIZON','HEAVEN BEGINS TO FALL','The Thunderbreak Lighthouse catches fire with blue lightning. Above it, the Kirin pulls whole islands toward the eye of the storm, building a throne from everything the spirit sea has lost.','Climb, {hero}. The road ends where the sky breaks.','ASCEND SKYFANG','GROUND THE STORM CROWN'],boss:['CHAPTER IV  EATER OF SKIES','THE TEMPEST OPENS ITS EYE','Sea and sky fold into one vast arena. Raijin Kirin descends through the lightning, chained to a crown that turns every rescued spirit into another thunderbolt.','Four guardians were bound. Only one still believes the chain is a crown.','CHALLENGE RAIJIN KIRIN','FREE THE EATER OF SKIES']},
-  neonChapter:{accent:'#ff3ab8',intro:['CHAPTER V  THE CITY THAT DREAMS IN CODE','NO ONE HERE IS AWAKE','Beyond the returned horizon, Neon City shines beneath endless rain. Its citizens move, trade, and pray—but every face repeats the same perfect night while the Shogun Core harvests their memories.','This city is not alive. It is being replayed.','BREACH THE RAIN GATE','WAKE THE CIRCUIT MARKET'],interlude2:['CHAPTER V  THE GHOST PROTOCOL','THE CITY KNOWS YOUR PAST','Freed market spirits remember each of the four guardians falling before they remember their own names. Daikyo has been recording every victory, teaching his army how {hero} escapes, fires, and survives.','Every fight makes the Core smarter. Become impossible to predict.','ENTER THE HOLOGRAM ARCADE','CRASH THE MEMORY LOOP'],interlude4:['CHAPTER V  THE LAST COMMAND','THE SHOGUN WAS THE FIRST CHAIN','The Data Lotus reveals an older truth: Daikyo wrote the command that bound every guardian to their sacred post. The corruption did not invent the chains. It simply taught them to tighten.','Reach the Core before he deletes the proof.','ASCEND SHOGUN TOWER','SEVER THE ROOT COMMAND'],boss:['CHAPTER V  SHOGUN OF THE CORE','THE CITY OPENS ITS EYES','The tower splits and the sleeping city looks upward. Daikyo Oni descends in white tiger armor, carrying the original command in a reactor where his heart once lived.','I did not chain the guardians. I made duty eternal.','CHALLENGE DAIKYO ONI','DELETE THE FIRST CHAIN']}
+  neonChapter:{accent:'#ff3ab8',intro:['CHAPTER V  THE CITY THAT DREAMS IN CODE','NO ONE HERE IS AWAKE','Beyond the returned horizon, Neon City shines beneath endless rain. Its citizens move, trade, and pray—but every face repeats the same perfect night while the Shogun Core harvests their memories.','This city is not alive. It is being replayed.','BREACH THE RAIN GATE','WAKE THE CIRCUIT MARKET'],interlude2:['CHAPTER V  THE GHOST PROTOCOL','THE CITY KNOWS YOUR PAST','Freed market spirits remember each of the four guardians falling before they remember their own names. Daikyo has been recording every victory, teaching his army how {hero} escapes, fires, and survives.','Every fight makes the Core smarter. Become impossible to predict.','ENTER THE HOLOGRAM ARCADE','CRASH THE MEMORY LOOP'],interlude4:['CHAPTER V  THE LAST COMMAND','THE SHOGUN WAS THE FIRST CHAIN','The Data Lotus reveals an older truth: Daikyo wrote the command that bound every guardian to their sacred post. The corruption did not invent the chains. It simply taught them to tighten.','Reach the Core before he deletes the proof.','ASCEND SHOGUN TOWER','SEVER THE ROOT COMMAND'],boss:['CHAPTER V  SHOGUN OF THE CORE','THE CITY OPENS ITS EYES','The tower splits and the sleeping city looks upward. Daikyo Oni descends in white tiger armor, carrying the original command in a reactor where his heart once lived.','I did not chain the guardians. I made duty eternal.','CHALLENGE DAIKYO ONI','DELETE THE FIRST CHAIN']},
+  shadowChapter:{accent:'#b84dff',intro:['CHAPTER VI  THE REALM BEHIND EVERY SHADOW','THE LIGHTS CAST NOTHING','Neon City wakes, yet none of the five freed guardians casts a shadow. Their missing selves flee through Daikyo’s broken command and open an obsidian road behind the moon.','The chains were written in code. The fear that asked for them is older.','ENTER THE OBSIDIAN PATH','FOLLOW THE STOLEN SHADOWS'],interlude2:['CHAPTER VI  THE LIVES WE LEFT BEHIND','MIRRORGRAVE REMEMBERS EVERY RUN','The village is inhabited by heroes who turned left when {hero} turned right, fell where {hero} survived, or accepted powers this life refused. Tsukiko has hidden every abandoned future here and calls the prison mercy.','She did not erase our failures. She made them her army.','CROSS WRAITHWOOD','FREE THE FORGOTTEN SELVES'],interlude4:['CHAPTER VI  THE FIRST REQUEST','DAIKYO OBEYED THE HOLLOW MOON','The Eclipse Archive reveals the true beginning: Tsukiko saw a future where the spirit roads devoured one another, then ordered Daikyo to make every guardian’s duty eternal. The curse grew from a cage built to prevent grief.','A perfect future chosen for everyone is still a prison.','ASCEND THE UMBRAL PALACE','BREAK THE SIX MOON CHAINS'],boss:['CHAPTER VI  EMPRESS OF THE HOLLOW MOON','EVERY SHADOW KNEELS','Beyond the last palace step waits Tsukiko, snow-leopard guardian of forgotten choices. Six spectral tails carry every future she refused to let the world risk.','Freedom creates suffering, {hero}. I loved this world enough to end its choices.','CHALLENGE TSUKIKO','FREE THE HOLLOW MOON']}
 };
 
 function renderCampaignStory(beat){
@@ -1140,10 +1159,10 @@ function showStory(beat) {
   const crimson = chapter.id === 'crimsonChapter';
   if(beat==='epilogue'){
     const endings={
-      mercy:{kicker:'EPILOGUE  THE CITY WAKES',title:'THE FIVE GUARDIANS BOW',copy:`${heroDef.name} returns every stolen memory. Jade Grove rings, Bamboo Hollow breathes, the Crimson bells call warriors home, Storm Coast sees stars, and Neon City experiences morning for the first time in a century.`,quote:'Strength is not what you take. It is what survives your victory.',button:'RETURN TO SPIRIT LANTERN VILLAGE'},
-      power:{kicker:'EPILOGUE  KEEPER OF EVERY ROAD',title:'THE CORE CHOOSES YOU',copy:`${heroDef.name} binds Daikyo’s kernel to a new oath. Five realms are safe, but every spirit road now answers to the fiercest guardian of all.`,quote:'No chain will close unless I command it.',button:'DESCEND FROM THE SHOGUN CORE'},
-      freedom:{kicker:'EPILOGUE  NO MORE COMMANDS',title:'THE ROAD HAS NO MASTER',copy:`${heroDef.name} deletes the first chain. Five guardians remain by choice, the city wakes beneath a real sunrise, and every BrawlPaw may choose where the next path leads.`,quote:'Duty chosen freely is an oath. Duty without escape is a prison.',button:'RUN WITH THE FREE SPIRITS'}
-    };const ending=endings[player.endingVow]||endings.mercy;storyScreen.style.setProperty('--story-accent','#d95cff');ui.storyKicker.textContent=ending.kicker;ui.storyTitle.textContent=ending.title;ui.storyCopy.textContent=ending.copy;ui.storyQuote.textContent=ending.quote;ui.storyProgress.textContent='5 / 5 GUARDIANS FREED';ui.storyObjective.textContent='THE SPIRIT ROAD REMEMBERS YOUR VOW';ui.storyButton.innerHTML=`${ending.button} <span>›</span>`;
+      mercy:{kicker:'EPILOGUE  A DAWN WITH SHADOWS',title:'THE SIX GUARDIANS RISE',copy:`${heroDef.name} returns every lost self. Jade Grove rings, Bamboo Hollow breathes, Crimson calls its warriors home, Storm Coast sees stars, Neon City wakes, and the Shadow Realm opens its doors to a real dawn.`,quote:'Strength is not what you preserve. It is what you trust to choose again.',button:'RETURN TO SPIRIT LANTERN VILLAGE'},
+      power:{kicker:'EPILOGUE  KEEPER OF EVERY FUTURE',title:'THE HOLLOW MOON CHOOSES YOU',copy:`${heroDef.name} claims Tsukiko’s throne. Six realms are safe, but every possible spirit road now answers to the fiercest guardian of all.`,quote:'No future will be lost unless I allow it.',button:'DESCEND FROM THE HOLLOW MOON'},
+      freedom:{kicker:'EPILOGUE  EVERY ROAD OPENS',title:'THE FUTURE HAS NO MASTER',copy:`${heroDef.name} breaks the hollow throne. Six guardians remain by choice, every shadow returns to its living paw, and every BrawlPaw may decide what the next dawn becomes.`,quote:'A chosen oath is devotion. A future without escape is a cage.',button:'RUN WITH THE FREE SPIRITS'}
+    };const ending=endings[player.endingVow]||endings.mercy;storyScreen.style.setProperty('--story-accent','#d95cff');ui.storyKicker.textContent=ending.kicker;ui.storyTitle.textContent=ending.title;ui.storyCopy.textContent=ending.copy;ui.storyQuote.textContent=ending.quote;ui.storyProgress.textContent='6 / 6 GUARDIANS FREED';ui.storyObjective.textContent='EVERY POSSIBLE ROAD REMEMBERS YOUR VOW';ui.storyButton.innerHTML=`${ending.button} <span>›</span>`;
   } else if (beat === 'boss' && crimson) {
     ui.storyKicker.textContent = 'CHAPTER III  THE SHOGUN"S OATH';
     ui.storyTitle.textContent = 'THE LAST BELL BURNS';
@@ -1223,6 +1242,9 @@ function scheduleBiomePressure(){
     effects.biomePressures.push({type:'bellEcho',x:target.x,y:target.y,radius:pressure.radius+encounter.wave*8,damage:pressure.damage+encounter.wave*2,color:pressure.color,life:pressure.warning,maxLife:pressure.warning,stage:'warning',triggered:false,index});
   }else if(pressure.id==='sporeBloom'){
     const angle=index*2.21+encounter.wave*.47,lane=.28+(index%3)*.18;effects.biomePressures.push({type:'sporeBloom',x:b.x+Math.cos(angle)*b.radiusX*lane,y:b.y+Math.sin(angle)*b.radiusY*lane,radius:pressure.radius+encounter.wave*7,damage:pressure.damage+encounter.wave,color:pressure.color,life:pressure.warning,maxLife:pressure.warning,activeDuration:pressure.activeDuration,slow:pressure.slow,stage:'warning',triggered:false,index});
+  }else if(pressure.id==='eclipseRift'){
+    const target={x:clamp(player.x+player.vx*lead,b.x-b.radiusX*.78,b.x+b.radiusX*.78),y:clamp(player.y+player.vy*lead,b.y-b.radiusY*.76,b.y+b.radiusY*.76)};
+    effects.biomePressures.push({type:'eclipseRift',x:target.x,y:target.y,radius:pressure.radius+encounter.wave*10,damage:pressure.damage+encounter.wave*3,color:pressure.color,life:pressure.warning,maxLife:pressure.warning,activeDuration:pressure.activeDuration,slow:pressure.slow,stage:'warning',triggered:false,index});
   }else{
     const angle=Math.atan2(player.y-b.y,player.x-b.x)+(index%2?Math.PI/2:0)+Math.sin(index*1.7)*.22;effects.biomePressures.push({type:'emberLane',x:b.x,y:b.y,angle,width:pressure.width+encounter.wave*6,length:b.radiusX*2.25,damage:pressure.damage+encounter.wave*2,color:pressure.color,life:pressure.warning,maxLife:pressure.warning,activeDuration:pressure.activeDuration,stage:'warning',triggered:false,index});
     if(pressure.id==='stormSurge'){const surge=effects.biomePressures.at(-1);surge.type='stormSurge';surge.width=pressure.width+encounter.wave*8;surge.length=b.radiusX*2.42;}
@@ -1253,11 +1275,11 @@ function spawnBoss({restoring=false}={}) {
   Object.values(effects).forEach((list)=>list.splice(0));roomInteractable=null;roomMission=null;destructibles=[];activateRoom(chapter.bossRoom||chapter.rooms?.at(-1)||chapter.room,{reposition:true,announce:true,waveIndex:chapter.waves.length,subtitle:'GUARDIAN CHAMBER'});
   const b=room.combatBounds; enemies=[]; encounter.bossActive=true; encounter.transitioning=false; state='playing';
   const difficulty=activeDifficulty();corruptionDirector=createCorruptionDirector(chapter.waves.length);const corruption=corruptionTier(),party=coopPressure();refreshCorruptionHud({surge:true});
-  const bossEntranceY=b.y+(chapter.id==='neonChapter'?430:chapter.id==='stormChapter'?410:chapter.id==='crimsonChapter'?390:280);
+  const bossEntranceY=b.y+(chapter.id==='shadowChapter'?445:chapter.id==='neonChapter'?430:chapter.id==='stormChapter'?410:chapter.id==='crimsonChapter'?390:280);
   const boss=makeEnemy({type:chapter.boss,x:b.x+330,y:bossEntranceY,delay:.25,healthScale:difficulty.healthScale*corruption.health*party.health,speedScale:difficulty.speedScale*corruption.speed,damageScale:difficulty.damageScale*corruption.damage*party.damage},0);
   boss.state='waiting'; boss.stateTime=.25;boss.domainClock=Number.POSITIVE_INFINITY; enemies.push(boss);
   const bossDef=ENEMIES[chapter.boss];
-  ui.waveLabel.textContent=`CHAPTER ${chapterIndex+1}  BOSS`; ui.roomState.textContent=chapter.id==='neonChapter'?'OVERRIDE PROTOCOL':chapter.id==='stormChapter'?'TEMPEST CROWN':chapter.id==='crimsonChapter'?'INFERNO OATH':chapter.id==='bambooChapter'?'MOON HUNGER':'SPIRIT FURY'; ui.roomState.style.color=bossDef.color;
+  ui.waveLabel.textContent=`CHAPTER ${chapterIndex+1}  BOSS`; ui.roomState.textContent=chapter.id==='shadowChapter'?'HOLLOW MOON':chapter.id==='neonChapter'?'OVERRIDE PROTOCOL':chapter.id==='stormChapter'?'TEMPEST CROWN':chapter.id==='crimsonChapter'?'INFERNO OATH':chapter.id==='bambooChapter'?'MOON HUNGER':'SPIRIT FURY'; ui.roomState.style.color=bossDef.color;
   ui.objective.textContent=`DEFEAT ${bossDef.name.toUpperCase()}`; ui.bossName.textContent=bossDef.name.toUpperCase(); ui.bossPanel.classList.add('active');
   camera.shake=18;if(!restoring)player.health=Math.min(player.maxHealth,player.health+35);
   saveRunCheckpoint({kind:'boss'});if(!coop.applyingSignal)coopSignal({kind:'boss',chapter:chapterIndex});
@@ -1358,9 +1380,9 @@ function spawnRoomDestructibles(waveIndex,brokenIds=[]){
 }
 
 function missionPalette(type){
-  if(type==='anchors')return chapter.id==='neonChapter'?'#ff38c7':chapter.id==='stormChapter'?'#31e8ff':chapter.id==='crimsonChapter'?'#ff542f':chapter.id==='bambooChapter'?'#b8ff45':'#c94cff';
-  if(type==='rescue')return chapter.id==='neonChapter'?'#46f6ff':chapter.id==='stormChapter'?'#78fff0':chapter.id==='crimsonChapter'?'#ffbc42':chapter.id==='bambooChapter'?'#72f7c7':'#55eaff';
-  return chapter.id==='neonChapter'?'#f7ef69':chapter.id==='stormChapter'?'#65f5ff':chapter.id==='crimsonChapter'?'#ff9a32':chapter.id==='bambooChapter'?'#a6ff4c':'#65f3dc';
+  if(type==='anchors')return chapter.id==='shadowChapter'?'#c865ff':chapter.id==='neonChapter'?'#ff38c7':chapter.id==='stormChapter'?'#31e8ff':chapter.id==='crimsonChapter'?'#ff542f':chapter.id==='bambooChapter'?'#b8ff45':'#c94cff';
+  if(type==='rescue')return chapter.id==='shadowChapter'?'#70efff':chapter.id==='neonChapter'?'#46f6ff':chapter.id==='stormChapter'?'#78fff0':chapter.id==='crimsonChapter'?'#ffbc42':chapter.id==='bambooChapter'?'#72f7c7':'#55eaff';
+  return chapter.id==='shadowChapter'?'#e7d3ff':chapter.id==='neonChapter'?'#f7ef69':chapter.id==='stormChapter'?'#65f5ff':chapter.id==='crimsonChapter'?'#ff9a32':chapter.id==='bambooChapter'?'#a6ff4c':'#65f3dc';
 }
 
 function spawnRoomMission(definition={type:'eliminate',title:'DEFEAT THE SPIRITS'},saved={}){
@@ -1392,7 +1414,7 @@ function saveMissionCheckpoint(){
 
 function completeRoomMission(){
   if(!roomMission||roomMission.complete&&roomMission.rewarded)return;roomMission.complete=true;
-  if(!roomMission.rewarded&&roomMission.type!=='eliminate'){roomMission.rewarded=true;const reward=10+encounter.wave*3;player.gold+=reward;gainXp(6+encounter.wave*2);const victory=chapter.id==='neonChapter'?'SYSTEM RESTORED!':chapter.id==='stormChapter'?'TIDE BROKEN!':chapter.id==='crimsonChapter'?'OATH KEPT!':chapter.id==='bambooChapter'?'HOLLOW FREED!':'SEAL RESTORED!';spawnWord(player.x,player.y-118,victory,roomMission.color);spawnWord(player.x,player.y-82,`+${reward} GOLD`, '#ffd34f');effects.rings.push({x:player.x,y:player.y,radius:22,maxRadius:190,color:roomMission.color,life:.85,maxLife:.85});playSfx('upgrade',.24,1.04);}
+  if(!roomMission.rewarded&&roomMission.type!=='eliminate'){roomMission.rewarded=true;const reward=10+encounter.wave*3;player.gold+=reward;gainXp(6+encounter.wave*2);const victory=chapter.id==='shadowChapter'?'NIGHT BROKEN!':chapter.id==='neonChapter'?'SYSTEM RESTORED!':chapter.id==='stormChapter'?'TIDE BROKEN!':chapter.id==='crimsonChapter'?'OATH KEPT!':chapter.id==='bambooChapter'?'HOLLOW FREED!':'SEAL RESTORED!';spawnWord(player.x,player.y-118,victory,roomMission.color);spawnWord(player.x,player.y-82,`+${reward} GOLD`, '#ffd34f');effects.rings.push({x:player.x,y:player.y,radius:22,maxRadius:190,color:roomMission.color,life:.85,maxLife:.85});playSfx('upgrade',.24,1.04);}
   saveMissionCheckpoint();updateHud();
 }
 
@@ -1650,7 +1672,7 @@ function begin() {
   if(debugSystem==='specialists'){startSpecialistShowcase();return;}
   if(debugSystem==='capstone'){player.level=10;player.maxHealth=1200;player.health=1200;player.damageMultiplier=2.4;player.weaponEvolution=selectedHeroId==='kitsune'?'phaseNova':selectedHeroId==='bamboo'?'siegeLotus':selectedHeroId==='hopscotch'?'moonConstellation':selectedHeroId==='rusty'?'deadeyeCircuit':'thunderheadArray';player.bonusPierces=selectedHeroId==='hopscotch'?2:player.bonusPierces;player.bonusRicochets=selectedHeroId==='rusty'?2:player.bonusRicochets;player.arcChainBonus=selectedHeroId==='zap'?3:player.arcChainBonus;refreshSynergyHud();startWave(4);return;}
   if(debugSystem==='room6'){player.level=10;player.maxHealth=1400;player.health=1400;startWave(5);return;}
-  if(debugSystem==='pressure'){player.maxHealth=900;player.health=900;player.unlockedAbilities.add('undertowWell');startWave(Math.min(4,chapter.waves.length-1));encounter.biomePressureClock=.35;return;}
+  if(debugSystem==='pressure'){player.maxHealth=chapter.id==='shadowChapter'?12000:900;player.health=player.maxHealth;player.unlockedAbilities.add('undertowWell');startWave(Math.min(4,chapter.waves.length-1));encounter.biomePressureClock=.35;return;}
   if(debugSystem==='evolutions'){player.level=12;player.maxHealth=1200;player.health=1200;player.damageMultiplier=1.35;for(const id of Object.keys(ABILITIES))player.unlockedAbilities.add(id);for(const id of Object.keys(player.abilityEvolutions))player.abilityEvolutions[id]=true;player.stormBonus=1;refreshSynergyHud();startWave(Math.min(4,chapter.waves.length-1));return;}
   if(debugSystem==='mission'){const type=['anchors','rescue','defend'].includes(debugMission)?debugMission:'anchors';const missionWave=chapter.waves.findIndex((wave)=>wave.mission?.type===type);player.maxHealth=900;player.health=900;player.damageMultiplier=type==='anchors'?4:1.6;startWave(Math.max(0,missionWave));if(roomMission?.actors?.[0]){roomMission.actors[0].x=player.x+125;roomMission.actors[0].y=player.y;}if(roomMission?.ward){roomMission.ward.x=player.x+90;roomMission.ward.y=player.y+40;}return;}
   if(debugSystem==='guardianReward'){openGuardianReward(chapter.boss);return;}
@@ -1670,7 +1692,7 @@ function completeChapter() {
   player.health=Math.min(player.maxHealth,player.health+Math.max(35,Math.round(player.maxHealth*.35)));
   player.invulnerable=1.5;camera.x=player.x;camera.y=player.y;camera.shake=0;
   encounter={wave:-1,transitioning:false,transitionTime:0,bossActive:false,bossDefeated:false,storyBeat:'intro',rewardScale:1,nodeType:'combat',startWaveAfterUpgrade:null};
-  ui.bossPanel.classList.remove('active');ui.roomState.textContent=chapter.id==='neonChapter'?'CORE GATE':chapter.id==='stormChapter'?'STORM GATE':chapter.id==='crimsonChapter'?'ASH GATE':'MOON GATE';ui.roomState.style.color=chapter.id==='neonChapter'?'#ff3ab8':chapter.id==='stormChapter'?'#37dfff':chapter.id==='crimsonChapter'?'#ff5b27':'#41f5da';
+  ui.bossPanel.classList.remove('active');ui.roomState.textContent=chapter.id==='shadowChapter'?'ECLIPSE GATE':chapter.id==='neonChapter'?'CORE GATE':chapter.id==='stormChapter'?'STORM GATE':chapter.id==='crimsonChapter'?'ASH GATE':'MOON GATE';ui.roomState.style.color=chapter.id==='shadowChapter'?'#b84dff':chapter.id==='neonChapter'?'#ff3ab8':chapter.id==='stormChapter'?'#37dfff':chapter.id==='crimsonChapter'?'#ff5b27':'#41f5da';
   showStory('intro');updateHud();
 }
 
@@ -1689,9 +1711,9 @@ function endGame(won) {
   saveProfile();refreshProfileUi();
   state = won ? 'won' : 'lost';
   ui.resultTitle.textContent = won ? 'RUN COMPLETE!' : `${heroDef.name.toUpperCase()} FALLS`;
-  ui.resultKicker.textContent = won ? 'THE ONI GATE OPENS' : 'THE SPIRITS STILL WATCH';
-  const endingResults={mercy:'You erased the root command and returned every stolen memory to Neon City.',power:'You claimed Daikyo’s Oni Kernel and became keeper of the five guardian roads.',freedom:'You shattered the first command, freed all five guardians, and left every spirit road unbound.'};
-  ui.resultCopy.textContent = won ? `${endingResults[player.endingVow]||'Daikyo releases the Shogun Core and all five guardians bow.'} ${unlockedNames.length?`${unlockedNames.join(' AND ')} ${unlockedNames.length>1?'HAVE':'HAS'} JOINED THE ROSTER. `:''}${selectedDifficulty==='ascension'?`ASCENSION RANK ${profile.ascensionRank} NOW AWAITS. `:''}Permanent spirit rewards are banked, and a harder run awaits.` : defeatReason||'The curse grows stronger. Rebuild your powers and strike again.';
+  ui.resultKicker.textContent = won ? 'THE HOLLOW MOON OPENS' : 'THE SPIRITS STILL WATCH';
+  const endingResults={mercy:'You healed the Hollow Moon and returned every lost self to the six realms.',power:'You claimed Tsukiko’s throne and became keeper of every possible guardian road.',freedom:'You shattered the hollow throne, freed all six guardians, and returned every future to its living paws.'};
+  ui.resultCopy.textContent = won ? `${endingResults[player.endingVow]||'Tsukiko releases the Hollow Moon and all six guardians bow.'} ${unlockedNames.length?`${unlockedNames.join(' AND ')} ${unlockedNames.length>1?'HAVE':'HAS'} JOINED THE ROSTER. `:''}${selectedDifficulty==='ascension'?`ASCENSION RANK ${profile.ascensionRank} NOW AWAITS. `:''}Permanent spirit rewards are banked, and a harder run awaits.` : defeatReason||'The curse grows stronger. Rebuild your powers and strike again.';
   ui.resultTime.textContent = formatTime(runTime);
   ui.resultCombo.textContent = String(player.maxCombo);
   ui.resultDashes.textContent = String(player.dashes);
@@ -2028,7 +2050,7 @@ function killEnemy(enemy, direction) {
     spawnWord(enemy.x,enemy.y-82,'CORE UNSTABLE!',enemy.eliteDef.color);
   }
   if(enemy.eliteId==='splitter'&&enemy.splitDepth<1){
-    const splitType=enemy.def.biome==='neon'?'circuitJackal':enemy.def.biome==='storm'?'tidebladeOtter':enemy.def.biome==='crimson'?'emberAkita':enemy.def.biome==='bamboo'?'bambooStalker':'groveMinion';
+    const splitType=enemy.def.biome==='shadow'?'shadowstepFerret':enemy.def.biome==='neon'?'circuitJackal':enemy.def.biome==='storm'?'tidebladeOtter':enemy.def.biome==='crimson'?'emberAkita':enemy.def.biome==='bamboo'?'bambooStalker':'groveMinion';
     for(let i=0;i<enemy.eliteDef.splitCount;i++){const angle=(i?1:-1)*.8+enemy.facing;const child=makeEnemy({type:splitType,x:enemy.x+Math.cos(angle)*58,y:enemy.y+Math.sin(angle)*44,delay:.22+i*.12,healthScale:enemy.healthScale*.48,speedScale:enemy.speedScale*1.12,damageScale:enemy.damageScale*.7,splitDepth:enemy.splitDepth+1},enemies.length+i);enemies.push(child);}
     spawnWord(enemy.x,enemy.y-82,'SPIRIT SPLIT!',enemy.eliteDef.color);effects.rings.push({x:enemy.x,y:enemy.y,radius:18,maxRadius:145,color:enemy.eliteDef.color,life:.5,maxLife:.5});
   }
@@ -2076,8 +2098,10 @@ function hurtPlayer(amount, source, stunDuration = 0) {
 }
 
 function summonBossGuard(enemy, phase) {
-  const bamboo=enemy.def.biome==='bamboo';const crimson=enemy.def.biome==='crimson';const storm=enemy.def.biome==='storm';const neon=enemy.def.biome==='neon';
-  const types=neon
+  const bamboo=enemy.def.biome==='bamboo';const crimson=enemy.def.biome==='crimson';const storm=enemy.def.biome==='storm';const neon=enemy.def.biome==='neon';const shadow=enemy.def.biome==='shadow';
+  const types=shadow
+    ? phase===2?['shadowstepFerret','veilwingOwl','shadowstepFerret','veilwingOwl','gravebackBear','shadowstepFerret','veilwingOwl','shadowstepFerret']:['gravebackBear','veilwingOwl','shadowstepFerret','gravebackBear','veilwingOwl','shadowstepFerret','gravebackBear','veilwingOwl','shadowstepFerret','shadowstepFerret']
+    : neon
     ? phase===2?['circuitJackal','pulsewingCrow','circuitJackal','pulsewingCrow','chromebackGorilla','circuitJackal','pulsewingCrow']:['chromebackGorilla','pulsewingCrow','circuitJackal','chromebackGorilla','pulsewingCrow','circuitJackal','pulsewingCrow','chromebackGorilla','circuitJackal']
     : storm
     ? phase===2?['tidebladeOtter','galecrestGull','tidebladeOtter','galecrestGull','reefbreakerWalrus','tidebladeOtter']:['reefbreakerWalrus','galecrestGull','tidebladeOtter','reefbreakerWalrus','galecrestGull','tidebladeOtter','galecrestGull','reefbreakerWalrus']
@@ -2085,9 +2109,9 @@ function summonBossGuard(enemy, phase) {
     ? phase===2?['emberAkita','gongwing','emberAkita','gongwing','mistclawLynx','ironhorn']:['gatewardenRhino','mistclawLynx','gongwing','emberAkita','gatewardenRhino','gongwing','mistclawLynx']
     : bamboo?phase===2?['bambooStalker','sporeArcher','bambooStalker','sporeArcher','bambooStalker']:['mossBrute','bambooStalker','powderkegToad','bambooStalker','mossBrute','powderkegToad']
     : phase===2?['jadeBrawler','spiritArcher','jadeBrawler','spiritArcher']:['armoredBoar','jadeBrawler','bellweaverCat','jadeBrawler','groveMinion','bellweaverCat'];
-  const baseHealth=neon?2.68:storm?2.35:crimson?2.05:bamboo?1.82:1.65;const baseSpeed=neon?1.98:storm?1.82:crimson?1.68:bamboo?1.55:1.42;const baseDamage=neon?2.24:storm?1.98:crimson?1.72:bamboo?1.5:1.35;
+  const baseHealth=shadow?3.08:neon?2.68:storm?2.35:crimson?2.05:bamboo?1.82:1.65;const baseSpeed=shadow?2.18:neon?1.98:storm?1.82:crimson?1.68:bamboo?1.55:1.42;const baseDamage=shadow?2.58:neon?2.24:storm?1.98:crimson?1.72:bamboo?1.5:1.35;
   types.forEach((type,i)=>{const a=i/types.length*Math.PI*2;enemies.push(makeEnemy({type,x:enemy.x+Math.cos(a)*560,y:enemy.y+Math.sin(a)*350,delay:.25+i*.16,healthScale:baseHealth*enemy.healthScale,speedScale:baseSpeed*enemy.speedScale,damageScale:baseDamage*enemy.damageScale},enemies.length+i));});
-  spawnWord(enemy.x,enemy.y-190,neon?(phase===2?'CORE LEGION!':'SYSTEM PURGE!'):storm?(phase===2?'STORM FLEET!':'SKY FURY!'):crimson?(phase===2?'WARHOST!':'SHOGUN FURY!'):bamboo?(phase===2?'MOON PACK!':'HOLLOW FURY!'):(phase===2?'SPIRIT GUARD!':'JADE FURY!'),enemy.def.color);
+  spawnWord(enemy.x,enemy.y-190,shadow?(phase===2?'SHADOW COURT!':'TEN THOUSAND SELVES!'):neon?(phase===2?'CORE LEGION!':'SYSTEM PURGE!'):storm?(phase===2?'STORM FLEET!':'SKY FURY!'):crimson?(phase===2?'WARHOST!':'SHOGUN FURY!'):bamboo?(phase===2?'MOON PACK!':'HOLLOW FURY!'):(phase===2?'SPIRIT GUARD!':'JADE FURY!'),enemy.def.color);
 }
 
 function bossDomainInterval(enemy,profile){
@@ -2095,13 +2119,14 @@ function bossDomainInterval(enemy,profile){
 }
 
 function triggerBossDomain(enemy,profile){
-  const b=room.combatBounds;const crimson=enemy.def.id==='pyreclawShogun',moon=enemy.def.id==='moonfangKomainu',storm=enemy.def.id==='raijinKirin',neon=enemy.def.id==='daikyoOni';enemy.domainCount=(enemy.domainCount||0)+1;
-  if(neon){const angle=Math.atan2(player.y-b.y,player.x-b.x)+(enemy.domainCount%2?Math.PI/2:Math.PI/4);effects.biomePressures.push({type:'firewallGrid',x:b.x,y:b.y,angle,width:98+enemy.bossPhase*16,length:b.radiusX*2.5,damage:Math.round((18+enemy.bossPhase*6)*enemy.damageScale),color:'#ff3ab8',life:.86,maxLife:.86,activeDuration:.96,stage:'warning',triggered:false,index:enemy.domainCount});}
+  const b=room.combatBounds;const crimson=enemy.def.id==='pyreclawShogun',moon=enemy.def.id==='moonfangKomainu',storm=enemy.def.id==='raijinKirin',neon=enemy.def.id==='daikyoOni',shadow=enemy.def.id==='tsukikoEmpress';enemy.domainCount=(enemy.domainCount||0)+1;
+  if(shadow){const lead=.54;effects.biomePressures.push({type:'eclipseRift',x:clamp(player.x+player.vx*lead,b.x-b.radiusX*.8,b.x+b.radiusX*.8),y:clamp(player.y+player.vy*lead,b.y-b.radiusY*.78,b.y+b.radiusY*.78),radius:205+enemy.bossPhase*22,damage:Math.round((21+enemy.bossPhase*7)*enemy.damageScale),color:'#b84dff',life:.8,maxLife:.8,activeDuration:1.2,slow:.34,stage:'warning',triggered:false,index:enemy.domainCount});}
+  else if(neon){const angle=Math.atan2(player.y-b.y,player.x-b.x)+(enemy.domainCount%2?Math.PI/2:Math.PI/4);effects.biomePressures.push({type:'firewallGrid',x:b.x,y:b.y,angle,width:98+enemy.bossPhase*16,length:b.radiusX*2.5,damage:Math.round((18+enemy.bossPhase*6)*enemy.damageScale),color:'#ff3ab8',life:.86,maxLife:.86,activeDuration:.96,stage:'warning',triggered:false,index:enemy.domainCount});}
   else if(storm){const angle=Math.atan2(player.y-b.y,player.x-b.x)+(enemy.domainCount%2?Math.PI/2:0)+.18;effects.biomePressures.push({type:'stormSurge',x:b.x,y:b.y,angle,width:105+enemy.bossPhase*15,length:b.radiusX*2.42,damage:Math.round((15+enemy.bossPhase*5)*enemy.damageScale),color:'#37dfff',life:.92,maxLife:.92,activeDuration:1.05,stage:'warning',triggered:false,index:enemy.domainCount});}
   else if(crimson){const angle=Math.atan2(player.y-b.y,player.x-b.x)+(enemy.domainCount%2?Math.PI/2:0);effects.biomePressures.push({type:'emberLane',x:b.x,y:b.y,angle,width:76+enemy.bossPhase*12,length:b.radiusX*2.25,damage:Math.round((10+enemy.bossPhase*4)*enemy.damageScale),color:'#ff5b27',life:1.05,maxLife:1.05,activeDuration:1.35,stage:'warning',triggered:false,index:enemy.domainCount});}
   else if(moon){const angle=enemy.domainCount*2.11,lane=.34+(enemy.domainCount%3)*.14;effects.biomePressures.push({type:'sporeBloom',x:b.x+Math.cos(angle)*b.radiusX*lane,y:b.y+Math.sin(angle)*b.radiusY*lane,radius:185+enemy.bossPhase*18,damage:Math.round((6+enemy.bossPhase*2)*enemy.damageScale),color:'#58f6d0',life:1.15,maxLife:1.15,activeDuration:3.8,slow:.36,stage:'warning',triggered:false,index:enemy.domainCount});}
   else{const lead=.36;effects.biomePressures.push({type:'bellEcho',x:clamp(player.x+player.vx*lead,b.x-b.radiusX*.74,b.x+b.radiusX*.74),y:clamp(player.y+player.vy*lead,b.y-b.radiusY*.74,b.y+b.radiusY*.74),radius:155+enemy.bossPhase*14,damage:Math.round((8+enemy.bossPhase*3)*enemy.damageScale),color:'#8cff39',life:1.2,maxLife:1.2,stage:'warning',triggered:false,index:enemy.domainCount});}
-  spawnWord(enemy.x,enemy.y-212,profile.domainName,enemy.def.color);playSfx(neon?'lightning':storm?'lightning':crimson?'fire':moon?'water':'lightning',.34,neon?1.12:storm?.94:.78);
+  spawnWord(enemy.x,enemy.y-212,profile.domainName,enemy.def.color);playSfx(shadow?'lightning':neon?'lightning':storm?'lightning':crimson?'fire':moon?'water':'lightning',.34,shadow?.58:neon?1.12:storm?.94:.78);
 }
 
 function updateBossDomain(enemy,profile,dt){
@@ -2109,8 +2134,8 @@ function updateBossDomain(enemy,profile,dt){
 }
 
 function fireBossRadial(enemy,count){
-  const bamboo=enemy.def.biome==='bamboo';const crimson=enemy.def.biome==='crimson';const neon=enemy.def.biome==='neon';const speed=neon?690:crimson?610:bamboo?540:470;
-  for(let i=0;i<count;i++){const angle=i/count*Math.PI*2+enemy.patternIndex*.19;effects.projectiles.push({x:enemy.x+Math.cos(angle)*95,y:enemy.y+Math.sin(angle)*70-42,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,radius:neon?24:crimson?22:bamboo?20:17,color:enemy.def.color,damage:Math.round(((neon?25:crimson?21:bamboo?17:14)+enemy.bossPhase*2)*enemy.damageScale),life:3.6,maxLife:3.6,boss:true});}
+  const bamboo=enemy.def.biome==='bamboo';const crimson=enemy.def.biome==='crimson';const neon=enemy.def.biome==='neon';const shadow=enemy.def.biome==='shadow';const speed=shadow?780:neon?690:crimson?610:bamboo?540:470;
+  for(let i=0;i<count;i++){const angle=i/count*Math.PI*2+enemy.patternIndex*.19;effects.projectiles.push({x:enemy.x+Math.cos(angle)*95,y:enemy.y+Math.sin(angle)*70-42,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,radius:shadow?26:neon?24:crimson?22:bamboo?20:17,color:enemy.def.color,damage:Math.round(((shadow?30:neon?25:crimson?21:bamboo?17:14)+enemy.bossPhase*2)*enemy.damageScale),life:3.6,maxLife:3.6,boss:true,shadow});}
   burst(enemy.x,enemy.y-65,enemy.def.color,40,420,6);camera.shake=11;playSfx('heavyImpact',.34,.82);
 }
 
@@ -2129,7 +2154,7 @@ function fireBossCrossfire(enemy,profile){
     if(lineDistance<profile.crossfireWidth+player.radius)struck=true;
     for(let step=-2;step<=2;step++){
       const x=target.x+Math.cos(angle)*step*230,y=target.y+Math.sin(angle)*step*230;
-      const neon=enemy.def.biome==='neon';effects.spriteEffects.push({asset:neon?'neonCityVfx':enemy.def.biome==='crimson'?'crimsonCombatVfx':'shockImpactVfx',fixedFrame:neon?1:enemy.def.biome==='crimson'?4:3,x,y,width:neon?285:245,height:neon?180:150,life:.55,maxLife:.55,rotation:angle,glow:enemy.def.color});
+      const neon=enemy.def.biome==='neon',shadow=enemy.def.biome==='shadow';effects.spriteEffects.push({asset:shadow?'shadowRealmVfx':neon?'neonCityVfx':enemy.def.biome==='crimson'?'crimsonCombatVfx':'shockImpactVfx',fixedFrame:shadow?2:neon?1:enemy.def.biome==='crimson'?4:3,x,y,width:shadow?320:neon?285:245,height:shadow?210:neon?180:150,life:.55,maxLife:.55,rotation:angle,glow:enemy.def.color});
     }
   }
   if(struck)hurtPlayer(Math.round((profile.crossfireDamage+enemy.bossPhase*3)*enemy.damageScale),enemy,.45);
@@ -2138,47 +2163,47 @@ function fireBossCrossfire(enemy,profile){
 }
 
 function prepareBossSignature(enemy,profile){
-  const b=room.combatBounds;const neon=enemy.def.id==='daikyoOni';const lead=neon?.7:enemy.def.id==='moonfangKomainu'?.48:enemy.def.id==='raijinKirin'?.62:.28;const count=neon?5+enemy.bossPhase:enemy.def.id==='raijinKirin'?4+enemy.bossPhase:enemy.def.id==='pyreclawShogun'?2+Math.floor(enemy.bossPhase/2):enemy.def.id==='moonfangKomainu'?3:1;
+  const b=room.combatBounds;const neon=enemy.def.id==='daikyoOni',shadow=enemy.def.id==='tsukikoEmpress';const lead=shadow?.78:neon?.7:enemy.def.id==='moonfangKomainu'?.48:enemy.def.id==='raijinKirin'?.62:.28;const count=shadow?6+enemy.bossPhase:neon?5+enemy.bossPhase:enemy.def.id==='raijinKirin'?4+enemy.bossPhase:enemy.def.id==='pyreclawShogun'?2+Math.floor(enemy.bossPhase/2):enemy.def.id==='moonfangKomainu'?3:1;
   enemy.signatureTargets=Array.from({length:count},(_,index)=>{
     if(enemy.def.id==='jadeguardTanuki')return {x:enemy.x,y:enemy.y+10,radius:430};
-    const spread=index-(count-1)/2;const x=player.x+player.vx*lead+spread*(neon?170:enemy.def.id==='raijinKirin'?188:enemy.def.id==='pyreclawShogun'?205:175);const y=player.y+player.vy*lead+(index%2?(neon?130:115):(neon?-70:-55));
-    return {x:clamp(x,b.x-b.radiusX*.86,b.x+b.radiusX*.86),y:clamp(y,b.y-b.radiusY*.84,b.y+b.radiusY*.84),radius:neon?155:enemy.def.id==='raijinKirin'?148:enemy.def.id==='pyreclawShogun'?132:138};
+    const spread=index-(count-1)/2;const x=player.x+player.vx*lead+spread*(shadow?156:neon?170:enemy.def.id==='raijinKirin'?188:enemy.def.id==='pyreclawShogun'?205:175);const y=player.y+player.vy*lead+(index%2?(shadow?145:neon?130:115):(shadow?-90:neon?-70:-55));
+    return {x:clamp(x,b.x-b.radiusX*.86,b.x+b.radiusX*.86),y:clamp(y,b.y-b.radiusY*.84,b.y+b.radiusY*.84),radius:shadow?168:neon?155:enemy.def.id==='raijinKirin'?148:enemy.def.id==='pyreclawShogun'?132:138};
   });
   const warningLife=enemy.stateTime+BOSS_PATTERNS.signature.action-BOSS_PATTERNS.signature.resolveAt;
-  for(const target of enemy.signatureTargets)effects.guardianSignatures.push({x:target.x,y:target.y,radius:target.radius,row:profile.signatureRow,storm:enemy.def.id==='raijinKirin',neon,stage:0,life:warningLife,maxLife:warningLife,color:enemy.def.color,ownerId:enemy.id});
+  for(const target of enemy.signatureTargets)effects.guardianSignatures.push({x:target.x,y:target.y,radius:target.radius,row:profile.signatureRow,storm:enemy.def.id==='raijinKirin',neon,shadow,stage:0,life:warningLife,maxLife:warningLife,color:enemy.def.color,ownerId:enemy.id});
   spawnWord(enemy.x,enemy.y-205,profile.signatureName.toUpperCase(),enemy.def.color);playSfx(enemy.def.id==='pyreclawShogun'?'fire':enemy.def.id==='moonfangKomainu'?'water':'lightning',.42,neon?1.12:enemy.def.id==='raijinKirin'?.9:.76);
 }
 
 function resolveBossSignature(enemy,profile){
-  const targets=enemy.signatureTargets||[{x:enemy.x,y:enemy.y,radius:360}];const jade=enemy.def.id==='jadeguardTanuki',moon=enemy.def.id==='moonfangKomainu',storm=enemy.def.id==='raijinKirin',neon=enemy.def.id==='daikyoOni';
+  const targets=enemy.signatureTargets||[{x:enemy.x,y:enemy.y,radius:360}];const jade=enemy.def.id==='jadeguardTanuki',moon=enemy.def.id==='moonfangKomainu',storm=enemy.def.id==='raijinKirin',neon=enemy.def.id==='daikyoOni',shadow=enemy.def.id==='tsukikoEmpress';
   if(jade){
     const count=14+enemy.bossPhase*4;for(let i=0;i<count;i++){const angle=i/count*Math.PI*2+enemy.patternIndex*.31;const gap=i%(enemy.bossPhase>=3?5:4)===0;if(gap)continue;effects.projectiles.push({x:enemy.x+Math.cos(angle)*115,y:enemy.y+Math.sin(angle)*82-38,vx:Math.cos(angle)*(440+enemy.bossPhase*45),vy:Math.sin(angle)*(440+enemy.bossPhase*45),radius:18,color:enemy.def.color,damage:Math.round(profile.signatureDamage*enemy.damageScale),life:3.2,maxLife:3.2,boss:true});}
   }else{
     let hit=false;for(const target of targets){if(distance(player,target)<target.radius+player.radius)hit=true;effects.rings.push({x:target.x,y:target.y,radius:24,maxRadius:target.radius,color:enemy.def.color,life:.56,maxLife:.56});burst(target.x,target.y,enemy.def.color,moon?36:48,moon?520:680,moon?6:8);}
     if(hit)hurtPlayer(Math.round(profile.signatureDamage*enemy.damageScale),enemy,moon ? .55 : .72);
   }
-  effects.guardianSignatures=effects.guardianSignatures.filter((effect)=>effect.ownerId!==enemy.id);for(const target of targets)effects.guardianSignatures.push({x:target.x,y:target.y,radius:target.radius,row:profile.signatureRow,storm,neon,stage:1,life:.78,maxLife:.78,color:enemy.def.color,ownerId:enemy.id});
-  camera.shake=Math.max(camera.shake,neon?32:jade?16:moon?20:storm?28:24);hitStop=Math.max(hitStop,.075);spawnWord(targets[0].x,targets[0].y-90,neon?'KERNEL CRASH!':jade?'BELLS BREAK!':moon?'MOON CLAWS!':storm?'HEAVEN SPLITS!':'ONI ERUPTS!',enemy.def.color);playSfx(neon?'lightning':jade?'lightning':moon?'slice':storm?'lightning':'stomp',.52,neon?.58:storm?.68:jade?.82:moon?.75:.68);
+  effects.guardianSignatures=effects.guardianSignatures.filter((effect)=>effect.ownerId!==enemy.id);for(const target of targets)effects.guardianSignatures.push({x:target.x,y:target.y,radius:target.radius,row:profile.signatureRow,storm,neon,shadow,stage:1,life:.78,maxLife:.78,color:enemy.def.color,ownerId:enemy.id});
+  camera.shake=Math.max(camera.shake,shadow?36:neon?32:jade?16:moon?20:storm?28:24);hitStop=Math.max(hitStop,.075);spawnWord(targets[0].x,targets[0].y-90,shadow?'MOON DEVOURS!':neon?'KERNEL CRASH!':jade?'BELLS BREAK!':moon?'MOON CLAWS!':storm?'HEAVEN SPLITS!':'ONI ERUPTS!',enemy.def.color);playSfx(shadow?'lightning':neon?'lightning':jade?'lightning':moon?'slice':storm?'lightning':'stomp',.52,shadow?.52:neon?.58:storm?.68:jade?.82:moon?.75:.68);
 }
 
 function updateBoss(enemy,dt){
-  const bamboo=enemy.def.biome==='bamboo';const crimson=enemy.def.biome==='crimson';const storm=enemy.def.biome==='storm';const neon=enemy.def.biome==='neon';const bossColor=enemy.def.color;const profile=BOSS_PROFILES[enemy.def.id];const sweepRange=profile.sweepRange;
+  const bamboo=enemy.def.biome==='bamboo';const crimson=enemy.def.biome==='crimson';const storm=enemy.def.biome==='storm';const neon=enemy.def.biome==='neon';const shadow=enemy.def.biome==='shadow';const bossColor=enemy.def.color;const profile=BOSS_PROFILES[enemy.def.id];const sweepRange=profile.sweepRange;
   enemy.stateTime-=dt;enemy.contactCooldown=Math.max(0,(enemy.contactCooldown||0)-dt);
   const healthRatio=enemy.health/enemy.maxHealth;const nextPhase=healthRatio<=.33?3:healthRatio<=.67?2:1;
   if(nextPhase>enemy.bossPhase){enemy.bossPhase=nextPhase;enemy.domainClock=bossDomainInterval(enemy,profile)*.55;enemy.state='bossEnrage';enemy.stateTime=1.35;enemy.patternHit=false;player.ultimateFlash=.12;camera.shake=20;ui.bossPhase.textContent=profile.phaseNames[nextPhase];if(!enemy.phaseTriggered[nextPhase]){enemy.phaseTriggered[nextPhase]=true;summonBossGuard(enemy,nextPhase);}}
   updateBossDomain(enemy,profile,dt);
   const toPlayer=normalize(player.x-enemy.x,player.y-enemy.y);const dist=distance(enemy,player);enemy.facing=approachAngle(enemy.facing,Math.atan2(toPlayer.y,toPlayer.x),clamp(dt*4,0,1));
   if(dist<enemy.radius+player.radius+8&&enemy.contactCooldown<=0){enemy.contactCooldown=1.1;hurtPlayer(Math.round(enemy.def.contactDamage*.65*enemy.damageScale),enemy);}
-  if(enemy.state==='enter'){enemy.vx*=.84;enemy.vy*=.84;if(enemy.stateTime<=0){enemy.state='bossIdle';enemy.stateTime=1.1;const entranceName=neon?'DAIKYO ONI!':enemy.def.id==='raijinKirin'?'RAIJIN KIRIN!':enemy.def.id==='pyreclawShogun'?'PYRECLAW!':enemy.def.id==='moonfangKomainu'?'MOONFANG!':'JADEGUARD!';spawnWord(enemy.x,enemy.y-180,entranceName,bossColor);}return;}
+  if(enemy.state==='enter'){enemy.vx*=.84;enemy.vy*=.84;if(enemy.stateTime<=0){enemy.state='bossIdle';enemy.stateTime=1.1;const entranceName=shadow?'TSUKIKO!':neon?'DAIKYO ONI!':enemy.def.id==='raijinKirin'?'RAIJIN KIRIN!':enemy.def.id==='pyreclawShogun'?'PYRECLAW!':enemy.def.id==='moonfangKomainu'?'MOONFANG!':'JADEGUARD!';spawnWord(enemy.x,enemy.y-180,entranceName,bossColor);}return;}
   if(enemy.state==='bossEnrage'){enemy.vx*=Math.exp(-10*dt);enemy.vy*=Math.exp(-10*dt);if(enemy.stateTime<=0){enemy.state='bossIdle';enemy.stateTime=.45;}return;}
   if(enemy.state==='bossWindupSweep'){enemy.vx*=Math.exp(-12*dt);enemy.vy*=Math.exp(-12*dt);if(enemy.stateTime<=0){enemy.state=BOSS_PATTERNS.sweep.actionState;enemy.stateTime=BOSS_PATTERNS.sweep.action;enemy.patternHit=false;playSfx('slice',.44,.7);}return;}
   if(enemy.state==='bossSweep'){
-    if(!enemy.patternHit&&enemy.stateTime<=BOSS_PATTERNS.sweep.resolveAt){enemy.patternHit=true;const facing={x:Math.cos(enemy.facing),y:Math.sin(enemy.facing)};const toward=normalize(player.x-enemy.x,player.y-enemy.y);if(dist<sweepRange&&facing.x*toward.x+facing.y*toward.y>-.15)hurtPlayer(Math.round((profile.sweepDamage+enemy.bossPhase*4)*enemy.damageScale),enemy,.35);effects.spriteEffects.push({asset:neon?'neonCityVfx':storm?'stormCoastVfx':crimson?'crimsonCombatVfx':'hammerSlamVfx',fixedFrame:neon?2:storm?2:crimson?0:undefined,x:enemy.x+facing.x*190,y:enemy.y+facing.y*125,width:neon?900:storm?820:crimson?760:bamboo?660:560,height:neon?520:storm?500:crimson?420:bamboo?370:330,life:.62,maxLife:.62,rotation:enemy.facing,glow:bossColor});camera.shake=16;hitStop=.06;}
+    if(!enemy.patternHit&&enemy.stateTime<=BOSS_PATTERNS.sweep.resolveAt){enemy.patternHit=true;const facing={x:Math.cos(enemy.facing),y:Math.sin(enemy.facing)};const toward=normalize(player.x-enemy.x,player.y-enemy.y);if(dist<sweepRange&&facing.x*toward.x+facing.y*toward.y>-.15)hurtPlayer(Math.round((profile.sweepDamage+enemy.bossPhase*4)*enemy.damageScale),enemy,.35);effects.spriteEffects.push({asset:shadow?'shadowRealmVfx':neon?'neonCityVfx':storm?'stormCoastVfx':crimson?'crimsonCombatVfx':'hammerSlamVfx',fixedFrame:shadow?0:neon?2:storm?2:crimson?0:undefined,x:enemy.x+facing.x*190,y:enemy.y+facing.y*125,width:shadow?980:neon?900:storm?820:crimson?760:bamboo?660:560,height:shadow?590:neon?520:storm?500:crimson?420:bamboo?370:330,life:.62,maxLife:.62,rotation:enemy.facing,glow:bossColor});camera.shake=16;hitStop=.06;}
     if(enemy.stateTime<=0){enemy.state='bossIdle';enemy.stateTime=BOSS_PATTERNS.sweep.recovery/enemy.bossPhase;}return;
   }
   if(enemy.state==='bossWindupSlam'){enemy.vx*=Math.exp(-14*dt);enemy.vy*=Math.exp(-14*dt);if(enemy.stateTime<=0){enemy.state=BOSS_PATTERNS.slam.actionState;enemy.stateTime=BOSS_PATTERNS.slam.action;enemy.patternHit=false;}return;}
   if(enemy.state==='bossSlam'){
-    if(!enemy.patternHit&&enemy.stateTime<=BOSS_PATTERNS.slam.resolveAt){enemy.patternHit=true;effects.spriteEffects.push({asset:neon?'neonCityVfx':storm?'stormCoastVfx':crimson?'crimsonCombatVfx':'hammerSlamVfx',fixedFrame:neon?5:storm?5:crimson?5:undefined,x:enemy.x,y:enemy.y+18,width:neon?980:storm?920:crimson?760:bamboo?860:760,height:neon?900:storm?880:crimson?760:bamboo?590:520,life:.8,maxLife:.8,glow:bossColor});effects.rings.push({x:enemy.x,y:enemy.y,radius:40,maxRadius:enemy.def.slamRadius,color:neon?'#ff3ab8':storm?'#37dfff':crimson?'#ff5b27':bamboo?'#41f5da':'#ff3b69',life:.65,maxLife:.65});if(dist<enemy.def.slamRadius+player.radius)hurtPlayer(Math.round((profile.slamDamage+enemy.bossPhase*4)*enemy.damageScale),enemy,enemy.def.stunDuration);camera.shake=22;hitStop=.08;playSfx(neon||storm?'lightning':'stomp',.58,neon?.78:.68);}
+    if(!enemy.patternHit&&enemy.stateTime<=BOSS_PATTERNS.slam.resolveAt){enemy.patternHit=true;effects.spriteEffects.push({asset:shadow?'shadowRealmVfx':neon?'neonCityVfx':storm?'stormCoastVfx':crimson?'crimsonCombatVfx':'hammerSlamVfx',fixedFrame:shadow?5:neon?5:storm?5:crimson?5:undefined,x:enemy.x,y:enemy.y+18,width:shadow?1050:neon?980:storm?920:crimson?760:bamboo?860:760,height:shadow?930:neon?900:storm?880:crimson?760:bamboo?590:520,life:.8,maxLife:.8,glow:bossColor});effects.rings.push({x:enemy.x,y:enemy.y,radius:40,maxRadius:enemy.def.slamRadius,color:shadow?'#b84dff':neon?'#ff3ab8':storm?'#37dfff':crimson?'#ff5b27':bamboo?'#41f5da':'#ff3b69',life:.65,maxLife:.65});if(dist<enemy.def.slamRadius+player.radius)hurtPlayer(Math.round((profile.slamDamage+enemy.bossPhase*4)*enemy.damageScale),enemy,enemy.def.stunDuration);camera.shake=22;hitStop=.08;playSfx(shadow||neon||storm?'lightning':'stomp',.58,shadow?.58:neon?.78:.68);}
     if(enemy.stateTime<=0){enemy.state='bossIdle';enemy.stateTime=BOSS_PATTERNS.slam.recovery/enemy.bossPhase;}return;
   }
   if(enemy.state==='bossChannel'){
@@ -2320,7 +2345,7 @@ function updateEnemies(dt) {
           enemy.state = 'strike'; enemy.stateTime = .38; enemy.hitPlayer = false;
           const speed = definition.behavior === 'basic' ? 165 : definition.behavior==='shield' ? 640 : 720;
           enemy.vx = Math.cos(enemy.facing) * speed; enemy.vy = Math.sin(enemy.facing) * speed;
-          if(definition.behavior!=='shield'){const neon=definition.biome==='neon';effects.spriteEffects.push({asset:neon?'neonCityVfx':definition.biome==='crimson'?'crimsonCombatVfx':'clawSlashVfx',fixedFrame:neon?0:definition.biome==='crimson'?0:undefined,x:enemy.x+Math.cos(enemy.facing)*62,y:enemy.y+Math.sin(enemy.facing)*62-16,width:neon?265:definition.biome==='crimson'?240:definition.behavior==='basic'?135:190,height:neon?175:definition.biome==='crimson'?160:definition.behavior==='basic'?90:124,life:.38,maxLife:.38,rotation:enemy.facing,glow:definition.color});}
+          if(definition.behavior!=='shield'){const shadow=definition.biome==='shadow',neon=definition.biome==='neon';effects.spriteEffects.push({asset:shadow?'shadowRealmVfx':neon?'neonCityVfx':definition.biome==='crimson'?'crimsonCombatVfx':'clawSlashVfx',fixedFrame:shadow?0:neon?0:definition.biome==='crimson'?0:undefined,x:enemy.x+Math.cos(enemy.facing)*62,y:enemy.y+Math.sin(enemy.facing)*62-16,width:shadow?300:neon?265:definition.biome==='crimson'?240:definition.behavior==='basic'?135:190,height:shadow?190:neon?175:definition.biome==='crimson'?160:definition.behavior==='basic'?90:124,life:.38,maxLife:.38,rotation:enemy.facing,glow:definition.color});}
         }
       }
     } else if (enemy.state === 'slam') {
@@ -2328,7 +2353,7 @@ function updateEnemies(dt) {
       if (!enemy.slamResolved && enemy.stateTime <= .3) {
         enemy.slamResolved = true;
         const radius = definition.slamRadius;
-        const neon=definition.biome==='neon';effects.spriteEffects.push({asset:neon?'neonCityVfx':definition.biome==='crimson'?'crimsonCombatVfx':'hammerSlamVfx',fixedFrame:neon?2:definition.biome==='crimson'?3:undefined,x:enemy.x,y:enemy.y+14,width:neon?radius*2.75:definition.biome==='crimson'?radius*3.15:radius*2.8,height:neon?radius*2.3:definition.biome==='crimson'?radius*2.55:radius*2.2,life:.58,maxLife:.58,glow:definition.color});
+        const shadow=definition.biome==='shadow',neon=definition.biome==='neon';effects.spriteEffects.push({asset:shadow?'shadowRealmVfx':neon?'neonCityVfx':definition.biome==='crimson'?'crimsonCombatVfx':'hammerSlamVfx',fixedFrame:shadow?4:neon?2:definition.biome==='crimson'?3:undefined,x:enemy.x,y:enemy.y+14,width:shadow?radius*3.2:neon?radius*2.75:definition.biome==='crimson'?radius*3.15:radius*2.8,height:shadow?radius*2.75:neon?radius*2.3:definition.biome==='crimson'?radius*2.55:radius*2.2,life:.58,maxLife:.58,glow:definition.color});
         burst(enemy.x, enemy.y + 12, '#ff9a24', 22, 390, 5);
         camera.shake = Math.max(camera.shake, 13); hitStop = Math.max(hitStop, .065); playSfx('stomp',definition.behavior==='heavy'?.42:.31,definition.behavior==='heavy'?.82:1);
         if (dist < radius + player.radius) hurtPlayer(Math.round(definition.contactDamage*enemy.damageScale), enemy, definition.stunDuration);
@@ -2398,12 +2423,12 @@ function resolveEnemyCrowding(activeCombatants,dt){
 }
 
 function fireEnemyProjectile(enemy, direction) {
-  const neon=enemy.def.biome==='neon';const storm=enemy.def.biome==='storm';const crimson=enemy.def.biome==='crimson';const speed = neon?720:storm?640:crimson?560:enemy.def.biome==='bamboo'?485:410;const color=enemy.def.color||'#37e8ff';
+  const shadow=enemy.def.biome==='shadow';const neon=enemy.def.biome==='neon';const storm=enemy.def.biome==='storm';const crimson=enemy.def.biome==='crimson';const speed = shadow?810:neon?720:storm?640:crimson?560:enemy.def.biome==='bamboo'?485:410;const color=enemy.def.color||'#37e8ff';
   const muzzle = {x:enemy.x+direction.x*48,y:enemy.y+direction.y*48-16};
-  effects.projectiles.push({ x: muzzle.x, y: muzzle.y, vx: direction.x * speed, vy: direction.y * speed, radius: neon?18:crimson?16:12, color, damage:Math.round((neon?19:storm?17:crimson?15:enemy.def.biome==='bamboo'?12:8)*enemy.damageScale), life: 2.1, maxLife: 2.1, neon, crimson });
-  effects.spriteEffects.push({asset:neon?'neonCityVfx':crimson?'crimsonCombatVfx':'spiritArrowImpactVfx',fixedFrame:neon?1:crimson?2:undefined,x:muzzle.x,y:muzzle.y,width:neon?112:crimson?82:66,height:neon?84:crimson?82:58,life:.16,maxLife:.16,rotation:Math.atan2(direction.y,direction.x),glow:color});
+  effects.projectiles.push({ x: muzzle.x, y: muzzle.y, vx: direction.x * speed, vy: direction.y * speed, radius: shadow?20:neon?18:crimson?16:12, color, damage:Math.round((shadow?23:neon?19:storm?17:crimson?15:enemy.def.biome==='bamboo'?12:8)*enemy.damageScale), life: 2.1, maxLife: 2.1, shadow, neon, crimson });
+  effects.spriteEffects.push({asset:shadow?'shadowRealmVfx':neon?'neonCityVfx':crimson?'crimsonCombatVfx':'spiritArrowImpactVfx',fixedFrame:shadow?1:neon?1:crimson?2:undefined,x:muzzle.x,y:muzzle.y,width:shadow?132:neon?112:crimson?82:66,height:shadow?96:neon?84:crimson?82:58,life:.16,maxLife:.16,rotation:Math.atan2(direction.y,direction.x),glow:color});
   burst(muzzle.x, muzzle.y, color, 16, 230, 3);
-  playSfx(neon?'lightning':crimson?'fire':'arrow',neon?.23:crimson?.24:.18,neon?1.24:crimson?1.18:.9);
+  playSfx(shadow?'lightning':neon?'lightning':crimson?'fire':'arrow',shadow?.24:neon?.23:crimson?.24:.18,shadow?.72:neon?1.24:crimson?1.18:.9);
 }
 
 function updateEnemyProjectiles(dt) {
@@ -2411,7 +2436,7 @@ function updateEnemyProjectiles(dt) {
     projectile.life -= dt; projectile.x += projectile.vx * dt; projectile.y += projectile.vy * dt;
     if (projectile.life > 0 && distance(projectile, player) < projectile.radius + player.radius) {
       projectile.life = 0; hurtPlayer(projectile.damage||8, projectile); burst(projectile.x, projectile.y, projectile.color||'#37e8ff', 8, 210, 3);
-      effects.spriteEffects.push({asset:projectile.neon?'neonCityVfx':projectile.crimson?'crimsonCombatVfx':'spiritArrowImpactVfx',fixedFrame:projectile.neon?4:projectile.crimson?(projectile.impactFrame??2):undefined,x:projectile.x,y:projectile.y-10,width:projectile.neon?210:projectile.crimson?178:142,height:projectile.neon?190:projectile.crimson?178:126,life:.45,maxLife:.45,rotation:Math.atan2(projectile.vy,projectile.vx),glow:projectile.color||'#37e8ff'});
+      effects.spriteEffects.push({asset:projectile.shadow?'shadowRealmVfx':projectile.neon?'neonCityVfx':projectile.crimson?'crimsonCombatVfx':'spiritArrowImpactVfx',fixedFrame:projectile.shadow?2:projectile.neon?4:projectile.crimson?(projectile.impactFrame??2):undefined,x:projectile.x,y:projectile.y-10,width:projectile.shadow?240:projectile.neon?210:projectile.crimson?178:142,height:projectile.shadow?210:projectile.neon?190:projectile.crimson?178:126,life:.45,maxLife:.45,rotation:Math.atan2(projectile.vy,projectile.vx),glow:projectile.color||'#37e8ff'});
     }
   }
 }
@@ -2470,11 +2495,13 @@ function updateEffects(dt) {
     if(pressure.stage==='warning'&&pressure.life<=0){pressure.stage='active';pressure.life=pressure.type==='bellEcho'?.7:pressure.activeDuration;pressure.maxLife=pressure.life;pressure.triggered=false;
       if(pressure.type==='bellEcho'){effects.rings.push({x:pressure.x,y:pressure.y,radius:18,maxRadius:pressure.radius,color:pressure.color,life:.5,maxLife:.5});burst(pressure.x,pressure.y-16,pressure.color,30,420,6);playSfx('lightning',.28,1.28);}
       else if(pressure.type==='sporeBloom'){effects.rings.push({x:pressure.x,y:pressure.y,radius:22,maxRadius:pressure.radius,color:pressure.color,life:.55,maxLife:.55});burst(pressure.x,pressure.y,pressure.color,28,260,5);playSfx('water',.22,.74);}
+      else if(pressure.type==='eclipseRift'){effects.rings.push({x:pressure.x,y:pressure.y,radius:pressure.radius,maxRadius:28,color:pressure.color,life:.62,maxLife:.62});effects.spriteEffects.push({asset:'shadowRealmVfx',fixedFrame:3,x:pressure.x,y:pressure.y-28,width:pressure.radius*2.35,height:pressure.radius*1.75,life:.74,maxLife:.74,glow:pressure.color});burst(pressure.x,pressure.y-20,pressure.color,44,520,7);camera.shake=Math.max(camera.shake,14);playSfx('lightning',.38,.62);}
       else{camera.shake=Math.max(camera.shake,9);playSfx(pressure.type==='stormSurge'?'water':pressure.type==='firewallGrid'?'lightning':'fire',.32,pressure.type==='stormSurge'?1.05:pressure.type==='firewallGrid'?1.18:.82);}
     }
     if(pressure.stage!=='active')continue;
     if(pressure.type==='bellEcho'&&!pressure.triggered){pressure.triggered=true;const hit=distance(pressure,player)<pressure.radius+player.radius;if(hit)hurtPlayer(pressure.damage,pressure,.18);const count=8+Math.floor(encounter.wave/2)*2;for(let i=0;i<count;i++){const a=i/count*Math.PI*2+pressure.index*.27;effects.projectiles.push({x:pressure.x,y:pressure.y-14,vx:Math.cos(a)*(310+encounter.wave*30),vy:Math.sin(a)*(310+encounter.wave*30),radius:11,color:pressure.color,damage:Math.max(4,Math.round(pressure.damage*.7)),life:2.8,maxLife:2.8});}}
     else if(pressure.type==='sporeBloom'){if(distance(pressure,player)<pressure.radius+player.radius){player.vx*=Math.exp(-pressure.slow*8*dt);player.vy*=Math.exp(-pressure.slow*8*dt);pressure.tick=(pressure.tick||0)-dt;if(pressure.tick<=0){pressure.tick=.72;hurtPlayer(pressure.damage,pressure);}}}
+    else if(pressure.type==='eclipseRift'){if(distance(pressure,player)<pressure.radius+player.radius){player.vx*=Math.exp(-pressure.slow*11*dt);player.vy*=Math.exp(-pressure.slow*11*dt);if(!pressure.triggered){pressure.triggered=true;hurtPlayer(pressure.damage,pressure,.32);effects.spriteEffects.push({asset:'shadowRealmVfx',fixedFrame:5,x:player.x,y:player.y-22,width:330,height:260,life:.58,maxLife:.58,glow:pressure.color});spawnWord(player.x,player.y-85,'SHADOW CAUGHT!',pressure.color);}}}
     else if(pressure.type==='emberLane'&&!pressure.triggered){pressure.triggered=true;const dx=player.x-pressure.x,dy=player.y-pressure.y,side=Math.abs(-Math.sin(pressure.angle)*dx+Math.cos(pressure.angle)*dy),along=Math.abs(Math.cos(pressure.angle)*dx+Math.sin(pressure.angle)*dy);if(side<pressure.width+player.radius&&along<pressure.length*.5)hurtPlayer(pressure.damage,pressure,.24);effects.fireTrails.push(...Array.from({length:15},(_,i)=>({x:pressure.x+Math.cos(pressure.angle)*(i-7)*pressure.length/14,y:pressure.y+Math.sin(pressure.angle)*(i-7)*pressure.length/14,color:pressure.color,life:.92,maxLife:.92})));}
     else if(pressure.type==='stormSurge'&&!pressure.triggered){pressure.triggered=true;const dx=player.x-pressure.x,dy=player.y-pressure.y,side=Math.abs(-Math.sin(pressure.angle)*dx+Math.cos(pressure.angle)*dy),along=Math.abs(Math.cos(pressure.angle)*dx+Math.sin(pressure.angle)*dy);if(side<pressure.width+player.radius&&along<pressure.length*.5)hurtPlayer(pressure.damage,pressure,.38);for(let i=-6;i<=6;i+=2)effects.spriteEffects.push({asset:'stormCoastVfx',fixedFrame:4,x:pressure.x+Math.cos(pressure.angle)*i*pressure.length/13,y:pressure.y+Math.sin(pressure.angle)*i*pressure.length/13,width:360,height:270,life:.76,maxLife:.76,rotation:pressure.angle-Math.PI/2,glow:pressure.color});camera.shake=Math.max(camera.shake,15);}
     else if(pressure.type==='firewallGrid'&&!pressure.triggered){pressure.triggered=true;const dx=player.x-pressure.x,dy=player.y-pressure.y,side=Math.abs(-Math.sin(pressure.angle)*dx+Math.cos(pressure.angle)*dy),along=Math.abs(Math.cos(pressure.angle)*dx+Math.sin(pressure.angle)*dy);if(side<pressure.width+player.radius&&along<pressure.length*.5)hurtPlayer(pressure.damage,pressure,.46);for(let i=-6;i<=6;i+=2)effects.spriteEffects.push({asset:'neonCityVfx',fixedFrame:4,x:pressure.x+Math.cos(pressure.angle)*i*pressure.length/13,y:pressure.y+Math.sin(pressure.angle)*i*pressure.length/13,width:340,height:310,life:.68,maxLife:.68,rotation:pressure.angle-Math.PI/2,glow:pressure.color});camera.shake=Math.max(camera.shake,17);}
@@ -2866,12 +2893,13 @@ function drawForegroundHaze() {
 }
 
 function drawAmbient() {
-  const time = motionTime();const crimson=chapter.id==='crimsonChapter';const neon=chapter.id==='neonChapter';const ambient=room.ambient||'';
+  const time = motionTime();const crimson=chapter.id==='crimsonChapter';const neon=chapter.id==='neonChapter';const shadow=chapter.id==='shadowChapter';const ambient=room.ambient||'';
   const ambientPalette={
     river:['#54efff','#668cff'],roots:['#ff3fb5','#d54cff'],corruption:['#ff3fb5','#a63cff'],
     moonriver:['#58f2ff','#7297ff'],spores:['#7dff9c','#d54cff'],mooncurse:['#42ecff','#9b4dff'],
     bells:['#ffb13b','#ff3b79'],ash:['#ff8738','#c73d54'],inferno:['#ff5b2e','#d738ff'],dojo:['#72ef5b','#d54cff'],
-    neonRain:['#43efff','#ff3bbd'],circuitMarket:['#f7ef69','#ff3bbd'],hologram:['#52efff','#d54cff'],skyrail:['#41f5ff','#f7ef69'],dataLotus:['#7dff9c','#ff3bbd'],override:['#ff365e','#52efff']
+    neonRain:['#43efff','#ff3bbd'],circuitMarket:['#f7ef69','#ff3bbd'],hologram:['#52efff','#d54cff'],skyrail:['#41f5ff','#f7ef69'],dataLotus:['#7dff9c','#ff3bbd'],override:['#ff365e','#52efff'],
+    shadow:['#c865ff','#54e9ff'],mirrorgrave:['#e6c8ff','#5cecff'],wraithwood:['#a64dff','#4be4ff'],eclipse:['#ff66dc','#8b55ff'],hollowMoon:['#f2ddff','#b84dff']
   };
   const [moteA,moteB]=ambientPalette[ambient]||(crimson?['#ffb13b','#ff3b62']:['#54efff','#d54cff']);
   const wispTint=ambient==='inferno'?'#ff37d7':ambient==='ash'||ambient==='bells'?'#ff6b2d':ambient==='spores'||ambient==='dojo'?'#86ff8a':ambient==='mooncurse'||ambient==='corruption'?'#d94cff':'#4aeaff';
@@ -2896,6 +2924,12 @@ function drawAmbient() {
     ctx.save();ctx.globalCompositeOperation='lighter';ctx.lineCap='round';
     for(let i=0;i<34;i++){const span=room.combatBounds.radiusX*1.9;const x=room.combatBounds.x-span*.5+((i*281+time*(190+i%5*22))%span);const y=room.combatBounds.y-room.combatBounds.radiusY*.88+((i*167+time*(520+i%4*35))%(room.combatBounds.radiusY*1.76));ctx.globalAlpha=.11+(i%5)*.025;ctx.strokeStyle=i%3?'#52efff':'#ff3bbd';ctx.lineWidth=2+(i%3);ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-30,y+92);ctx.stroke();}
     for(let i=0;i<9;i++){const a=i/9*Math.PI*2+time*.08;const x=room.combatBounds.x+Math.cos(a)*room.combatBounds.radiusX*.82;const y=room.combatBounds.y+Math.sin(a)*room.combatBounds.radiusY*.77;drawAtlasFrame(assets.neonCityVfx,Math.floor(time*7+i)%2,x,y-20,128,88,a,.26,i%2?'#48efff':'#ff3ab8');}
+    ctx.restore();
+  }
+  if(shadow){
+    ctx.save();ctx.globalCompositeOperation='lighter';
+    for(let i=0;i<12;i++){const a=i/12*Math.PI*2+time*.035;const x=room.combatBounds.x+Math.cos(a)*room.combatBounds.radiusX*(.7+(i%3)*.07);const y=room.combatBounds.y+Math.sin(a)*room.combatBounds.radiusY*(.68+(i%2)*.08);drawAtlasFrame(assets.shadowRealmVfx,1,x,y-24,118+(i%3)*18,82+(i%3)*12,a,.16+(i%4)*.035,i%2?'#b84dff':'#54e9ff');}
+    ctx.globalAlpha=.09;ctx.fillStyle='#b84dff';for(let i=0;i<7;i++){const drift=((time*54+i*683)%(room.combatBounds.radiusX*2))-room.combatBounds.radiusX;const y=room.combatBounds.y-room.combatBounds.radiusY*.78+i*room.combatBounds.radiusY*.25+Math.sin(time*.4+i)*38;ctx.beginPath();ctx.ellipse(room.combatBounds.x+drift,y,280+i*28,36+i*5,-.08,0,Math.PI*2);ctx.fill();}
     ctx.restore();
   }
   for(let i=0;i<26;i++){
@@ -3013,17 +3047,17 @@ function drawCoopPlayer(member){
 }
 
 function drawBoss(enemy){
-  const time=performance.now()/1000;const alpha=enemy.dead?clamp(enemy.deathTime/2.8,0,1):1;const bamboo=enemy.def.biome==='bamboo';const crimson=enemy.def.biome==='crimson';const storm=enemy.def.biome==='storm';const neon=enemy.def.biome==='neon';const bossColor=enemy.def.color;
+  const time=performance.now()/1000;const alpha=enemy.dead?clamp(enemy.deathTime/2.8,0,1):1;const bamboo=enemy.def.biome==='bamboo';const crimson=enemy.def.biome==='crimson';const storm=enemy.def.biome==='storm';const neon=enemy.def.biome==='neon';const shadow=enemy.def.biome==='shadow';const bossColor=enemy.def.color;
   const stateFrames={enter:0,bossIdle:0,bossWindupSweep:1,bossSweep:2,bossWindupSlam:1,bossSlam:3,bossChannel:4,bossWindupCrossfire:4,bossCrossfire:3,bossWindupSignature:4,bossSignature:3,bossEnrage:5};
   const frame=enemy.dead?5:(stateFrames[enemy.state]??0);
-  const motion=enemyMotion(enemy);drawContactShadow(enemy.x,enemy.y+26,neon?100:storm?94:crimson?88:bamboo?82:76,neon?20:storm?19:crimson?18:bamboo?17:16,.42*alpha);drawEnemyStatusBack(enemy,neon?405:storm?380:340,neon?292:storm?272:245);
+  const motion=enemyMotion(enemy);drawContactShadow(enemy.x,enemy.y+26,shadow?106:neon?100:storm?94:crimson?88:bamboo?82:76,shadow?21:neon?20:storm?19:crimson?18:bamboo?17:16,.42*alpha);drawEnemyStatusBack(enemy,shadow?430:neon?405:storm?380:340,shadow?310:neon?292:storm?272:245);
   ctx.save();ctx.translate(enemy.x,enemy.y);
   if(enemy.state==='bossWindupSweep'){
     const p=1-clamp(enemy.stateTime/(enemy.patternWindup||BOSS_PATTERNS.sweep.windup),0,1);ctx.rotate(enemy.facing);ctx.fillStyle=`rgba(255,48,88,${.08+p*.14})`;ctx.strokeStyle=`rgba(255,66,101,${.55+p*.4})`;ctx.lineWidth=8;ctx.shadowColor='#ff315f';ctx.shadowBlur=18;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,enemy.def.attackRange+60,-1.74,1.74);ctx.closePath();ctx.fill();ctx.stroke();
   } else if(enemy.state==='bossWindupSlam'){
     const p=1-clamp(enemy.stateTime/(enemy.patternWindup||BOSS_PATTERNS.slam.windup),0,1);ctx.fillStyle=`rgba(255,42,84,${.07+p*.14})`;ctx.strokeStyle=`rgba(255,58,92,${.5+p*.48})`;ctx.lineWidth=9;ctx.setLineDash([42,16,9,14]);ctx.lineDashOffset=-performance.now()/35;ctx.beginPath();ctx.arc(0,12,enemy.def.slamRadius,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.setLineDash([]);
   } else if(enemy.state==='bossChannel'){
-    const p=1-clamp(enemy.stateTime/1.45,0,1);ctx.strokeStyle=neon?`rgba(255,58,184,${.5+p*.5})`:storm?`rgba(55,223,255,${.5+p*.5})`:crimson?`rgba(255,91,39,${.5+p*.5})`:bamboo?`rgba(65,245,218,${.45+p*.5})`:`rgba(140,255,57,${.45+p*.5})`;ctx.lineWidth=6;ctx.shadowColor=bossColor;ctx.shadowBlur=24;for(let i=1;i<=3;i++){ctx.setLineDash([20+i*7,12]);ctx.lineDashOffset=(i%2?1:-1)*performance.now()/45;ctx.beginPath();ctx.arc(0,0,85+i*54+p*18,0,Math.PI*2);ctx.stroke();}ctx.setLineDash([]);
+    const p=1-clamp(enemy.stateTime/1.45,0,1);ctx.strokeStyle=shadow?`rgba(184,77,255,${.5+p*.5})`:neon?`rgba(255,58,184,${.5+p*.5})`:storm?`rgba(55,223,255,${.5+p*.5})`:crimson?`rgba(255,91,39,${.5+p*.5})`:bamboo?`rgba(65,245,218,${.45+p*.5})`:`rgba(140,255,57,${.45+p*.5})`;ctx.lineWidth=6;ctx.shadowColor=bossColor;ctx.shadowBlur=24;for(let i=1;i<=3;i++){ctx.setLineDash([20+i*7,12]);ctx.lineDashOffset=(i%2?1:-1)*performance.now()/45;ctx.beginPath();ctx.arc(0,0,85+i*54+p*18,0,Math.PI*2);ctx.stroke();}ctx.setLineDash([]);
   } else if(enemy.state==='bossWindupCrossfire'||enemy.state==='bossCrossfire'){
     const profile=BOSS_PROFILES[enemy.def.id];const active=enemy.state==='bossCrossfire';const p=active?1:1-clamp(enemy.stateTime/(enemy.patternWindup||BOSS_PATTERNS.crossfire.windup),0,1);
     ctx.translate(enemy.patternTargetX-enemy.x,enemy.patternTargetY-enemy.y);ctx.globalCompositeOperation='lighter';ctx.shadowColor=bossColor;ctx.shadowBlur=active?42:18;
@@ -3033,24 +3067,24 @@ function drawBoss(enemy){
   ctx.restore();
   const bob=enemy.state==='bossIdle'?Math.sin(time*2.3)*4:0;const pulse=enemy.state==='bossEnrage'?1+Math.sin(time*15)*.035:1;
   ctx.save();ctx.filter=enemy.flash>0?'brightness(2.2) saturate(.35)':motion.filter;ctx.globalAlpha=alpha;ctx.translate(enemy.x+motion.x,enemy.y+bob+motion.y);ctx.rotate(motion.rotation);ctx.scale(pulse*motion.scaleX,pulse*motion.scaleY);
-  const bossSheet=neon?assets.daikyoOni:storm?assets.raijinKirin:crimson?assets.pyreclawShogun:bamboo?assets.moonfangKomainu:assets.jadeguardTanuki;
-  const moveSheet=neon?assets.daikyoOniMove:storm?assets.raijinKirinMove:crimson?assets.pyreclawShogunMove:bamboo?assets.moonfangKomainuMove:assets.jadeguardTanukiMove;
-  const bossSize=neon?690:storm?650:crimson?600:bamboo?540:500;const useMove=motion.moving&&enemy.state==='bossIdle'&&moveSheet?.complete&&moveSheet.naturalWidth;const bossYOffset=neon?-145:storm?-138:crimson?-125:bamboo?-112:-104;
+  const bossSheet=shadow?assets.tsukikoEmpress:neon?assets.daikyoOni:storm?assets.raijinKirin:crimson?assets.pyreclawShogun:bamboo?assets.moonfangKomainu:assets.jadeguardTanuki;
+  const moveSheet=shadow?assets.tsukikoEmpressMove:neon?assets.daikyoOniMove:storm?assets.raijinKirinMove:crimson?assets.pyreclawShogunMove:bamboo?assets.moonfangKomainuMove:assets.jadeguardTanukiMove;
+  const bossSize=shadow?730:neon?690:storm?650:crimson?600:bamboo?540:500;const useMove=motion.moving&&enemy.state==='bossIdle'&&moveSheet?.complete&&moveSheet.naturalWidth;const bossYOffset=shadow?-154:neon?-145:storm?-138:crimson?-125:bamboo?-112:-104;
   if(useMove){const speed=Math.hypot(enemy.vx||0,enemy.vy||0),cadence=clamp(speed/32,2.8,5.2),moveFrame=Math.floor((time+(enemy.spawnIndex||0)*.19)*cadence)%2;drawGridAtlasFrame(moveSheet,moveFrame,2,1,0,bossYOffset,bossSize,bossSize,0,1,enemy.bossPhase>=3?'#ff3fbc':bossColor);}
   else drawAtlasFrame(bossSheet,frame,0,bossYOffset,bossSize,bossSize,0,1,enemy.bossPhase>=3?'#ff3fbc':bossColor);ctx.restore();ctx.filter='none';
   if(enemy.dead){const p=1-alpha;ctx.save();ctx.translate(enemy.x,enemy.y-80);ctx.globalAlpha=alpha;ctx.strokeStyle=bossColor;ctx.shadowColor=bossColor;ctx.shadowBlur=32;ctx.lineWidth=12;ctx.beginPath();ctx.arc(0,0,80+p*260,0,Math.PI*2);ctx.stroke();ctx.restore();}
 }
 
 function drawBambooEnemy(enemy) {
-  const baseSheet=enemy.def.biome==='neon'?assets.neonEnemies:enemy.def.biome==='storm'?assets.stormEnemies:enemy.def.biome==='crimson'?assets.crimsonEnemies:assets.bambooEnemies;
-  const moveSheet=enemy.def.biome==='neon'?assets.neonEnemiesMove:enemy.def.biome==='storm'?assets.stormEnemiesMove:enemy.def.biome==='crimson'?assets.crimsonEnemiesMove:assets.bambooEnemiesMove;
+  const baseSheet=enemy.def.biome==='shadow'?assets.shadowEnemies:enemy.def.biome==='neon'?assets.neonEnemies:enemy.def.biome==='storm'?assets.stormEnemies:enemy.def.biome==='crimson'?assets.crimsonEnemies:assets.bambooEnemies;
+  const moveSheet=enemy.def.biome==='shadow'?assets.shadowEnemiesMove:enemy.def.biome==='neon'?assets.neonEnemiesMove:enemy.def.biome==='storm'?assets.stormEnemiesMove:enemy.def.biome==='crimson'?assets.crimsonEnemiesMove:assets.bambooEnemiesMove;
   if (!baseSheet.complete || !baseSheet.naturalWidth) return;
   const definition=enemy.def;const alpha=enemy.dead?clamp(enemy.deathTime/.72,0,1):1;
   const attacking=['windup','strike','slam','recover'].includes(enemy.state);const motion=enemyMotion(enemy);const useMove=!attacking&&motion.moving&&moveSheet?.complete&&moveSheet.naturalWidth;
   const speed=Math.hypot(enemy.vx||0,enemy.vy||0),cadence=clamp(speed/24,4.2,10.5),walkRow=Math.floor((performance.now()/1000+(enemy.spawnIndex||0)*.17)*cadence)%2;
   const sheet=useMove?moveSheet:baseSheet;const frame=definition.spriteColumn+(attacking?3:useMove?walkRow*3:0);
   const sw=sheet.naturalWidth/3,sh=sheet.naturalHeight/2;
-  const sx=(frame%3)*sw,sy=Math.floor(frame/3)*sh;const lateAtlas=definition.biome==='storm'||definition.biome==='neon';const baseH=(lateAtlas?(definition.behavior==='heavy'?112:102):(definition.behavior==='heavy'?148:138))*definition.scale;const baseW=baseH*(sw/sh);
+  const sx=(frame%3)*sw,sy=Math.floor(frame/3)*sh;const lateAtlas=definition.biome==='storm'||definition.biome==='neon'||definition.biome==='shadow';const baseH=(lateAtlas?(definition.behavior==='heavy'?112:102):(definition.behavior==='heavy'?148:138))*definition.scale;const baseW=baseH*(sw/sh);
   const flip=Math.cos(enemy.facing)<0?-1:1;let scaleX=1,scaleY=1,rotation=0;
   if(enemy.state==='enter'){scaleX=1;scaleY=1;}
   if(enemy.state==='windup'){scaleX=1.08;scaleY=.92;}
@@ -3089,7 +3123,7 @@ function drawEnemy(enemy) {
   if(enemy.eliteId&&!enemy.dead)drawEliteAura(enemy);
   if(enemy.def.behavior==='boss'){drawBoss(enemy);return;}
   if(['bellweaverCat','powderkegToad','gatewardenRhino','mistclawLynx'].includes(enemy.type)){drawSpecialEnemy(enemy);return;}
-  if(enemy.def.biome==='bamboo'||enemy.def.biome==='crimson'||enemy.def.biome==='storm'||enemy.def.biome==='neon'){drawBambooEnemy(enemy);return;}
+  if(enemy.def.biome==='bamboo'||enemy.def.biome==='crimson'||enemy.def.biome==='storm'||enemy.def.biome==='neon'||enemy.def.biome==='shadow'){drawBambooEnemy(enemy);return;}
   if (!assets.enemies.complete || !assets.enemies.naturalWidth) return;
   const definition = enemy.def;
   const alpha = enemy.dead ? clamp(enemy.deathTime / .72, 0, 1) : 1;
@@ -3192,11 +3226,12 @@ function drawEffects() {
     const warning=pressure.stage==='warning',p=1-pressure.life/pressure.maxLife,pulse=.82+Math.sin(performance.now()/85+pressure.index)*.14;ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=warning?.35+p*.4:.44;
     if(pressure.type==='bellEcho'){ctx.translate(pressure.x,pressure.y);ctx.scale(1,.58);ctx.strokeStyle=warning?'#fff3a1':pressure.color;ctx.fillStyle=`${pressure.color}18`;ctx.shadowColor=pressure.color;ctx.shadowBlur=22;ctx.lineWidth=warning?4+p*5:8;ctx.setLineDash(warning?[22,11,5,10]:[]);ctx.lineDashOffset=-performance.now()/30;ctx.beginPath();ctx.arc(0,0,pressure.radius*pulse,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.rotate(performance.now()/900);for(let i=0;i<8;i++){ctx.rotate(Math.PI/4);ctx.strokeRect(pressure.radius*.66,-7,14,14);}ctx.setLineDash([]);}
     else if(pressure.type==='sporeBloom'){ctx.translate(pressure.x,pressure.y);ctx.scale(1,.55);ctx.fillStyle=`${pressure.color}${warning?'20':'35'}`;ctx.strokeStyle=warning?'#e8ffd7':pressure.color;ctx.shadowColor=pressure.color;ctx.shadowBlur=28;ctx.lineWidth=5;ctx.setLineDash(warning?[18,10]:[]);ctx.lineDashOffset=-performance.now()/35;ctx.beginPath();ctx.arc(0,0,pressure.radius*pulse,0,Math.PI*2);ctx.fill();ctx.stroke();for(let i=0;i<7;i++){const a=i/7*Math.PI*2+performance.now()/1100;ctx.beginPath();ctx.arc(Math.cos(a)*pressure.radius*.58,Math.sin(a)*pressure.radius*.58,8+Math.sin(a*4)*3,0,Math.PI*2);ctx.fill();}ctx.setLineDash([]);}
+    else if(pressure.type==='eclipseRift'){ctx.translate(pressure.x,pressure.y);ctx.scale(1,.58);ctx.fillStyle=warning?'rgba(184,77,255,.12)':'rgba(42,5,72,.62)';ctx.strokeStyle=warning?'#f1d6ff':pressure.color;ctx.shadowColor=pressure.color;ctx.shadowBlur=warning?24:42;ctx.lineWidth=warning?5+p*5:11;ctx.setLineDash(warning?[26,12,7,10]:[]);ctx.lineDashOffset=-performance.now()/24;ctx.beginPath();ctx.arc(0,0,pressure.radius*pulse,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.rotate(-performance.now()/760);for(let i=0;i<6;i++){ctx.rotate(Math.PI/3);ctx.beginPath();ctx.moveTo(pressure.radius*.38,-14);ctx.lineTo(pressure.radius*.74,0);ctx.lineTo(pressure.radius*.38,14);ctx.stroke();}ctx.setLineDash([]);}
     else{ctx.translate(pressure.x,pressure.y);ctx.rotate(pressure.angle);const storm=pressure.type==='stormSurge',neon=pressure.type==='firewallGrid',grad=ctx.createLinearGradient(0,-pressure.width,0,pressure.width);grad.addColorStop(0,storm?'rgba(49,232,255,0)':neon?'rgba(255,58,184,0)':'rgba(255,42,40,0)');grad.addColorStop(.5,warning?(storm?'rgba(100,245,255,.2)':neon?'rgba(72,239,255,.22)':'rgba(255,180,70,.18)'):(storm?'rgba(40,190,255,.45)':neon?'rgba(255,58,184,.48)':'rgba(255,74,30,.42)'));grad.addColorStop(1,storm?'rgba(49,232,255,0)':neon?'rgba(255,58,184,0)':'rgba(255,42,40,0)');ctx.fillStyle=grad;ctx.strokeStyle=warning?(storm?'#d6ffff':neon?'#62f5ff':'#ffd06a'):pressure.color;ctx.shadowColor=pressure.color;ctx.shadowBlur=neon?34:26;ctx.lineWidth=warning?4:11;ctx.setLineDash(warning?[32,16,7,12]:[]);ctx.lineDashOffset=-performance.now()/25;ctx.fillRect(-pressure.length/2,-pressure.width,pressure.length,pressure.width*2);ctx.beginPath();ctx.moveTo(-pressure.length/2,0);ctx.lineTo(pressure.length/2,0);ctx.stroke();if(neon){ctx.strokeStyle=warning?'rgba(247,239,105,.75)':'#f7ef69';ctx.lineWidth=warning?2:5;for(let x=-pressure.length/2;x<pressure.length/2;x+=115){ctx.beginPath();ctx.moveTo(x,-pressure.width*.55);ctx.lineTo(x+58,pressure.width*.55);ctx.stroke();}}ctx.setLineDash([]);}
     ctx.restore();
   }
   for(const signature of effects.guardianSignatures){
-    const p=1-signature.life/signature.maxLife;const impact=signature.stage===1;const frame=signature.row*3+(impact?(p>.58?2:1):0);const size=signature.radius*(impact?2.95:2.5);if(signature.neon)drawAtlasFrame(assets.neonCityVfx,impact?5:3,signature.x,signature.y-24,size*1.25,size,0,clamp(signature.life/.12,0,1)*(impact?1:.84),signature.color);else if(signature.storm)drawAtlasFrame(assets.stormCoastVfx,impact?5:3,signature.x,signature.y-24,size*1.18,size*.94,0,clamp(signature.life/.12,0,1)*(impact?1:.82),signature.color);else drawGridAtlasFrame(assets.guardianSignatureVfx,frame,3,3,signature.x,signature.y-24,size,size*.72,0,clamp(signature.life/.12,0,1)*(impact?1:.82),signature.color);
+    const p=1-signature.life/signature.maxLife;const impact=signature.stage===1;const frame=signature.row*3+(impact?(p>.58?2:1):0);const size=signature.radius*(impact?2.95:2.5);if(signature.shadow)drawAtlasFrame(assets.shadowRealmVfx,impact?5:3,signature.x,signature.y-24,size*1.2,size*.94,0,clamp(signature.life/.12,0,1)*(impact?1:.86),signature.color);else if(signature.neon)drawAtlasFrame(assets.neonCityVfx,impact?5:3,signature.x,signature.y-24,size*1.25,size,0,clamp(signature.life/.12,0,1)*(impact?1:.84),signature.color);else if(signature.storm)drawAtlasFrame(assets.stormCoastVfx,impact?5:3,signature.x,signature.y-24,size*1.18,size*.94,0,clamp(signature.life/.12,0,1)*(impact?1:.82),signature.color);else drawGridAtlasFrame(assets.guardianSignatureVfx,frame,3,3,signature.x,signature.y-24,size,size*.72,0,clamp(signature.life/.12,0,1)*(impact?1:.82),signature.color);
     if(!impact){ctx.save();ctx.translate(signature.x,signature.y);ctx.scale(1,.58);ctx.strokeStyle=signature.color;ctx.shadowColor=signature.color;ctx.shadowBlur=18;ctx.lineWidth=5+p*6;ctx.setLineDash([30,14,8,11]);ctx.lineDashOffset=-performance.now()/24;ctx.beginPath();ctx.arc(0,0,signature.radius*(.72+p*.28),0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();}
   }
   for(const hazard of effects.enemyHazards){
@@ -3238,7 +3273,8 @@ function drawEffects() {
   }
   for (const projectile of effects.projectiles) {
     const angle=Math.atan2(projectile.vy,projectile.vx);const frame=2+Math.floor(performance.now()/78+projectile.x*.01)%3;
-    if(projectile.neon)drawAtlasFrame(assets.neonCityVfx,1,projectile.x,projectile.y,152,92,angle,clamp(projectile.life/.2,0,1),projectile.color);
+    if(projectile.shadow)drawAtlasFrame(assets.shadowRealmVfx,1,projectile.x,projectile.y,178,112,angle,clamp(projectile.life/.2,0,1),projectile.color);
+    else if(projectile.neon)drawAtlasFrame(assets.neonCityVfx,1,projectile.x,projectile.y,152,92,angle,clamp(projectile.life/.2,0,1),projectile.color);
     else if(projectile.crimson)drawAtlasFrame(assets.crimsonCombatVfx,projectile.vfxFrame??1,projectile.x,projectile.y,projectile.vfxFrame===4?210:130,projectile.vfxFrame===4?118:130,angle,clamp(projectile.life/.2,0,1),projectile.color);
     else drawAtlasFrame(assets.spiritArrowVfx,frame,projectile.x,projectile.y,132,72,angle,clamp(projectile.life/.2,0,1),projectile.color);
   }
