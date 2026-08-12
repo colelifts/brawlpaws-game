@@ -111,18 +111,21 @@ export const BOSS_PATTERNS = {
 export const BOSS_PROFILES = {
   jadeguardTanuki: {
     id:'jadeguardTanuki', sweepRange:390, sweepDamage:18, slamDamage:22, radialBase:10, crossfireDamage:24, crossfireWidth:72, crossfireLanes:2,
+    phaseTempo:{1:1,2:.93,3:.82},domainIntervals:{2:9.2,3:6.7},domainName:'BELLSTORM DOMAIN',
     signatureName:'Thousand-Bell Spiral',signatureRow:0,signatureDamage:24,signatureDescription:'Jade bells wind into a rotating projectile spiral. Read the gaps and rotate with them.',
     phaseNames:{1:'AWAKENED GUARDIAN',2:'SPIRIT FURY',3:'JADE ENRAGED'},
     schedules:{1:['sweep','slam','channel'],2:['signature','sweep','channel','slam','crossfire'],3:['signature','channel','crossfire','sweep','slam','signature']}
   },
   moonfangKomainu: {
     id:'moonfangKomainu', sweepRange:450, sweepDamage:22, slamDamage:27, radialBase:14, crossfireDamage:29, crossfireWidth:78, crossfireLanes:3,
+    phaseTempo:{1:1,2:.9,3:.76},domainIntervals:{2:8.2,3:5.8},domainName:'MOONBLOOM DOMAIN',
     signatureName:'Lunar Hunt',signatureRow:1,signatureDamage:31,signatureDescription:'Three moon-claw marks predict your path, then collapse in sequence. Change direction after they lock.',
     phaseNames:{1:'AWAKENED GUARDIAN',2:'MOON HUNGER',3:'HOLLOW ENRAGED'},
     schedules:{1:['sweep','slam','channel'],2:['signature','sweep','crossfire','slam','channel'],3:['signature','crossfire','sweep','channel','slam','signature']}
   },
   pyreclawShogun: {
     id:'pyreclawShogun', sweepRange:500, sweepDamage:28, slamDamage:32, radialBase:0, crossfireDamage:36, crossfireWidth:84, crossfireLanes:4,
+    phaseTempo:{1:.96,2:.86,3:.72},domainIntervals:{2:7.2,3:4.9},domainName:'ONI-FIRE DOMAIN',
     signatureName:'Oni Eruption',signatureRow:2,signatureDamage:42,signatureDescription:'Oni seals bloom beneath your escape routes and erupt one after another. Keep moving through the open seam.',
     phaseNames:{1:'AWAKENED GUARDIAN',2:'INFERNO OATH',3:'SHOGUN UNBOUND'},
     schedules:{1:['sweep','signature','slam','channel'],2:['signature','sweep','channel','crossfire','slam'],3:['signature','crossfire','channel','sweep','signature','slam','channel']}

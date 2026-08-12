@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { ENCOUNTERS } from '../src/data.js';
+import { BOSS_PROFILES, ENCOUNTERS } from '../src/data.js';
+import { encounterActiveLimit } from '../src/math.js';
 
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const game=readFileSync(new URL('../src/game.js',import.meta.url),'utf8');
@@ -390,4 +391,19 @@ test('every unlocked ability earns a behavior-changing late-run evolution',()=>{
   assert.match(game,/function triggerHeavensVerdict\(/);
   assert.match(game,/storm\.verdict&&!storm\.verdictResolved/);
   assert.match(game,/debugSystem==='evolutions'/);
+});
+
+test('late armies and guardians escalate pressure without changing the tutorial opening',()=>{
+  assert.equal(encounterActiveLimit({waveIndex:0,chapterIndex:0,difficultyId:'ferocious'}),8);
+  assert.ok(encounterActiveLimit({waveIndex:5,chapterIndex:2,difficultyId:'ferocious'})>=54);
+  assert.ok(encounterActiveLimit({waveIndex:5,chapterIndex:2,difficultyId:'nightmare'})>=60);
+  assert.match(game,/const spawnDuration=Math\.max\(\.42,1\.35-index\*\.15-chapterIndex\*\.08\)/);
+  assert.match(game,/const angle=i\*2\.3999632297\+index\*\.73/);
+  assert.match(game,/return Math\.min\(ceiling,staged\)/);
+  assert.match(game,/Math\.min\(2\.35,1\+\(rawSpeedScale-1\)\*\.58\)/);
+  assert.match(game,/abilityEvolutions\|\|\{\}\)\.filter\(Boolean\)\.length\*\.16/);
+  for(const guardian of Object.values(BOSS_PROFILES)){assert.ok(guardian.phaseTempo[3]<guardian.phaseTempo[2]);assert.ok(guardian.domainIntervals[3]<guardian.domainIntervals[2]);assert.ok(guardian.domainName);}
+  for(const fn of ['bossDomainInterval','triggerBossDomain','updateBossDomain'])assert.match(game,new RegExp(`function ${fn}\\(`));
+  assert.match(game,/updateBossDomain\(enemy,profile,dt\)/);
+  assert.match(game,/enemy\.patternWindup=pattern\.windup\*tempo/);
 });

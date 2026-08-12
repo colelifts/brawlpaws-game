@@ -15,9 +15,10 @@ export const withinArc = (origin, facing, target, range, arc) => {
     && Math.abs(shortestAngle(facing, Math.atan2(dy, dx))) <= arc / 2;
 };
 export function encounterActiveLimit({ waveIndex = 0, chapterIndex = 0, difficultyId = 'ferocious', partySize = 1, elite = false } = {}) {
-  const difficultyBonus = difficultyId === 'ascension' ? 7 : difficultyId === 'nightmare' ? 5 : difficultyId === 'spirited' ? -2 : 0;
-  const partyBonus = Math.max(0, partySize - 1) * 5;
-  return clamp(Math.round(8 + waveIndex * 3 + chapterIndex * 3 + difficultyBonus + partyBonus + (elite ? 3 : 0)), 6, 44);
+  const difficultyBonus = difficultyId === 'ascension' ? 11 : difficultyId === 'nightmare' ? 7 : difficultyId === 'spirited' ? -2 : 0;
+  const partyBonus = Math.max(0, partySize - 1) * 6;
+  const waveRamp = waveIndex * 4 + Math.max(0, waveIndex - 1) ** 2;
+  return clamp(Math.round(8 + waveRamp + chapterIndex * 5 + difficultyBonus + partyBonus + (elite ? 3 : 0)), 6, 72);
 }
 export function cappedWardPressure(rawDamagePerSecond, maxHealth, duration) {
   const survivalWindow = Math.max(18, duration * .62);

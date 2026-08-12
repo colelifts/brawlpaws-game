@@ -17,8 +17,8 @@ test('army reserves cap simultaneous threats while preserving difficulty and co-
   assert.equal(encounterActiveLimit({waveIndex:0,chapterIndex:0}),8);
   const lateSolo=encounterActiveLimit({waveIndex:5,chapterIndex:2,difficultyId:'nightmare'});
   const lateCoop=encounterActiveLimit({waveIndex:5,chapterIndex:2,difficultyId:'nightmare',partySize:4});
-  assert.equal(lateSolo,34);
-  assert.equal(lateCoop,44);
+  assert.equal(lateSolo,61);
+  assert.equal(lateCoop,72);
   assert.ok(lateSolo>encounterActiveLimit({waveIndex:1,chapterIndex:0,difficultyId:'spirited'}));
   assert.equal(cappedWardPressure(999,520,40),520/(40*.62));
   assert.equal(cappedWardPressure(8,520,40),8);

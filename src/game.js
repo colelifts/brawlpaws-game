@@ -206,8 +206,8 @@ function activeDifficulty(){
 
 function expectedPowerForProgress(progress){return 1+progress*.18;}
 function currentBuildPower(){
-  if(!player)return 1;const abilityRanks=Object.values(player.abilityPower).reduce((sum,value)=>sum+Math.max(0,value-1),0)*.28;const unlockPower=player.unlockedAbilities.size*.14;const projectilePower=(player.bonusProjectiles+player.bonusPierces*.35+player.bonusRicochets*.5)*.12;const capstone=player.weaponEvolution?.2:0;
-  return .55+player.damageMultiplier*(1/Math.max(.48,player.fireRateMultiplier))*.45+abilityRanks+unlockPower+projectilePower+capstone+Math.max(0,player.level-1)*.045;
+  if(!player)return 1;const abilityRanks=Object.values(player.abilityPower).reduce((sum,value)=>sum+Math.max(0,value-1),0)*.28;const unlockPower=player.unlockedAbilities.size*.14;const projectilePower=(player.bonusProjectiles+player.bonusPierces*.35+player.bonusRicochets*.5)*.12;const capstone=player.weaponEvolution?.2:0;const evolvedPower=Object.values(player.abilityEvolutions||{}).filter(Boolean).length*.16;
+  return .55+player.damageMultiplier*(1/Math.max(.48,player.fireRateMultiplier))*.45+abilityRanks+unlockPower+projectilePower+capstone+evolvedPower+Math.max(0,player.level-1)*.045;
 }
 function createCorruptionDirector(waveIndex,saved={}){
   const progress=chapterIndex*chapter.waves.length+waveIndex;const scripted=Math.min(CORRUPTION_TIERS.length-1,Math.floor(progress/3));const ahead=currentBuildPower()/expectedPowerForProgress(progress);const adaptive=ahead>1.75?2:ahead>1.34?1:0;const tier=clamp(saved.tier??scripted+adaptive,0,CORRUPTION_TIERS.length-1);const definition=CORRUPTION_TIERS[tier];
@@ -370,7 +370,8 @@ function coopIsHost(){return coopPartySize()===1||coop.hostId===coop.id;}
 function coopPressure(){const extra=Math.max(0,coopPartySize()-1);return {health:1+extra*.62,damage:1+extra*.16,count:1+extra*.34,elite:extra*.07,reward:1+extra*.18,reinforcements:extra};}
 function activeEnemyLimit(){
   if(!encounter||encounter.bossActive||state==='dojo')return Number.POSITIVE_INFINITY;
-  return encounterActiveLimit({waveIndex:encounter.wave,chapterIndex,difficultyId:selectedDifficulty,partySize:coopPartySize(),elite:encounter.nodeType==='elite'||encounter.nodeType?.includes('Elite')});
+  const ceiling=encounterActiveLimit({waveIndex:encounter.wave,chapterIndex,difficultyId:selectedDifficulty,partySize:coopPartySize(),elite:encounter.nodeType==='elite'||encounter.nodeType?.includes('Elite')});
+  const waveIndex=Math.max(0,encounter.wave);const staged=Math.round(8+chapterIndex*3+waveIndex*1.5+(encounter.waveTime||0)*(1.5+waveIndex*.45));return Math.min(ceiling,staged);
 }
 function refreshCoopUi(message=''){
   const online=coop.connected;coopPanel?.classList.toggle('online',online);if(coopStatus)coopStatus.textContent=online?`${coopIsHost()?'HOST':'ALLY'} · ${coop.code} · ${coopPartySize()}/4`:'SOLO · OFFLINE READY';
@@ -1020,11 +1021,11 @@ function makeEnemy(spawn, index) {
   const definition = ENEMIES[spawn.type || 'jadeBrawler'];
   discoverEnemy(definition);
   const eliteDef=spawn.eliteId?ELITE_MODIFIERS[spawn.eliteId]:null;
-  const healthScale=(spawn.healthScale||1)*(eliteDef?.healthScale||1);const maxHealth=Math.round(definition.maxHealth*healthScale);const maxShield=Math.round(maxHealth*Math.max(eliteDef?.shieldScale||0,definition.guardScale||0));
+  const healthScale=(spawn.healthScale||1)*(eliteDef?.healthScale||1);const maxHealth=Math.round(definition.maxHealth*healthScale);const maxShield=Math.round(maxHealth*Math.max(eliteDef?.shieldScale||0,definition.guardScale||0));const spawnDuration=spawn.spawnDuration??1.35;
   return {
     id: ++enemyId, type: definition.id, def: definition, x: spawn.x, y: spawn.y, vx: 0, vy: 0, radius: definition.radius,
     health:maxHealth,maxHealth,shield:maxShield,maxShield,guardCooldown:0,eliteId:eliteDef?.id||null,eliteDef,eliteRewardScale:eliteDef?.rewardScale||1,splitDepth:spawn.splitDepth||0,
-    facing: Math.PI / 2, state: spawn.delay > 0 ? 'waiting' : 'enter', stateTime: spawn.delay || 1.35, spawnDuration:1.35,cooldown: 1.2 + index * .16,
+    facing: Math.PI / 2, state: spawn.delay > 0 ? 'waiting' : 'enter', stateTime: spawn.delay || spawnDuration, spawnDuration,cooldown: 1.2 + index * .16,
     flash: 0, stagger: 0, dead: false, deathTime: 0, hitPlayer: false, bob: Math.random() * Math.PI * 2,
     burnTime: 0, burnTick: 0, wetTime: 0, shockTime: 0, huntTime: 0,abilityReactTime:0,abilityReactType:'',abilityReactSeed:Math.random()*20,
     orbitAngle: Math.atan2(spawn.y - room.playerSpawn.y, spawn.x - room.playerSpawn.x),
@@ -1095,7 +1096,7 @@ function startWave(index,modifiers={}) {
   const wave = chapter.waves[index];
   const difficulty=activeDifficulty();
   Object.values(effects).forEach((list)=>list.splice(0));activateRoom(roomForWave(index),{reposition:true,announce:true,waveIndex:index,subtitle:wave.name.toUpperCase()});
-  encounter.wave=index; encounter.transitioning=false; encounter.bossActive=false;encounter.nodeType=modifiers.nodeType||'combat';encounter.modifiers={...modifiers};encounter.biomePressureClock=biomePressureInterval(index)*.72;encounter.biomePressureCount=0;corruptionDirector=createCorruptionDirector(index,modifiers.corruption);const corruption=corruptionTier();encounter.rewardScale=(modifiers.rewardScale||1)*difficulty.rewardScale*corruption.reward;enemies=[];state='playing';roomInteractable=null;spawnRoomDestructibles(index,modifiers.brokenProps||[]);spawnRoomMission(wave.mission,modifiers.missionState);refreshCorruptionHud({surge:corruptionDirector.tier>=2});
+  encounter.wave=index; encounter.waveTime=0;encounter.transitioning=false; encounter.bossActive=false;encounter.nodeType=modifiers.nodeType||'combat';encounter.modifiers={...modifiers};encounter.biomePressureClock=biomePressureInterval(index)*.72;encounter.biomePressureCount=0;corruptionDirector=createCorruptionDirector(index,modifiers.corruption);const corruption=corruptionTier();encounter.rewardScale=(modifiers.rewardScale||1)*difficulty.rewardScale*corruption.reward;enemies=[];state='playing';roomInteractable=null;spawnRoomDestructibles(index,modifiers.brokenProps||[]);spawnRoomMission(wave.mission,modifiers.missionState);refreshCorruptionHud({surge:corruptionDirector.tier>=2});
   if(PHYSICAL_ROUTE_NODES.has(encounter.nodeType)){spawnRoomInteractable(encounter.nodeType);if(modifiers.interactableUsed)roomInteractable.used=true;}
   ui.waveLabel.textContent=`CHAPTER ${chapterIndex+1}  WAVE ${index+1} / ${chapter.waves.length}`;
   const eliteNode=encounter.nodeType==='elite'||encounter.nodeType?.includes('Elite');ui.roomState.textContent=eliteNode?`MUTATED  ${wave.name.toUpperCase()}`:wave.name.toUpperCase();ui.roomState.style.color=eliteNode?'#f13b8c':index>=2?'#ff7448':'#ff38b5';
@@ -1103,9 +1104,11 @@ function startWave(index,modifiers={}) {
   const b=room.combatBounds;const party=coopPressure();
   const authoredCount=wave.targetCount||wave.roster.length;const targetCount=Math.max(wave.roster.length,Math.ceil(authoredCount*(difficulty.enemyCountScale||1)*corruption.count*party.count));const scaledRoster=Array.from({length:targetCount},(_,i)=>wave.roster[i%wave.roster.length]);
   scaledRoster.forEach((type,i)=>{
-    const angle=(i/scaledRoster.length)*Math.PI*2+index*.73;
+    const angle=i*2.3999632297+index*.73;
     const lane=(room.spawnLane??.78)+(i%3)*(room.spawnLaneStep??.07);
-    enemies.push(makeEnemy({type,eliteId:eliteModifierFor(i,index,encounter.nodeType),delay:1.35+i*wave.spawnRate/((difficulty.spawnRateScale||1)*corruption.spawn),x:b.x+Math.cos(angle)*b.radiusX*lane,y:b.y+Math.sin(angle)*b.radiusY*lane,healthScale:wave.healthScale*(modifiers.healthScale||1)*difficulty.healthScale*corruption.health*party.health,speedScale:wave.speedScale*(modifiers.speedScale||1)*difficulty.speedScale*corruption.speed,damageScale:wave.damageScale*(modifiers.damageScale||1)*difficulty.damageScale*corruption.damage*party.damage},i));
+    const spawnDuration=Math.max(.42,1.35-index*.15-chapterIndex*.08);
+    const rawSpeedScale=wave.speedScale*(modifiers.speedScale||1)*difficulty.speedScale*corruption.speed;const speedScale=rawSpeedScale<=1?rawSpeedScale:Math.min(2.35,1+(rawSpeedScale-1)*.58);
+    enemies.push(makeEnemy({type,eliteId:eliteModifierFor(i,index,encounter.nodeType),delay:spawnDuration+i*wave.spawnRate/((difficulty.spawnRateScale||1)*corruption.spawn),spawnDuration,x:b.x+Math.cos(angle)*b.radiusX*lane,y:b.y+Math.sin(angle)*b.radiusY*lane,healthScale:wave.healthScale*(modifiers.healthScale||1)*difficulty.healthScale*corruption.health*party.health,speedScale,damageScale:wave.damageScale*(modifiers.damageScale||1)*difficulty.damageScale*corruption.damage*party.damage},i));
   });
   spawnWord(player.x,player.y-110,`WAVE ${index+1}!`,index>=2?'#ff6a43':'#56edff');
   if(roomMission?.type!=='eliminate')setTimeout(()=>{if(state==='playing'&&roomMission)spawnWord(player.x,player.y-145,roomMission.title,roomMission.color);},420);
@@ -1153,7 +1156,7 @@ function spawnBoss({restoring=false}={}) {
   const difficulty=activeDifficulty();corruptionDirector=createCorruptionDirector(chapter.waves.length);const corruption=corruptionTier(),party=coopPressure();refreshCorruptionHud({surge:true});
   const bossEntranceY=b.y+(chapter.id==='crimsonChapter'?390:280);
   const boss=makeEnemy({type:chapter.boss,x:b.x+330,y:bossEntranceY,delay:.25,healthScale:difficulty.healthScale*corruption.health*party.health,speedScale:difficulty.speedScale*corruption.speed,damageScale:difficulty.damageScale*corruption.damage*party.damage},0);
-  boss.state='waiting'; boss.stateTime=.25; enemies.push(boss);
+  boss.state='waiting'; boss.stateTime=.25;boss.domainClock=Number.POSITIVE_INFINITY; enemies.push(boss);
   const bossDef=ENEMIES[chapter.boss];
   ui.waveLabel.textContent=`CHAPTER ${chapterIndex+1}  BOSS`; ui.roomState.textContent=chapter.id==='crimsonChapter'?'INFERNO OATH':chapter.id==='bambooChapter'?'MOON HUNGER':'SPIRIT FURY'; ui.roomState.style.color=bossDef.color;
   ui.objective.textContent=`DEFEAT ${bossDef.name.toUpperCase()}`; ui.bossName.textContent=bossDef.name.toUpperCase(); ui.bossPanel.classList.add('active');
@@ -1935,6 +1938,22 @@ function summonBossGuard(enemy, phase) {
   spawnWord(enemy.x,enemy.y-190,crimson?(phase===2?'WARHOST!':'SHOGUN FURY!'):bamboo?(phase===2?'MOON PACK!':'HOLLOW FURY!'):(phase===2?'SPIRIT GUARD!':'JADE FURY!'),enemy.def.color);
 }
 
+function bossDomainInterval(enemy,profile){
+  const base=profile.domainIntervals?.[enemy.bossPhase]||999;const difficulty=selectedDifficulty==='ascension'?.78:selectedDifficulty==='nightmare'?.86:selectedDifficulty==='spirited'?1.14:1;return base*difficulty;
+}
+
+function triggerBossDomain(enemy,profile){
+  const b=room.combatBounds;const crimson=enemy.def.id==='pyreclawShogun',moon=enemy.def.id==='moonfangKomainu';enemy.domainCount=(enemy.domainCount||0)+1;
+  if(crimson){const angle=Math.atan2(player.y-b.y,player.x-b.x)+(enemy.domainCount%2?Math.PI/2:0);effects.biomePressures.push({type:'emberLane',x:b.x,y:b.y,angle,width:76+enemy.bossPhase*12,length:b.radiusX*2.25,damage:Math.round((10+enemy.bossPhase*4)*enemy.damageScale),color:'#ff5b27',life:1.05,maxLife:1.05,activeDuration:1.35,stage:'warning',triggered:false,index:enemy.domainCount});}
+  else if(moon){const angle=enemy.domainCount*2.11,lane=.34+(enemy.domainCount%3)*.14;effects.biomePressures.push({type:'sporeBloom',x:b.x+Math.cos(angle)*b.radiusX*lane,y:b.y+Math.sin(angle)*b.radiusY*lane,radius:185+enemy.bossPhase*18,damage:Math.round((6+enemy.bossPhase*2)*enemy.damageScale),color:'#58f6d0',life:1.15,maxLife:1.15,activeDuration:3.8,slow:.36,stage:'warning',triggered:false,index:enemy.domainCount});}
+  else{const lead=.36;effects.biomePressures.push({type:'bellEcho',x:clamp(player.x+player.vx*lead,b.x-b.radiusX*.74,b.x+b.radiusX*.74),y:clamp(player.y+player.vy*lead,b.y-b.radiusY*.74,b.y+b.radiusY*.74),radius:155+enemy.bossPhase*14,damage:Math.round((8+enemy.bossPhase*3)*enemy.damageScale),color:'#8cff39',life:1.2,maxLife:1.2,stage:'warning',triggered:false,index:enemy.domainCount});}
+  spawnWord(enemy.x,enemy.y-212,profile.domainName,enemy.def.color);playSfx(crimson?'fire':moon?'water':'lightning',.34,.78);
+}
+
+function updateBossDomain(enemy,profile,dt){
+  if(enemy.bossPhase<2)return;enemy.domainClock=(Number.isFinite(enemy.domainClock)?enemy.domainClock:bossDomainInterval(enemy,profile))-dt;if(enemy.domainClock<=0){enemy.domainClock=bossDomainInterval(enemy,profile);triggerBossDomain(enemy,profile);}
+}
+
 function fireBossRadial(enemy,count){
   const bamboo=enemy.def.biome==='bamboo';const crimson=enemy.def.biome==='crimson';const speed=crimson?610:bamboo?540:470;
   for(let i=0;i<count;i++){const angle=i/count*Math.PI*2+enemy.patternIndex*.19;effects.projectiles.push({x:enemy.x+Math.cos(angle)*95,y:enemy.y+Math.sin(angle)*70-42,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,radius:crimson?22:bamboo?20:17,color:enemy.def.color,damage:Math.round(((crimson?21:bamboo?17:14)+enemy.bossPhase*2)*enemy.damageScale),life:3.6,maxLife:3.6,boss:true});}
@@ -1965,13 +1984,13 @@ function fireBossCrossfire(enemy,profile){
 }
 
 function prepareBossSignature(enemy,profile){
-  const b=room.combatBounds;const lead=enemy.def.id==='moonfangKomainu'?.48:.28;const count=enemy.def.id==='pyreclawShogun'?3+enemy.bossPhase:enemy.def.id==='moonfangKomainu'?3:1;
+  const b=room.combatBounds;const lead=enemy.def.id==='moonfangKomainu'?.48:.28;const count=enemy.def.id==='pyreclawShogun'?2+Math.floor(enemy.bossPhase/2):enemy.def.id==='moonfangKomainu'?3:1;
   enemy.signatureTargets=Array.from({length:count},(_,index)=>{
     if(enemy.def.id==='jadeguardTanuki')return {x:enemy.x,y:enemy.y+10,radius:430};
     const spread=index-(count-1)/2;const x=player.x+player.vx*lead+spread*(enemy.def.id==='pyreclawShogun'?205:175);const y=player.y+player.vy*lead+(index%2?115:-55);
-    return {x:clamp(x,b.x-b.radiusX*.86,b.x+b.radiusX*.86),y:clamp(y,b.y-b.radiusY*.84,b.y+b.radiusY*.84),radius:enemy.def.id==='pyreclawShogun'?148:138};
+    return {x:clamp(x,b.x-b.radiusX*.86,b.x+b.radiusX*.86),y:clamp(y,b.y-b.radiusY*.84,b.y+b.radiusY*.84),radius:enemy.def.id==='pyreclawShogun'?132:138};
   });
-  const warningLife=BOSS_PATTERNS.signature.windup+BOSS_PATTERNS.signature.action-BOSS_PATTERNS.signature.resolveAt;
+  const warningLife=enemy.stateTime+BOSS_PATTERNS.signature.action-BOSS_PATTERNS.signature.resolveAt;
   for(const target of enemy.signatureTargets)effects.guardianSignatures.push({x:target.x,y:target.y,radius:target.radius,row:profile.signatureRow,stage:0,life:warningLife,maxLife:warningLife,color:enemy.def.color,ownerId:enemy.id});
   spawnWord(enemy.x,enemy.y-205,profile.signatureName.toUpperCase(),enemy.def.color);playTone(enemy.def.id==='pyreclawShogun'?58:enemy.def.id==='moonfangKomainu'?130:210,.5,'sawtooth',.055,240);
 }
@@ -1992,7 +2011,8 @@ function updateBoss(enemy,dt){
   const bamboo=enemy.def.biome==='bamboo';const crimson=enemy.def.biome==='crimson';const bossColor=enemy.def.color;const profile=BOSS_PROFILES[enemy.def.id];const sweepRange=profile.sweepRange;
   enemy.stateTime-=dt;enemy.contactCooldown=Math.max(0,(enemy.contactCooldown||0)-dt);
   const healthRatio=enemy.health/enemy.maxHealth;const nextPhase=healthRatio<=.33?3:healthRatio<=.67?2:1;
-  if(nextPhase>enemy.bossPhase){enemy.bossPhase=nextPhase;enemy.state='bossEnrage';enemy.stateTime=1.35;enemy.patternHit=false;player.ultimateFlash=.12;camera.shake=20;ui.bossPhase.textContent=profile.phaseNames[nextPhase];if(!enemy.phaseTriggered[nextPhase]){enemy.phaseTriggered[nextPhase]=true;summonBossGuard(enemy,nextPhase);}}
+  if(nextPhase>enemy.bossPhase){enemy.bossPhase=nextPhase;enemy.domainClock=bossDomainInterval(enemy,profile)*.55;enemy.state='bossEnrage';enemy.stateTime=1.35;enemy.patternHit=false;player.ultimateFlash=.12;camera.shake=20;ui.bossPhase.textContent=profile.phaseNames[nextPhase];if(!enemy.phaseTriggered[nextPhase]){enemy.phaseTriggered[nextPhase]=true;summonBossGuard(enemy,nextPhase);}}
+  updateBossDomain(enemy,profile,dt);
   const toPlayer=normalize(player.x-enemy.x,player.y-enemy.y);const dist=distance(enemy,player);enemy.facing=approachAngle(enemy.facing,Math.atan2(toPlayer.y,toPlayer.x),clamp(dt*4,0,1));
   if(dist<enemy.radius+player.radius+8&&enemy.contactCooldown<=0){enemy.contactCooldown=1.1;hurtPlayer(Math.round(enemy.def.contactDamage*.65*enemy.damageScale),enemy);}
   if(enemy.state==='enter'){enemy.vx*=.84;enemy.vy*=.84;if(enemy.stateTime<=0){enemy.state='bossIdle';enemy.stateTime=1.1;const entranceName=enemy.def.id==='pyreclawShogun'?'PYRECLAW!':enemy.def.id==='moonfangKomainu'?'MOONFANG!':'JADEGUARD!';spawnWord(enemy.x,enemy.y-180,entranceName,bossColor);}return;}
@@ -2036,7 +2056,7 @@ function updateBoss(enemy,dt){
     return;
   }
   const preferred=dist>420?1:dist<250?-1:0;enemy.vx=lerp(enemy.vx,toPlayer.x*enemy.def.speed*enemy.speedScale*preferred,clamp(dt*2.7,0,1));enemy.vy=lerp(enemy.vy,toPlayer.y*enemy.def.speed*enemy.speedScale*preferred,clamp(dt*2.7,0,1));enemy.x+=enemy.vx*dt;enemy.y+=enemy.vy*dt;keepInArena(enemy);
-  if(enemy.stateTime<=0){const schedule=profile.schedules[enemy.bossPhase];const pattern=BOSS_PATTERNS[schedule[enemy.patternIndex++%schedule.length]];enemy.activePattern=pattern.id;enemy.state=pattern.windupState;enemy.stateTime=pattern.windup;enemy.patternHit=false;if(pattern.id==='crossfire'){enemy.patternTargetX=player.x;enemy.patternTargetY=player.y;enemy.patternAngle=Math.atan2(player.y-enemy.y,player.x-enemy.x)+enemy.bossPhase*.17;}if(pattern.id==='signature'){enemy.signaturePrepared=false;enemy.signatureTargets=null;}}
+  if(enemy.stateTime<=0){const schedule=profile.schedules[enemy.bossPhase];const pattern=BOSS_PATTERNS[schedule[enemy.patternIndex++%schedule.length]];const tempo=profile.phaseTempo?.[enemy.bossPhase]||1;enemy.activePattern=pattern.id;enemy.state=pattern.windupState;enemy.patternWindup=pattern.windup*tempo;enemy.stateTime=enemy.patternWindup;enemy.patternHit=false;if(pattern.id==='crossfire'){enemy.patternTargetX=player.x;enemy.patternTargetY=player.y;enemy.patternAngle=Math.atan2(player.y-enemy.y,player.x-enemy.x)+enemy.bossPhase*.17;}if(pattern.id==='signature'){enemy.signaturePrepared=false;enemy.signatureTargets=null;}}
 }
 
 function summonBellweaverGuard(enemy){
@@ -2067,6 +2087,7 @@ function throwPowderkegBomb(enemy){
 }
 
 function updateEnemies(dt) {
+  if(!encounter.bossActive)encounter.waveTime=(encounter.waveTime||0)+dt;
   const alive = enemies.filter((enemy) => !enemy.dead);
   const activeCombatants=alive.filter((enemy)=>enemy.state!=='waiting');
   let activationSlots=Math.max(0,activeEnemyLimit()-activeCombatants.length);
@@ -2079,7 +2100,7 @@ function updateEnemies(dt) {
     if (enemy.state === 'waiting') {
       enemy.stateTime -= dt;
       if (enemy.stateTime <= 0 && activationSlots > 0) {
-        enemy.state = 'enter'; enemy.stateTime = 1.35;
+        enemy.state = 'enter'; enemy.stateTime = enemy.spawnDuration||1.35;
         activationSlots--;activeCombatants.push(enemy);
         effects.rings.push({ x: enemy.x, y: enemy.y, radius: 12, maxRadius: 84 * enemy.def.scale, color: enemy.def.color, life: .6, maxLife: .6 });
         burst(enemy.x, enemy.y, enemy.def.color, 16, 190, 4);
@@ -2761,7 +2782,7 @@ function directionIndex(angle) {
 function enemyMotion(enemy){
   const moving=!enemy.dead&&['chase','bossIdle'].includes(enemy.state)&&Math.hypot(enemy.vx||0,enemy.vy||0)>24;
   const t=performance.now()/1000+(enemy.spawnIndex||0)*.31;let x=0,y=moving?Math.abs(Math.sin(t*10))*-4:0,rotation=moving?Math.sin(t*10)*.028:0,scaleX=1,scaleY=1,filter='none';
-  if(enemy.state==='enter'){const p=clamp(1-enemy.stateTime/1.35,0,1);y=18*(1-p);scaleX=1+.04*Math.sin(p*Math.PI);scaleY=.92+.08*p;}
+  if(enemy.state==='enter'){const p=clamp(1-enemy.stateTime/(enemy.spawnDuration||1.35),0,1);y=18*(1-p);scaleX=1+.04*Math.sin(p*Math.PI);scaleY=.92+.08*p;}
   if(enemy.abilityReactTime>0){const p=enemy.abilityReactTime/(enemy.abilityReactType==='shock'?.48:enemy.abilityReactType==='burn'?.38:.44),wave=Math.sin(t*48+enemy.abilityReactSeed);if(enemy.abilityReactType==='shock'){x=wave*7;y+=Math.cos(t*55)*4;rotation=wave*.07;filter='brightness(1.75) saturate(1.8) hue-rotate(18deg)';}else if(enemy.abilityReactType==='burn'){x=wave*3;rotation=wave*.055;scaleX=1.08;scaleY=.92;filter='brightness(1.35) saturate(1.7) sepia(.35)';}else{y+=7;rotation=-Math.cos(enemy.facing)*.09;scaleX=1.12;scaleY=.84;filter='brightness(1.35) saturate(1.45) hue-rotate(145deg)';}}
   return {x,y,rotation,scaleX,scaleY,filter,moving};
 }
@@ -2785,13 +2806,13 @@ function drawBoss(enemy){
   const motion=enemyMotion(enemy);drawContactShadow(enemy.x,enemy.y+26,crimson?88:bamboo?82:76,crimson?18:bamboo?17:16,.42*alpha);drawEnemyStatusBack(enemy,340,245);
   ctx.save();ctx.translate(enemy.x,enemy.y);
   if(enemy.state==='bossWindupSweep'){
-    const p=1-clamp(enemy.stateTime/.95,0,1);ctx.rotate(enemy.facing);ctx.fillStyle=`rgba(255,48,88,${.08+p*.14})`;ctx.strokeStyle=`rgba(255,66,101,${.55+p*.4})`;ctx.lineWidth=8;ctx.shadowColor='#ff315f';ctx.shadowBlur=18;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,enemy.def.attackRange+60,-1.74,1.74);ctx.closePath();ctx.fill();ctx.stroke();
+    const p=1-clamp(enemy.stateTime/(enemy.patternWindup||BOSS_PATTERNS.sweep.windup),0,1);ctx.rotate(enemy.facing);ctx.fillStyle=`rgba(255,48,88,${.08+p*.14})`;ctx.strokeStyle=`rgba(255,66,101,${.55+p*.4})`;ctx.lineWidth=8;ctx.shadowColor='#ff315f';ctx.shadowBlur=18;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,enemy.def.attackRange+60,-1.74,1.74);ctx.closePath();ctx.fill();ctx.stroke();
   } else if(enemy.state==='bossWindupSlam'){
-    const p=1-clamp(enemy.stateTime/1.25,0,1);ctx.fillStyle=`rgba(255,42,84,${.07+p*.14})`;ctx.strokeStyle=`rgba(255,58,92,${.5+p*.48})`;ctx.lineWidth=9;ctx.setLineDash([42,16,9,14]);ctx.lineDashOffset=-performance.now()/35;ctx.beginPath();ctx.arc(0,12,enemy.def.slamRadius,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.setLineDash([]);
+    const p=1-clamp(enemy.stateTime/(enemy.patternWindup||BOSS_PATTERNS.slam.windup),0,1);ctx.fillStyle=`rgba(255,42,84,${.07+p*.14})`;ctx.strokeStyle=`rgba(255,58,92,${.5+p*.48})`;ctx.lineWidth=9;ctx.setLineDash([42,16,9,14]);ctx.lineDashOffset=-performance.now()/35;ctx.beginPath();ctx.arc(0,12,enemy.def.slamRadius,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.setLineDash([]);
   } else if(enemy.state==='bossChannel'){
     const p=1-clamp(enemy.stateTime/1.45,0,1);ctx.strokeStyle=crimson?`rgba(255,91,39,${.5+p*.5})`:bamboo?`rgba(65,245,218,${.45+p*.5})`:`rgba(140,255,57,${.45+p*.5})`;ctx.lineWidth=6;ctx.shadowColor=bossColor;ctx.shadowBlur=24;for(let i=1;i<=3;i++){ctx.setLineDash([20+i*7,12]);ctx.lineDashOffset=(i%2?1:-1)*performance.now()/45;ctx.beginPath();ctx.arc(0,0,85+i*54+p*18,0,Math.PI*2);ctx.stroke();}ctx.setLineDash([]);
   } else if(enemy.state==='bossWindupCrossfire'||enemy.state==='bossCrossfire'){
-    const profile=BOSS_PROFILES[enemy.def.id];const active=enemy.state==='bossCrossfire';const p=active?1:1-clamp(enemy.stateTime/BOSS_PATTERNS.crossfire.windup,0,1);
+    const profile=BOSS_PROFILES[enemy.def.id];const active=enemy.state==='bossCrossfire';const p=active?1:1-clamp(enemy.stateTime/(enemy.patternWindup||BOSS_PATTERNS.crossfire.windup),0,1);
     ctx.translate(enemy.patternTargetX-enemy.x,enemy.patternTargetY-enemy.y);ctx.globalCompositeOperation='lighter';ctx.shadowColor=bossColor;ctx.shadowBlur=active?42:18;
     for(let i=0;i<profile.crossfireLanes;i++){ctx.save();ctx.rotate(enemy.patternAngle+i*Math.PI/profile.crossfireLanes);ctx.fillStyle=active?'rgba(255,245,216,.55)':`rgba(255,45,124,${.04+p*.1})`;ctx.strokeStyle=active?'#fff4c4':bossColor;ctx.lineWidth=active?12:4+p*6;ctx.setLineDash(active?[]:[32,18,8,15]);ctx.lineDashOffset=-performance.now()/26;ctx.fillRect(-1700,-profile.crossfireWidth,3400,profile.crossfireWidth*2);ctx.beginPath();ctx.moveTo(-1700,0);ctx.lineTo(1700,0);ctx.stroke();ctx.restore();}
     ctx.setLineDash([]);ctx.globalCompositeOperation='source-over';ctx.strokeStyle=active?'#fff4c4':bossColor;ctx.lineWidth=active?10:5;ctx.beginPath();ctx.arc(0,0,42+p*28,0,Math.PI*2);ctx.stroke();
@@ -2810,7 +2831,7 @@ function drawBambooEnemy(enemy) {
   const definition=enemy.def;const alpha=enemy.dead?clamp(enemy.deathTime/.72,0,1):1;
   const attacking=['windup','strike','slam','recover'].includes(enemy.state);const frame=definition.spriteColumn+(attacking?3:0);
   const sw=sheet.naturalWidth/3,sh=sheet.naturalHeight/2;
-  const sx=(frame%3)*sw,sy=Math.floor(frame/3)*sh;const baseH=184*definition.scale;const baseW=baseH*(sw/sh);const motion=enemyMotion(enemy);
+  const sx=(frame%3)*sw,sy=Math.floor(frame/3)*sh;const baseH=(definition.behavior==='heavy'?148:138)*definition.scale;const baseW=baseH*(sw/sh);const motion=enemyMotion(enemy);
   const flip=Math.cos(enemy.facing)<0?-1:1;let scaleX=1,scaleY=1,rotation=0;
   if(enemy.state==='enter'){scaleX=1;scaleY=1;}
   if(enemy.state==='windup'){scaleX=1.08;scaleY=.92;}
@@ -2819,7 +2840,7 @@ function drawBambooEnemy(enemy) {
   if(enemy.state==='stagger'){rotation=-flip*.12;scaleX=.92;scaleY=1.08;}
   if(enemy.dead){rotation=flip*(1-alpha)*1.05;scaleY=.7+alpha*.3;}
   scaleX*=motion.scaleX;scaleY*=motion.scaleY;rotation+=motion.rotation;drawContactShadow(enemy.x,enemy.y+13,definition.behavior==='heavy'?26:15,definition.behavior==='heavy'?6:4,.31*alpha);drawEnemyStatusBack(enemy,definition.behavior==='heavy'?175:125,definition.behavior==='heavy'?130:90);
-  ctx.save();ctx.globalAlpha=enemy.state==='enter'?alpha*clamp(1-enemy.stateTime/1.35,0,1):alpha;ctx.translate(enemy.x+motion.x,enemy.y+motion.y);drawEnemyTelegraph(enemy);ctx.rotate(rotation);ctx.scale(flip*scaleX,scaleY);
+  ctx.save();ctx.globalAlpha=enemy.state==='enter'?alpha*clamp(1-enemy.stateTime/(enemy.spawnDuration||1.35),0,1):alpha;ctx.translate(enemy.x+motion.x,enemy.y+motion.y);drawEnemyTelegraph(enemy);ctx.rotate(rotation);ctx.scale(flip*scaleX,scaleY);
   ctx.shadowColor=definition.color;ctx.shadowBlur=enemy.state==='windup'?18:5;ctx.filter=enemy.flash>0?'brightness(2.6) saturate(.2)':motion.filter;
   ctx.drawImage(sheet,sx,sy,sw,sh,-baseW/2,-baseH*.78,baseW,baseH);ctx.restore();ctx.filter='none';ctx.globalAlpha=1;
   if(!enemy.dead)drawEnemyHealth(enemy);
@@ -2836,10 +2857,10 @@ function drawSpecialEnemy(enemy){
   const direction=directionIndex(enemy.facing);const attacking=['windup','strike','recover'].includes(enemy.state)&&enemy.state!=='recover' || enemy.state==='recover'&&enemy.stateTime>.28;
   const moving=!attacking&&!enemy.dead&&enemy.state==='chase';const poseOffset=attacking?4:moving?2:0;
   const sw=sheet.naturalWidth/4,sh=sheet.naturalHeight/6;const sx=(direction%4)*sw,sy=(Math.floor(direction/4)+poseOffset)*sh;
-  const baseH=definition.behavior==='shield'?204:definition.behavior==='bomber'?164:definition.behavior==='assassin'?158:168;const baseW=baseH*(sw/sh);const motion=enemyMotion(enemy);
+  const baseH=definition.behavior==='shield'?176:definition.behavior==='bomber'?148:definition.behavior==='assassin'?142:152;const baseW=baseH*(sw/sh);const motion=enemyMotion(enemy);
   let scaleX=motion.scaleX,scaleY=motion.scaleY,rotation=motion.rotation;if(enemy.state==='windup'){scaleX*=1.06;scaleY*=.94;}if(enemy.state==='strike'){scaleX*=1.15;scaleY*=.88;}if(enemy.state==='stagger'){rotation-=.1;scaleX*=.94;scaleY*=1.06;}if(enemy.dead){rotation=(1-alpha)*.92;scaleY=.7+alpha*.3;}
   const shadowX=definition.behavior==='shield'?28:19;drawContactShadow(enemy.x,enemy.y+13,shadowX,shadowX*.21,.32*alpha);drawEnemyStatusBack(enemy,definition.behavior==='shield'?175:130,definition.behavior==='shield'?128:94);
-  const mistAlpha=definition.behavior==='assassin'&&enemy.state==='windup' ? .32+clamp(enemy.stateTime/definition.windup,0,1)*.58 : 1;ctx.save();ctx.translate(enemy.x,enemy.y);drawEnemyTelegraph(enemy);ctx.restore();ctx.save();ctx.globalAlpha=alpha*mistAlpha*(enemy.state==='enter'?clamp(1-enemy.stateTime/1.35,0,1):1);ctx.translate(enemy.x+motion.x,enemy.y+motion.y);ctx.rotate(rotation);ctx.scale(scaleX,scaleY);ctx.filter=enemy.flash>0?'brightness(2.55) saturate(.3)':motion.filter;ctx.shadowColor=definition.color;ctx.shadowBlur=enemy.state==='windup'?18:5;ctx.drawImage(sheet,sx,sy,sw,sh,-baseW/2,-baseH*.79,baseW,baseH);ctx.restore();ctx.filter='none';ctx.globalAlpha=1;
+  const mistAlpha=definition.behavior==='assassin'&&enemy.state==='windup' ? .32+clamp(enemy.stateTime/definition.windup,0,1)*.58 : 1;ctx.save();ctx.translate(enemy.x,enemy.y);drawEnemyTelegraph(enemy);ctx.restore();ctx.save();ctx.globalAlpha=alpha*mistAlpha*(enemy.state==='enter'?clamp(1-enemy.stateTime/(enemy.spawnDuration||1.35),0,1):1);ctx.translate(enemy.x+motion.x,enemy.y+motion.y);ctx.rotate(rotation);ctx.scale(scaleX,scaleY);ctx.filter=enemy.flash>0?'brightness(2.55) saturate(.3)':motion.filter;ctx.shadowColor=definition.color;ctx.shadowBlur=enemy.state==='windup'?18:5;ctx.drawImage(sheet,sx,sy,sw,sh,-baseW/2,-baseH*.79,baseW,baseH);ctx.restore();ctx.filter='none';ctx.globalAlpha=1;
   if(definition.behavior==='shield'&&enemy.shield>0&&!enemy.dead){const ratio=enemy.shield/enemy.maxShield;ctx.save();ctx.translate(enemy.x,enemy.y-12);ctx.rotate(enemy.facing);ctx.scale(1,.72);ctx.globalAlpha=.34+ratio*.38;ctx.strokeStyle='#ff5b3a';ctx.shadowColor='#ff3828';ctx.shadowBlur=20;ctx.lineWidth=7;ctx.setLineDash([18,7]);ctx.lineDashOffset=-performance.now()/45;ctx.beginPath();ctx.arc(0,0,69,-.78,.78);ctx.stroke();ctx.setLineDash([]);ctx.restore();}
   if(!enemy.dead)drawEnemyHealth(enemy);
 }
@@ -2872,7 +2893,7 @@ function drawEnemy(enemy) {
   if (enemy.state === 'stagger') { rotation = -flip * .12; scaleX = .92; scaleY = 1.08; }
   if (enemy.dead) { rotation = flip * (1 - alpha) * 1.05; scaleY = .72 + alpha * .28; }
   drawContactShadow(enemy.x, enemy.y + 12, definition.behavior === 'heavy' ? 23 : 14, definition.behavior === 'heavy' ? 5.5 : 3.7, .32 * alpha);drawEnemyStatusBack(enemy,definition.behavior==='heavy'?160:115,definition.behavior==='heavy'?120:86);
-  ctx.save(); ctx.globalAlpha = alpha*(enemy.state==='enter'?clamp(1-enemy.stateTime/1.35,0,1):1); ctx.translate(enemy.x+motion.x, enemy.y+motion.y); drawEnemyTelegraph(enemy);
+  ctx.save(); ctx.globalAlpha = alpha*(enemy.state==='enter'?clamp(1-enemy.stateTime/(enemy.spawnDuration||1.35),0,1):1); ctx.translate(enemy.x+motion.x, enemy.y+motion.y); drawEnemyTelegraph(enemy);
   ctx.rotate(rotation); ctx.scale(flip * scaleX, scaleY);
   ctx.shadowColor = definition.color; ctx.shadowBlur = enemy.state === 'windup' ? 18 : 5;
   ctx.filter = enemy.flash > 0 ? 'brightness(2.6) saturate(.2)' : motion.filter;
