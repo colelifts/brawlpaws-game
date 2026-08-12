@@ -60,7 +60,7 @@ const assets = {
   arena: new Image(), kitsune: new Image(), kitsuneFire: new Image(), kitsuneStates: new Image(), bamboo: new Image(), bambooFire: new Image(), bambooStates: new Image(), hopscotch: new Image(), hopscotchFire: new Image(), hopscotchStates: new Image(), rusty: new Image(), rustyFire: new Image(), rustyStates: new Image(), zap: new Image(), zapFire: new Image(), zapStates: new Image(), nomi: new Image(), nomiFire: new Image(), nomiStates: new Image(), enemies: new Image(), props: new Image(),
   archerMove: new Image(), archerAttack: new Image(), raccoonAttack: new Image(), boarAttack: new Image(),
   undertowVfx: new Image(), foxfireVfx: new Image(), wildHeartVfx: new Image(),
-  blasterShotVfx: new Image(), blasterImpactVfx: new Image(), spiritArrowVfx: new Image(), spiritArrowImpactVfx: new Image(), hopscotchArrow: new Image(), trickshotVfx: new Image(), zapArcVfx: new Image(), nomiGlaiveVfx: new Image(),
+  blasterShotVfx: new Image(), blasterImpactVfx: new Image(), spiritArrowVfx: new Image(), spiritArrowImpactVfx: new Image(), hopscotchArrow: new Image(), trickshotVfx: new Image(), zapArcVfx: new Image(), nomiGlaiveVfx: new Image(), arsenalWeaponsVfx: new Image(), arsenalReactionsVfx: new Image(),
   burnStatusVfx: new Image(), waterImpactVfx: new Image(), clawSlashVfx: new Image(), hammerSlamVfx: new Image(),
   shockImpactVfx: new Image(), shockLinkVfx: new Image(), spiritWispVfx: new Image(), lanternFlameVfx: new Image(), waterRippleVfx: new Image(),
   jadeguardTanuki: new Image(), jadeguardTanukiMove: new Image(), bambooEnemies: new Image(), bambooEnemiesMove: new Image(), moonfangKomainu: new Image(), moonfangKomainuMove: new Image(),
@@ -107,6 +107,8 @@ const assetSources = {
   trickshotVfx: 'assets/vfx/trickshot-round-alpha.png',
   zapArcVfx: 'assets/vfx/zap-arc-pulse-v1.png',
   nomiGlaiveVfx: 'assets/vfx/nomi-glaive-vfx-v1.png',
+  arsenalWeaponsVfx: 'assets/vfx/arsenal-weapons-v1.png',
+  arsenalReactionsVfx: 'assets/vfx/arsenal-reactions-v1.png',
   burnStatusVfx: 'assets/vfx/burn-status.png',
   waterImpactVfx: 'assets/vfx/water-impact.png',
   clawSlashVfx: 'assets/vfx/claw-slash.png',
@@ -287,7 +289,7 @@ function refreshProfileUi(){
 }
 
 function applyHeroUi(){
-  shell.dataset.hero=selectedHeroId;shell.style.setProperty('--hero-accent',heroDef.accent);ui.heroPortrait.style.setProperty('--hero-portrait',`url('${heroDef.portrait}')`);
+  shell.dataset.hero=selectedHeroId;shell.dataset.weapon=weapon.id;shell.style.setProperty('--hero-accent',heroDef.accent);ui.heroPortrait.style.setProperty('--hero-portrait',`url('${heroDef.portrait}')`);
   ui.heroName.textContent=heroDef.name.toUpperCase();ui.heroRole.textContent=heroDef.role.toUpperCase();ui.weaponName.textContent=weapon.name.toUpperCase();ui.dashName.textContent=heroDef.dashName.toUpperCase();
   ui.startHeroMark.style.backgroundImage=`url('${heroDef.portrait}')`;ui.startHeroName.textContent=heroDef.name.toUpperCase();
   ui.startHeroCopy.textContent=selectedHeroId==='bamboo'?`${heroDef.role}  Wide spirit cannon  ${heroDef.passiveName}`:`${heroDef.role}  Precision spirit blaster  ${heroDef.passiveName}`;
@@ -296,6 +298,13 @@ function applyHeroUi(){
   ui.comparisonWeapon.textContent=weapon.name.toUpperCase();ui.comparisonWeaponTags.textContent=weapon.tags.join(' / ');ui.comparisonWeaponCopy.textContent=weapon.summary;
   ui.comparisonWeaponStats.innerHTML=`<span><small>DAMAGE</small><b>${weapon.damage}</b></span><span><small>FIRE RATE</small><b>${(1/weapon.fireRate).toFixed(1)}/S</b></span><span><small>SHOTS</small><b>${(weapon.shots||1)*(weapon.baseVolleys||1)}</b></span><span><small>CRIT</small><b>${Math.round(weapon.criticalChance*100)}%</b></span>`;
   for(const button of document.querySelectorAll('[data-hero]'))button.classList.toggle('selected',button.dataset.hero===selectedHeroId);
+}
+
+function equipWeapon(id,{announce=false}={}){
+  const next=WEAPONS[id];if(!next)return false;weapon=next;if(player){player.weaponId=id;player.arsenalAwakened=id!==heroDef.weapon;player.attack=null;player.shotCooldown=0;}
+  shell.dataset.weapon=id;ui.weaponName.textContent=next.name.toUpperCase();
+  if(announce){spawnWord(player.x,player.y-102,`${next.name.toUpperCase()} AWAKENED!`,next.color);effects.rings.push({x:player.x,y:player.y,radius:18,maxRadius:175,color:next.color,life:.72,maxLife:.72});}
+  return true;
 }
 
 function selectHero(id,{returnToHub=false}={}){
@@ -424,7 +433,7 @@ function refreshCoopUi(message=''){
   if(coopLeaveButton)coopLeaveButton.hidden=!online;if(coopCreateButton)coopCreateButton.hidden=online;if(coopJoinButton)coopJoinButton.hidden=online;if(coopCodeInput)coopCodeInput.readOnly=online;
 }
 function coopRoomCode(){const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';const bytes=crypto.getRandomValues(new Uint8Array(5));return [...bytes].map((value)=>alphabet[value%alphabet.length]).join('');}
-function coopMember(){return {id:coop.id,name:HEROES[selectedHeroId].name,hero:selectedHeroId,x:player?.x||room.playerSpawn.x,y:player?.y||room.playerSpawn.y,facing:player?.facing||0,health:player?.health||heroDef.maxHealth,state,room:room.id};}
+function coopMember(){return {id:coop.id,name:HEROES[selectedHeroId].name,hero:selectedHeroId,weaponId:player?.weaponId||heroDef.weapon,x:player?.x||room.playerSpawn.x,y:player?.y||room.playerSpawn.y,facing:player?.facing||0,health:player?.health||heroDef.maxHealth,state,room:room.id};}
 function coopPeerId(code){return `brawlpaws-${code.toLowerCase()}`;}
 function broadcastCoop(packet,except=null){for(const connection of coop.connections.values())if(connection!==except&&connection.open)connection.send(packet);}
 function broadcastRoster(){if(!coop.isRoomHost)return;const packet={type:'roster',hostId:coop.id,members:[...coop.members.values()]};broadcastCoop(packet);handleCoopMessage(packet);}
@@ -458,8 +467,8 @@ function handleCoopMessage(raw){
   if(packet.type==='snapshot'&&!coopIsHost())applyCoopSnapshot(packet.payload);
 }
 function applyRemoteAction(playerId,heroId,payload={}){
-  const member=coop.members.get(playerId);const remoteWeapon=WEAPONS[HEROES[heroId]?.weapon];if(!member||!remoteWeapon||payload.kind!=='attack')return;const angle=Number(payload.facing)||0;const direction={x:Math.cos(angle),y:Math.sin(angle)};const pellets=remoteWeapon.shots||1;const volleys=remoteWeapon.baseVolleys||1;
-  for(let volley=0;volley<volleys;volley++)for(let i=0;i<pellets;i++){const side=volleys===1?0:(volley?1:-1),shotAngle=angle+(i-(pellets-1)/2)*(remoteWeapon.spread||0)+side*.035,glaive=remoteWeapon.projectileType==='glaive';effects.playerShots.push({x:member.x+direction.x*48-direction.y*side*12,y:member.y+direction.y*48-7+direction.x*side*12,vx:Math.cos(shotAngle)*remoteWeapon.projectileSpeed,vy:Math.sin(shotAngle)*remoteWeapon.projectileSpeed,radius:remoteWeapon.projectileRadius||9,damage:remoteWeapon.damage*.78,color:remoteWeapon.color,arrow:remoteWeapon.projectileType==='arrow',trickshot:remoteWeapon.projectileType==='trickshot',arc:remoteWeapon.projectileType==='arc',glaive,remoteOwner:glaive?member:null,returnSpeed:remoteWeapon.returnSpeed||1100,ricochets:remoteWeapon.ricochets||0,ricochetRetention:.78,pierces:glaive?99:remoteWeapon.pierces||0,hitIds:new Set(),life:remoteWeapon.projectileLife,maxLife:remoteWeapon.projectileLife});}
+  const member=coop.members.get(playerId);const remoteWeapon=WEAPONS[payload.weaponId]||WEAPONS[member?.weaponId]||WEAPONS[HEROES[heroId]?.weapon];if(!member||!remoteWeapon||payload.kind!=='attack')return;const angle=Number(payload.facing)||0;const direction={x:Math.cos(angle),y:Math.sin(angle)};const pellets=remoteWeapon.shots||1;const volleys=remoteWeapon.baseVolleys||1;
+  for(let volley=0;volley<volleys;volley++)for(let i=0;i<pellets;i++){const side=volleys===1?0:(volley?1:-1),shotAngle=angle+(i-(pellets-1)/2)*(remoteWeapon.spread||0)+side*.035,type=remoteWeapon.projectileType,glaive=type==='glaive',gale=type==='gale';effects.playerShots.push({x:member.x+direction.x*48-direction.y*side*12,y:member.y+direction.y*48-7+direction.x*side*12,vx:Math.cos(shotAngle)*remoteWeapon.projectileSpeed,vy:Math.sin(shotAngle)*remoteWeapon.projectileSpeed,radius:remoteWeapon.projectileRadius||9,damage:remoteWeapon.damage*.78,baseDamage:remoteWeapon.damage*.78,color:remoteWeapon.color,arrow:type==='arrow',trickshot:type==='trickshot',arc:type==='arc',frost:type==='frost',mortar:type==='mortar',glaive,gale,knockback:remoteWeapon.knockback,criticalChance:remoteWeapon.criticalChance,blastRadius:remoteWeapon.blastRadius,blastDamage:(remoteWeapon.blastDamage||0)*.78,remoteOwner:glaive||gale?member:null,returnSpeed:remoteWeapon.returnSpeed||1100,ricochets:remoteWeapon.ricochets||0,ricochetRetention:.78,pierces:glaive||gale?99:remoteWeapon.pierces||0,hitIds:new Set(),life:remoteWeapon.projectileLife,maxLife:remoteWeapon.projectileLife});}
   burst(member.x+direction.x*44,member.y+direction.y*44,remoteWeapon.impactColor,10,220,3);
 }
 function coopSignal(payload){if(coopIsHost())sendCoop('signal',{payload});}
@@ -470,7 +479,7 @@ function applyCoopSnapshot(payload){
 }
 function updateCoop(dt){
   if(!coop.connected||!player)return;coop.presenceClock-=dt;coop.snapshotClock-=dt;if(coop.presenceClock<=0){coop.presenceClock=.08;sendCoop('presence',{x:player.x,y:player.y,facing:player.facing,health:player.health,hero:selectedHeroId,state,room:room.id});}
-  if(coopIsHost()&&coop.snapshotClock<=0&&state==='playing'){coop.snapshotClock=.1;sendCoop('snapshot',{payload:{room:room.id,enemies:enemies.map(({id,type,x,y,vx,vy,facing,state,stateTime,health,maxHealth,shield,maxShield,dead,deathTime,burnTime,wetTime,shockTime,conductiveStacks,conductiveTime,bossPhase})=>({id,type,x,y,vx,vy,facing,state,stateTime,health,maxHealth,shield,maxShield,dead,deathTime,burnTime,wetTime,shockTime,conductiveStacks,conductiveTime,bossPhase}))}});}
+  if(coopIsHost()&&coop.snapshotClock<=0&&state==='playing'){coop.snapshotClock=.1;sendCoop('snapshot',{payload:{room:room.id,enemies:enemies.map(({id,type,x,y,vx,vy,facing,state,stateTime,health,maxHealth,shield,maxShield,dead,deathTime,burnTime,wetTime,shockTime,conductiveStacks,conductiveTime,bossPhase,chillStacks,chillTime,freezeTime})=>({id,type,x,y,vx,vy,facing,state,stateTime,health,maxHealth,shield,maxShield,dead,deathTime,burnTime,wetTime,shockTime,conductiveStacks,conductiveTime,bossPhase,chillStacks,chillTime,freezeTime}))}});}
 }
 
 const CORRUPTION_TIERS=[
@@ -543,7 +552,7 @@ function restorePlayerCheckpoint(saved){
   restored.eventHistory=new Set(Array.isArray(saved.eventHistory)?saved.eventHistory:[]);
   restored.shopPurchases=new Set(Array.isArray(saved.shopPurchases)?saved.shopPurchases:[]);
   Object.assign(player,restored,{x:room.playerSpawn.x,y:room.playerSpawn.y,vx:0,vy:0,attack:null,dashTime:0,shotCooldown:0,invulnerable:1.1,flash:0,hurtTime:0,stunTime:0,castTime:0,ultimateFlash:0,wildHeartTime:0,braceTime:0,braced:false});
-  player.health=clamp(Number(player.health)||1,1,player.maxHealth);camera.x=player.x;camera.y=player.y;camera.shake=0;resolveSynergies();
+  equipWeapon(WEAPONS[player.weaponId]?player.weaponId:heroDef.weapon);player.health=clamp(Number(player.health)||1,1,player.maxHealth);camera.x=player.x;camera.y=player.y;camera.shake=0;resolveSynergies();
 }
 
 function resumeSavedRun(){
@@ -704,6 +713,9 @@ function closeCodex(){
 }
 
 const UPGRADES = [
+  {id:'equipFrostbiteNeedle',name:'Frostbite Needle',icon:'FROST',type:'ARSENAL AWAKENING',color:'#67edff',description:'Rapid precision fire stacks Chill. The third hit freezes the enemy in a visible ice prison.',detail:'3 HITS = FREEZE',available:()=>player.level>=3&&!player.arsenalAwakened,apply:()=>equipWeapon('frostbiteNeedle',{announce:true})},
+  {id:'equipOniMortar',name:'Oni Mortar',icon:'MORTAR',type:'ARSENAL AWAKENING',color:'#ff862c',description:'A slower heavy shell erupts across the pack at the end of its flight or on first impact.',detail:'205 AREA BLAST',available:()=>player.level>=3&&!player.arsenalAwakened,apply:()=>equipWeapon('oniMortar',{announce:true})},
+  {id:'equipGaleWarFan',name:'Gale War Fan',icon:'GALE',type:'ARSENAL AWAKENING',color:'#bffcff',description:'A wide war fan cuts through enemies, turns at maximum reach, and hits them again while returning.',detail:'OUT + RETURN',available:()=>player.level>=3&&!player.arsenalAwakened,apply:()=>equipWeapon('galeWarFan',{announce:true})},
   { id:'unlockUndertow', name:'Undertow Well', icon:'VORTEX', type:'LEVEL 2 TECHNIQUE', color:'#35e7ff', description:'Aim a violent whirlpool into a dangerous pack. It pulls the group into one firing lane, Soaks and slows them, then crushes the center.', detail:'Pull pack · Soak · Crush', available:()=>player.level>=ABILITIES.undertowWell.unlockLevel&&!player.unlockedAbilities.has('undertowWell'), apply:()=>player.unlockedAbilities.add('undertowWell') },
   { id:'unlockFoxfire', name:'Foxfire Volley', icon:'FIRE', type:'LEVEL 4 TECHNIQUE', color:'#ff6a24', description:'Fan out spirit flames that ignite every enemy they strike.', detail:'Burn damage over time', available:()=>player.level>=ABILITIES.foxfireVolley.unlockLevel&&player.unlockedAbilities.has('undertowWell')&&!player.unlockedAbilities.has('foxfireVolley'), apply:()=>player.unlockedAbilities.add('foxfireVolley') },
   { id:'unlockHeart', name:'Wild Heart', icon:'HEART', type:'LEVEL 6 TECHNIQUE', color:'#68ef50', description:'Restore health and briefly reduce incoming damage.', detail:'Survival + recovery', available:()=>player.level>=ABILITIES.wildHeart.unlockLevel&&player.unlockedAbilities.has('foxfireVolley')&&!player.unlockedAbilities.has('wildHeart'), apply:()=>player.unlockedAbilities.add('wildHeart') },
@@ -722,6 +734,12 @@ const UPGRADES = [
   { id:'pressureChamber', name:'Pressure Chamber', icon:'PLUS', type:'WEAPON EVOLUTION', color:'#ffd13a', description:'Add another projectile to every weapon volley at the cost of slightly slower cycling.', detail:'+1 projectile  8% slower', available:()=>player.upgradeRanks.pressureChamber<2, apply:()=>{player.upgradeRanks.pressureChamber++;player.bonusProjectiles++;player.fireRateMultiplier*=1.08;} },
   { id:'headhunter', name:'Headhunter Feast', icon:'BOUNTY', type:'BOUNTY UPGRADE', color:'#d95cff', description:'Mutated enemies drop richer bounties and restore health when defeated.', detail:'+35% elite gold  +6 HP', available:()=>player.upgradeRanks.headhunter<3, apply:()=>{player.upgradeRanks.headhunter++;player.eliteGoldMultiplier*=1.35;player.eliteKillHeal+=6;} },
   { id:'keenEye', name:'Keen Eye', icon:'CRIT', type:'WEAPON UPGRADE', color:'#42eaff', description:'Read enemy movement and land critical shots more reliably.', detail:'+5% critical chance', available:()=>player.upgradeRanks.keenEye<3, apply:()=>{player.upgradeRanks.keenEye++;player.critBonus+=.05;} }
+  ,{id:'permafrost',name:'Permafrost',icon:'FROST',type:'FROSTBITE NEEDLE',color:'#67edff',description:'Ice builds faster and the prison holds longer.',detail:'2 HITS TO FREEZE / +0.25 SEC',available:()=>weapon.id==='frostbiteNeedle'&&player.upgradeRanks.permafrost<2,apply:()=>{player.upgradeRanks.permafrost++;}}
+  ,{id:'shatterpoint',name:'Shatterpoint',icon:'SHATTER',type:'FROSTBITE NEEDLE',color:'#d7fbff',description:'Freezing a target releases a damaging ice shockwave into its nearby pack.',detail:'+45% FREEZE BURST',available:()=>weapon.id==='frostbiteNeedle'&&player.upgradeRanks.shatterpoint<3,apply:()=>{player.upgradeRanks.shatterpoint++;}}
+  ,{id:'oniPayload',name:'Oni Payload',icon:'MORTAR',type:'ONI MORTAR',color:'#ff862c',description:'Load denser spirit powder into every mortar shell.',detail:'+18% BLAST DAMAGE',available:()=>weapon.id==='oniMortar'&&player.upgradeRanks.oniPayload<3,apply:()=>{player.upgradeRanks.oniPayload++;}}
+  ,{id:'blastChamber',name:'Blast Chamber',icon:'BLAST',type:'ONI MORTAR',color:'#ffc34f',description:'Expand the Oni eruption without cluttering its warning.',detail:'+28 BLAST RADIUS',available:()=>weapon.id==='oniMortar'&&player.upgradeRanks.blastChamber<3,apply:()=>{player.upgradeRanks.blastChamber++;}}
+  ,{id:'razorCurrent',name:'Razor Current',icon:'GALE',type:'GALE WAR FAN',color:'#bffcff',description:'Sharpen both the outward and returning fan passages.',detail:'+14% DAMAGE / RETURN POWER',available:()=>weapon.id==='galeWarFan'&&player.upgradeRanks.razorCurrent<3,apply:()=>{player.upgradeRanks.razorCurrent++;}}
+  ,{id:'typhoonReach',name:'Typhoon Reach',icon:'WIND',type:'GALE WAR FAN',color:'#63efff',description:'A broader current carries the war fan farther and throws enemies harder.',detail:'+12% RANGE / +18% KNOCKBACK',available:()=>weapon.id==='galeWarFan'&&player.upgradeRanks.typhoonReach<3,apply:()=>{player.upgradeRanks.typhoonReach++;}}
   ,{ id:'moonPiercer', name:'Moon Piercer', icon:'PIERCE', type:'LONGBOW EVOLUTION', color:'#ff5fbd', description:'Spirit arrows tear through another target and strike harder after every puncture.', detail:'+1 pierce  +12% weapon damage', available:()=>selectedHeroId==='hopscotch'&&player.upgradeRanks.moonPiercer<3, apply:()=>{player.upgradeRanks.moonPiercer++;player.bonusPierces++;player.damageMultiplier*=1.12;} }
   ,{ id:'perfectDraw', name:'Perfect Draw', icon:'AIM', type:'ARCHER MASTERY', color:'#ff8bd4', description:'Steady your release for more critical hits and far stronger critical punctures.', detail:'+8% critical  +20% critical damage', available:()=>selectedHeroId==='hopscotch'&&player.upgradeRanks.perfectDraw<3, apply:()=>{player.upgradeRanks.perfectDraw++;player.critBonus+=.08;player.critDamageMultiplier*=1.2;} }
   ,{ id:'glassFang', name:'Glass Fang', icon:'RISK', type:'CURSED POWER', color:'#ff476f', description:'Accept dangerous spirit force: hit much harder, but every enemy hit hurts more.', detail:'+28% damage  +12% damage taken', available:()=>player.upgradeRanks.glassFang<2, apply:()=>{player.upgradeRanks.glassFang++;player.damageMultiplier*=1.28;player.damageTakenMultiplier*=1.12;} }
@@ -844,6 +862,7 @@ const INTERACTABLE_DEFS={
 };
 
 const UPGRADE_RARITIES={
+  equipFrostbiteNeedle:'rare',equipOniMortar:'rare',equipGaleWarFan:'rare',permafrost:'rare',shatterpoint:'epic',oniPayload:'rare',blastChamber:'rare',razorCurrent:'rare',typhoonReach:'rare',
   unlockUndertow:'rare',unlockFoxfire:'rare',unlockHeart:'rare',unlockShock:'epic',dualWield:'epic',
   spiritRounds:'common',quickPaws:'common',vitality:'common',undertow:'rare',hungryFlame:'rare',heartBloom:'rare',stormHeart:'epic',
   wardbreaker:'common',spiritHunter:'rare',spiritCatalyst:'rare',pressureChamber:'epic',headhunter:'rare',keenEye:'common',
@@ -1066,19 +1085,20 @@ function setChapter(index) {
 
 function resetGame() {
   dojoPanel.classList.remove('active');
+  weapon=WEAPONS[heroDef.weapon];shell.dataset.weapon=weapon.id;ui.weaponName.textContent=weapon.name.toUpperCase();
   setChapter(0);
   const legacyHealth=Math.min(25,profile.campaignClears*5)+profile.vitalityRank*5;const legacyGold=Math.min(25,profile.campaignClears*5)+profile.purseRank*5+(contractClaimed('spiritCull')?15:0);
   player = {
     x: room.playerSpawn.x, y: room.playerSpawn.y, vx: 0, vy: 0, radius: heroDef.radius,
     facing: -Math.PI / 2, health: heroDef.maxHealth+legacyHealth, maxHealth: heroDef.maxHealth+legacyHealth, invulnerable: 0, flash: 0,
     dashTime: 0, dashCooldown: 0, dashDirection: { x: 0, y: -1 }, dashTrailClock: 0,sprint:100,sprinting:false,footstepClock:0,
-    attack: null, shotCooldown: 0,
+    attack: null, shotCooldown: 0,weaponId:weapon.id,arsenalAwakened:false,
     abilityCooldowns: { undertowWell: 0, foxfireVolley: 0, wildHeart: 0, shockPaws: 0 },
     unlockedAbilities: new Set(), dualWield:Boolean(heroDef.naturalDual), damageMultiplier: 1+profile.forgeRank*.03, fireRateMultiplier: 1,
     rerolls:1+(contractClaimed('sealRunner')?1:0),paidRerolls:0,synergies:new Set(),eventHistory:new Set(),shotsFired:0,
     abilityPower: { undertowWell: 1+profile.attunementRank*.04, foxfireVolley:(1+profile.attunementRank*.04)*(contractClaimed('foxfireHunt')?1.06:1), wildHeart: 1+profile.attunementRank*.04, shockPaws: 1+profile.attunementRank*.04 },
     abilityEvolutions:{undertowWell:false,foxfireVolley:false,wildHeart:false,shockPaws:false},
-    upgradeRanks:{spiritRounds:0,quickPaws:0,vitality:0,undertow:0,hungryFlame:0,heartBloom:0,stormHeart:0,wardbreaker:0,spiritHunter:0,spiritCatalyst:0,pressureChamber:0,headhunter:0,keenEye:0,moonPiercer:0,perfectDraw:0,glassFang:0,spiritMomentum:0,guardianHunter:0,deepReserves:0,bankShot:0,loadedDice:0,quickdraw:0,spiritCylinder:0,phaseRounds:0,foxstepMastery:0,ironBelly:0,scatterBore:0,guardianHide:0,capacitorBank:0,chainLogic:0,rapidCycle:0,moonEdge:0,secondPassage:0,cranePoise:0},
+    upgradeRanks:{spiritRounds:0,quickPaws:0,vitality:0,undertow:0,hungryFlame:0,heartBloom:0,stormHeart:0,wardbreaker:0,spiritHunter:0,spiritCatalyst:0,pressureChamber:0,headhunter:0,keenEye:0,moonPiercer:0,perfectDraw:0,glassFang:0,spiritMomentum:0,guardianHunter:0,deepReserves:0,bankShot:0,loadedDice:0,quickdraw:0,spiritCylinder:0,phaseRounds:0,foxstepMastery:0,ironBelly:0,scatterBore:0,guardianHide:0,capacitorBank:0,chainLogic:0,rapidCycle:0,moonEdge:0,secondPassage:0,cranePoise:0,permafrost:0,shatterpoint:0,oniPayload:0,blastChamber:0,razorCurrent:0,typhoonReach:0},
     heartBonus: 0, stormBonus: 0,guardianBlessings:[],endingVow:null,victoryShardBonus:0,
     gold:legacyGold,goldMultiplier:1,relics:[],shopPurchases:new Set(),killHeal:0,damageTakenMultiplier:heroDef.damageTakenMultiplier,speedMultiplier:1,dashCooldownMultiplier:1,
     knockbackResistance:heroDef.knockbackResistance,knockbackMultiplier:1,braceTime:0,braceDelay:.72,braceDamageMultiplier:.8,braced:false,shieldDamageMultiplier:1,eliteDamageMultiplier:contractClaimed('eliteBreakers')?1.08:1,guardianDamageMultiplier:contractClaimed('guardianOath')?1.08:1,eliteGoldMultiplier:1,eliteKillHeal:0,statusDurationMultiplier:1,bonusProjectiles:0,bonusPierces:0,bonusRicochets:0,ricochetDamageRetention:.78,critBonus:0,critDamageMultiplier:1,arcChainBonus:0,arcChainPower:1,arcChainRange:0,glaiveReturnPower:1,glaiveReturnSpeed:1,glaiveReturnCrit:0,weaponEvolution:null,
@@ -1138,7 +1158,7 @@ function makeEnemy(spawn, index) {
     health:maxHealth,maxHealth,shield:maxShield,maxShield,guardCooldown:0,eliteId:eliteDef?.id||null,eliteDef,eliteRewardScale:eliteDef?.rewardScale||1,splitDepth:spawn.splitDepth||0,
     facing: Math.PI / 2, state: spawn.delay > 0 ? 'waiting' : 'enter', stateTime: spawn.delay || spawnDuration, spawnDuration,cooldown: 1.2 + index * .16,
     flash: 0, stagger: 0, dead: false, deathTime: 0, hitPlayer: false, bob: Math.random() * Math.PI * 2,
-    burnTime: 0, burnTick: 0, wetTime: 0, shockTime: 0, huntTime: 0,conductiveStacks:0,conductiveTime:0,abilityReactTime:0,abilityReactType:'',abilityReactSeed:Math.random()*20,
+    burnTime: 0, burnTick: 0, wetTime: 0, shockTime: 0, huntTime: 0,conductiveStacks:0,conductiveTime:0,chillStacks:0,chillTime:0,freezeTime:0,abilityReactTime:0,abilityReactType:'',abilityReactSeed:Math.random()*20,
     orbitAngle: Math.atan2(spawn.y - room.playerSpawn.y, spawn.x - room.playerSpawn.x),
     orbitRadius: definition.behavior === 'ranged' ? 430 : definition.behavior === 'summoner' ? 480 : definition.behavior === 'bomber' ? 390 : definition.behavior === 'assassin' ? 250 : definition.behavior === 'heavy' || definition.behavior === 'shield' ? 105 : definition.behavior === 'boss' ? 260 : definition.behavior === 'basic' ? 86 : 180 + (index % 2) * 34,
     orbitDrift: index % 2 ? 1 : -1, spawnIndex: index, shotSide: index % 2 ? 1 : -1,
@@ -1536,6 +1556,7 @@ function openLevelUp() {
 function rarityForUpgrade(upgrade){return UPGRADE_RARITIES[upgrade.id]||'common';}
 
 function upgradeOfferClass(upgrade){
+  if(upgrade.type==='ARSENAL AWAKENING')return 'CHOOSE ONE WEAPON';
   if(upgrade.id.startsWith('unlock'))return 'NEW ABILITY';
   if(['abyssalMaw','nineTailInferno','guardianBloom','heavensVerdict'].includes(upgrade.id))return 'ABILITY EVOLUTION';
   if(['phaseNova','siegeLotus','moonConstellation','deadeyeCircuit','thunderheadArray','skyfeatherConstellation'].includes(upgrade.id))return 'WEAPON CAPSTONE';
@@ -1546,6 +1567,7 @@ function upgradeOfferClass(upgrade){
 function upgradeComparison(upgrade){
   const percent=(value)=>`${Math.round(value*100)}%`,ability=(id,multiplier)=>`${percent(player.abilityPower[id])}  →  ${percent(player.abilityPower[id]*multiplier)}`;
   const comparisons={
+    equipFrostbiteNeedle:()=> '3 HITS = FREEZE',equipOniMortar:()=> '205 AREA BLAST',equipGaleWarFan:()=> 'OUT + RETURN',
     unlockUndertow:()=> 'LOCKED  →  READY ON E',unlockFoxfire:()=> 'LOCKED  →  READY ON C',unlockHeart:()=> 'LOCKED  →  READY ON F',unlockShock:()=> 'LOCKED  →  READY ON Q',
     dualWield:()=> '1 VOLLEY  →  2 VOLLEYS',spiritRounds:()=>`${percent(player.damageMultiplier)}  →  ${percent(player.damageMultiplier*1.22)}`,quickPaws:()=>`${percent(1/player.fireRateMultiplier)}  →  ${percent(1/(player.fireRateMultiplier*.85))}`,
     vitality:()=>`${player.maxHealth} HP  →  ${player.maxHealth+20} HP`,undertow:()=>ability('undertowWell',1.18),hungryFlame:()=>ability('foxfireVolley',1.25),heartBloom:()=>`+${player.heartBonus} HEAL  →  +${player.heartBonus+15} HEAL`,stormHeart:()=>`${percent(player.abilityPower.shockPaws)}  →  ${percent(player.abilityPower.shockPaws*1.2)}`,
@@ -1582,17 +1604,18 @@ function weightedUpgradeIndex(pool){
 
 function rollUpgradeChoices(available=UPGRADES.filter((upgrade)=>upgrade.available())){
   const pool=[...available];currentUpgradeChoices=[];
+  const arsenal=pool.filter((upgrade)=>upgrade.type==='ARSENAL AWAKENING');if(arsenal.length){currentUpgradeChoices=arsenal;return;}
   const earnedUnlock=pool.find((upgrade)=>upgrade.id==='unlockShock')||pool.find((upgrade)=>upgrade.id==='unlockHeart')||pool.find((upgrade)=>upgrade.id==='unlockFoxfire')||pool.find((upgrade)=>upgrade.id==='unlockUndertow');
   if(earnedUnlock){currentUpgradeChoices.push(earnedUnlock);pool.splice(pool.indexOf(earnedUnlock),1);}
   while(currentUpgradeChoices.length<Math.min(3,available.length)){const index=weightedUpgradeIndex(pool);currentUpgradeChoices.push(pool.splice(index,1)[0]);}
 }
 
 function renderUpgradeChoices(){
-  const awakened=player.unlockedAbilities.size;ui.levelupSubtitle.textContent=`LEVEL ${player.level} BUILD  ·  ${awakened} / ${Object.keys(ABILITIES).length} ABILITIES AWAKENED`;
+  const awakened=player.unlockedAbilities.size,arsenalDraft=currentUpgradeChoices.every((upgrade)=>upgrade.type==='ARSENAL AWAKENING');ui.levelupSubtitle.textContent=arsenalDraft?'LEVEL 3  ARSENAL AWAKENING  ·  CHOOSE YOUR RUN WEAPON':`LEVEL ${player.level} BUILD  ·  ${awakened} / ${Object.keys(ABILITIES).length} ABILITIES AWAKENED`;
   upgradeGrid.innerHTML = currentUpgradeChoices.map((upgrade, index) => `
     <button class="upgrade-card" title="${upgrade.description}" aria-label="${upgrade.name}. ${upgrade.detail}" data-rarity="${rarityForUpgrade(upgrade)}" style="--card-color:${upgrade.color};--rarity:${RARITY_STYLES[rarityForUpgrade(upgrade)].color}" data-upgrade-index="${index}">
       <span class="upgrade-card-top"><b class="choice-number">${index + 1}</b><i class="upgrade-rarity">${RARITY_STYLES[rarityForUpgrade(upgrade)].name}</i></span>
-      <span class="upgrade-icon" data-icon="${upgradeIconFrame(upgrade)}"></span>
+      <span class="upgrade-icon ${upgrade.type==='ARSENAL AWAKENING'?'arsenal-icon':''}" data-arsenal="${upgrade.id}" data-icon="${upgradeIconFrame(upgrade)}"></span>
       <strong>${upgrade.name}</strong>
       <span class="upgrade-type">${upgradeOfferClass(upgrade)}</span>
       <span class="upgrade-comparison">${upgrade.detail.toUpperCase()}</span>
@@ -1602,7 +1625,7 @@ function renderUpgradeChoices(){
     button.addEventListener('click', () => chooseUpgrade(Number(button.dataset.upgradeIndex)));
   }
   const cost=30+player.paidRerolls*15;ui.rerollCost.textContent=player.rerolls>0?`FREE  ${player.rerolls} LEFT`:` ${cost} GOLD`;
-  ui.rerollButton.disabled=player.rerolls<=0&&player.gold<cost;
+  ui.rerollButton.disabled=arsenalDraft||(player.rerolls<=0&&player.gold<cost);document.querySelector('#skip-upgrade').disabled=arsenalDraft;levelupScreen.classList.toggle('arsenal-draft',arsenalDraft);document.querySelector('.levelup-hint').textContent=arsenalDraft?'PRESS 1, 2, OR 3 TO CHOOSE YOUR WEAPON':'PRESS 1, 2, OR 3 TO CHOOSE · R TO REROLL';
 }
 
 function upgradeIconFrame(upgrade){
@@ -1618,13 +1641,13 @@ function rerollUpgrades(){
 }
 
 function finishLevelUpFlow(){
-  levelupScreen.classList.remove('active');state='playing';updateHud();
+  levelupScreen.classList.remove('active','arsenal-draft');state='playing';updateHud();
   if(encounter.startWaveAfterUpgrade!==null){const nextWave=encounter.startWaveAfterUpgrade;encounter.startWaveAfterUpgrade=null;startWave(nextWave);return;}
   if(pendingLevelUps>0)setTimeout(openLevelUp,180);
 }
 
 function skipUpgrade(){
-  if(state!=='levelup')return;player.gold+=20;player.health=Math.min(player.maxHealth,player.health+18);spawnWord(player.x,player.y-92,'POWER BANKED!','#ffd13a');effects.rings.push({x:player.x,y:player.y,radius:15,maxRadius:105,color:'#ffd13a',life:.5,maxLife:.5});playSfx('heal',.2,1.22);finishLevelUpFlow();
+  if(state!=='levelup'||currentUpgradeChoices.every((upgrade)=>upgrade.type==='ARSENAL AWAKENING'))return;player.gold+=20;player.health=Math.min(player.maxHealth,player.health+18);spawnWord(player.x,player.y-92,'POWER BANKED!','#ffd13a');effects.rings.push({x:player.x,y:player.y,radius:15,maxRadius:105,color:'#ffd13a',life:.5,maxLife:.5});playSfx('heal',.2,1.22);finishLevelUpFlow();
 }
 
 function chooseUpgrade(index) {
@@ -1671,7 +1694,8 @@ function begin() {
     Object.keys(ABILITIES).forEach((id)=>player.unlockedAbilities.add(id));
     resolveSynergies();updateHud();
   }
-  if(debugSystem==='levelup'){player.level=2;pendingLevelUps=1;encounter.startWaveAfterUpgrade=0;openLevelUp();return;}
+  if(debugSystem==='levelup'){player.level=Number(debugParams.get('level')||2);pendingLevelUps=1;encounter.startWaveAfterUpgrade=0;openLevelUp();return;}
+  if(debugSystem==='arsenal'){player.level=3;pendingLevelUps=1;encounter.startWaveAfterUpgrade=0;openLevelUp();return;}
   if(debugSystem==='contracts'){if(debugParams.has('restore')){profile.spiritShards=764;profile.contractProgress={...DEFAULT_CONTRACT_PROGRESS};profile.claimedContracts=[];saveProfile();}if(debugParams.has('ready'))for(const contract of CAMPAIGN_CONTRACTS)profile.contractProgress[contract.id]=contract.target;enterHub();openHubStation(HUB_STATIONS.find((station)=>station.id==='missionBoard'));return;}
   if(debugSystem==='story'){const storyBeat=['intro','interlude2','interlude4','boss'].includes(debugParams.get('beat'))?debugParams.get('beat'):'interlude2';showStory(storyBeat);return;}
   if(debugSystem==='dojo'){enterDojo();return;}
@@ -1805,7 +1829,7 @@ function startAttack() {
   const direction = { x: Math.cos(player.facing), y: Math.sin(player.facing) };
   player.attack = { index: 0, definition: { duration: weapon.attackDuration||.14 }, time: 0, released:false, facing:player.facing };
   player.shotCooldown = weapon.fireRate * player.fireRateMultiplier;
-  if(coop.connected)sendCoop('action',{payload:{kind:'attack',facing:player.facing}});
+  if(coop.connected)sendCoop('action',{payload:{kind:'attack',facing:player.facing,weaponId:weapon.id}});
   if(!weapon.releaseDelay)releaseWeaponVolley();
 }
 
@@ -1827,17 +1851,18 @@ function releaseWeaponVolley() {
       const shotDirection={x:Math.cos(angle),y:Math.sin(angle)};
       const sideX=-direction.y*volleySide*12,sideY=direction.x*volleySide*12;
       const shotMuzzle={x:muzzle.x+sideX,y:muzzle.y+sideY};
-      const arrow=weapon.projectileType==='arrow',trickshot=weapon.projectileType==='trickshot',arc=weapon.projectileType==='arc',glaive=weapon.projectileType==='glaive';
-      const shotDamage=weapon.damage*player.damageMultiplier*echoPenalty*(siegeShell?1.7:thunderheadArray?1.12:1);
-      effects.playerShots.push({x:shotMuzzle.x,y:shotMuzzle.y,vx:shotDirection.x*weapon.projectileSpeed,vy:shotDirection.y*weapon.projectileSpeed,radius:(weapon.projectileRadius||9)*(siegeShell?1.75:1),damage:shotDamage,baseDamage:shotDamage,color:phaseNova?'#d94cff':siegeShell?'#ffd13a':moonConstellation?'#ff5fbd':deadeyeCircuit?'#ff9b32':thunderheadArray?'#fff177':skyfeatherConstellation?'#d98cff':burningVolley?'#ff8a2a':weapon.color,ignite:burningVolley,arrow,trickshot,arc,glaive,returning:false,returnSpeed:(weapon.returnSpeed||1120)*player.glaiveReturnSpeed,skyfeatherConstellation,phaseNova,siegeLotus:siegeShell,moonConstellation,deadeyeCircuit,thunderheadArray:thunderheadArray&&volley===0&&pellet===0,guaranteedCrit:deadeyeCircuit,ricochets:(weapon.ricochets||0)+player.bonusRicochets+(deadeyeCircuit?2:0),ricochetRange:(weapon.ricochetRange||0)+(deadeyeCircuit?220:0),ricochetRetention:deadeyeCircuit?1:player.ricochetDamageRetention,pierces:glaive?99:(weapon.pierces||0)+player.bonusPierces+(phaseNova?4:0),hitIds:new Set(),life:weapon.projectileLife,maxLife:weapon.projectileLife});
-      effects.spriteEffects.push({asset:glaive?'nomiGlaiveVfx':arrow?'hopscotchArrow':trickshot?'trickshotVfx':arc?'zapArcVfx':'blasterImpactVfx',fixedFrame:glaive?0:arrow||trickshot||arc?0:undefined,x:shotMuzzle.x,y:shotMuzzle.y,width:glaive?128:arrow?92:trickshot?76:arc?82:selectedHeroId==='bamboo'?82:68,height:glaive?104:arrow?52:trickshot?76:arc?68:selectedHeroId==='bamboo'?70:58,life:.16,maxLife:.16,rotation:angle,glow:weapon.impactColor});
+      const type=weapon.projectileType,arrow=type==='arrow',trickshot=type==='trickshot',arc=type==='arc',glaive=type==='glaive',frost=type==='frost',mortar=type==='mortar',gale=type==='gale';
+      const arsenalPower=frost?1:mortar?Math.pow(1.18,player.upgradeRanks.oniPayload):gale?Math.pow(1.14,player.upgradeRanks.razorCurrent):1;const shotDamage=weapon.damage*player.damageMultiplier*echoPenalty*arsenalPower*(siegeShell?1.7:thunderheadArray?1.12:1);
+      const rangeBoost=gale?1+player.upgradeRanks.typhoonReach*.12:1;
+      effects.playerShots.push({x:shotMuzzle.x,y:shotMuzzle.y,vx:shotDirection.x*weapon.projectileSpeed,vy:shotDirection.y*weapon.projectileSpeed,radius:(weapon.projectileRadius||9)*(siegeShell?1.75:1),damage:shotDamage,baseDamage:shotDamage,color:phaseNova?'#d94cff':siegeShell?'#ffd13a':moonConstellation?'#ff5fbd':deadeyeCircuit?'#ff9b32':thunderheadArray?'#fff177':skyfeatherConstellation?'#d98cff':burningVolley?'#ff8a2a':weapon.color,ignite:burningVolley,arrow,trickshot,arc,glaive,frost,mortar,gale,returning:false,returnSpeed:(weapon.returnSpeed||1120)*player.glaiveReturnSpeed,knockback:weapon.knockback*(gale?1+player.upgradeRanks.typhoonReach*.18:1),criticalChance:weapon.criticalChance,blastRadius:(weapon.blastRadius||0)+player.upgradeRanks.blastChamber*28,blastDamage:(weapon.blastDamage||0)*player.damageMultiplier*Math.pow(1.18,player.upgradeRanks.oniPayload),skyfeatherConstellation,phaseNova,siegeLotus:siegeShell,moonConstellation,deadeyeCircuit,thunderheadArray:thunderheadArray&&volley===0&&pellet===0,guaranteedCrit:deadeyeCircuit,ricochets:(weapon.ricochets||0)+player.bonusRicochets+(deadeyeCircuit?2:0),ricochetRange:(weapon.ricochetRange||0)+(deadeyeCircuit?220:0),ricochetRetention:deadeyeCircuit?1:player.ricochetDamageRetention,pierces:glaive||gale?99:(weapon.pierces||0)+player.bonusPierces+(phaseNova?4:0),hitIds:new Set(),life:weapon.projectileLife*rangeBoost,maxLife:weapon.projectileLife*rangeBoost});
+      effects.spriteEffects.push({asset:glaive?'nomiGlaiveVfx':frost||mortar||gale?'arsenalWeaponsVfx':arrow?'hopscotchArrow':trickshot?'trickshotVfx':arc?'zapArcVfx':'blasterImpactVfx',fixedFrame:glaive?0:frost?3:mortar?4:gale?5:arrow||trickshot||arc?0:undefined,x:shotMuzzle.x,y:shotMuzzle.y,width:glaive?128:frost?100:mortar?104:gale?118:arrow?92:trickshot?76:arc?82:selectedHeroId==='bamboo'?82:68,height:glaive?104:frost?70:mortar?80:gale?96:arrow?52:trickshot?76:arc?68:selectedHeroId==='bamboo'?70:58,life:.16,maxLife:.16,rotation:angle,glow:weapon.impactColor});
     }
   }
   if(phaseNova||siegeLotus||moonConstellation||deadeyeCircuit||thunderheadArray||skyfeatherConstellation){const label=phaseNova?'PHASE NOVA!':siegeLotus?'SIEGE LOTUS!':moonConstellation?'MOON CONSTELLATION!':deadeyeCircuit?'DEADEYE CIRCUIT!':skyfeatherConstellation?'SKYFEATHER READY!':'THUNDERHEAD!';const color=phaseNova?'#d94cff':siegeLotus?'#ffd13a':moonConstellation?'#ff5fbd':deadeyeCircuit?'#ff9b32':skyfeatherConstellation?'#d98cff':'#39eaff';spawnWord(player.x,player.y-86,label,color);effects.rings.push({x:player.x,y:player.y,radius:18,maxRadius:115,color,life:.42,maxLife:.42});}
   burst(muzzle.x,muzzle.y,weapon.impactColor,selectedHeroId==='bamboo'?22:selectedHeroId==='rusty'?20:14,selectedHeroId==='bamboo'?330:selectedHeroId==='rusty'?300:260,selectedHeroId==='bamboo'?5:3);
   player.vx-=direction.x*(weapon.recoil||42);player.vy-=direction.y*(weapon.recoil||42);
   camera.kick=Math.max(camera.kick,selectedHeroId==='bamboo'?15:selectedHeroId==='hopscotch'?7:selectedHeroId==='rusty'?11:9);camera.shake=Math.max(camera.shake,selectedHeroId==='bamboo'?4.5:selectedHeroId==='hopscotch'?2:selectedHeroId==='rusty'?3:2.5);
-  playSfx(selectedHeroId==='hopscotch'?'arrow':selectedHeroId==='bamboo'||selectedHeroId==='nomi'?'slice':selectedHeroId==='zap'?'lightning':'blaster',selectedHeroId==='bamboo'?.42:selectedHeroId==='nomi'?.3:selectedHeroId==='zap'?.24:.3,selectedHeroId==='rusty'?1.12:selectedHeroId==='nomi'?1.28:selectedHeroId==='zap'?1.32:1);
+  const releaseType=weapon.projectileType;playSfx(releaseType==='frost'?'arrow':releaseType==='mortar'?'stomp':releaseType==='gale'?'slice':selectedHeroId==='hopscotch'?'arrow':selectedHeroId==='bamboo'||selectedHeroId==='nomi'?'slice':selectedHeroId==='zap'?'lightning':'blaster',releaseType==='mortar'?.38:releaseType==='gale'?.29:selectedHeroId==='bamboo'?.42:selectedHeroId==='nomi'?.3:selectedHeroId==='zap'?.24:.3,releaseType==='mortar'?.82:releaseType==='frost'?1.3:releaseType==='gale'?1.18:selectedHeroId==='rusty'?1.12:selectedHeroId==='nomi'?1.28:selectedHeroId==='zap'?1.32:1);
 }
 
 function aimDirection() {
@@ -1987,28 +2012,41 @@ function updateAttack(dt) {
 }
 
 function hitEnemyWithShot(enemy, shot) {
-  const critical=shot.guaranteedCrit||Math.random()<Math.min(.75,weapon.criticalChance+player.critBonus+(shot.returning?shot.returnCrit||0:0));
+  const critical=shot.guaranteedCrit||Math.random()<Math.min(.75,(shot.criticalChance??weapon.criticalChance)+player.critBonus+(shot.returning?shot.returnCrit||0:0));
   const damage=Math.max(1,Math.round((shot.damage??weapon.damage)*(critical?1.65*player.critDamageMultiplier:1)*(enemy.practiceArmor??1)*(enemy.eliteId?player.eliteDamageMultiplier:1)*(enemy.def.behavior==='boss'?player.guardianDamageMultiplier:1)));recordDojoDamage(enemy,damage);
   const direction = normalize(shot.vx, shot.vy);
   const isBoss=enemy.def.behavior==='boss';
   const resolved=resolveEnemyDamage(enemy,damage,direction);
-  enemy.vx += direction.x * weapon.knockback*player.knockbackMultiplier*(isBoss ? .05 : 1); enemy.vy += direction.y * weapon.knockback*player.knockbackMultiplier*(isBoss ? .05 : 1);
+  const weaponForce=weapon.knockback*player.knockbackMultiplier;const shotForce=shot.knockback==null?weaponForce:shot.knockback*player.knockbackMultiplier;enemy.vx += direction.x * shotForce*(isBoss ? .05 : 1); enemy.vy += direction.y * shotForce*(isBoss ? .05 : 1);
   enemy.flash = .15; enemy.stagger = critical ? .22 : .12;registerEnemyHitReaction(enemy,direction,critical?'critical':'projectile',damage);
   if(!isBoss){enemy.state = 'stagger'; enemy.stateTime = enemy.stagger;}
   player.hitCount++; player.maxCombo = Math.max(player.maxCombo, player.hitCount); player.comboDrop = 2.25;
   comboUiTimer = .65; hitStop = Math.max(hitStop, critical ? .05 : .026); camera.shake = Math.max(camera.shake, critical ? 6 : 3);
   const impactX = shot.x, impactY = shot.y - 8;
   const impactColor=critical?'#ffd52d':shot.color||weapon.impactColor;burst(impactX, impactY, impactColor, critical ? 16 : 9, critical ? 370 : 260, critical ? 5 : 3);
-  effects.spriteEffects.push({asset:shot.glaive||shot.spiritFeather?'nomiGlaiveVfx':shot.arrow?'hopscotchArrow':shot.trickshot?'trickshotVfx':shot.arc?'zapArcVfx':'blasterImpactVfx',fixedFrame:shot.glaive?2:shot.spiritFeather?3:shot.arrow?(critical?4:3):shot.trickshot?(critical?5:4):shot.arc?(critical?5:4):undefined,x:impactX,y:impactY,width:shot.glaive?(critical?205:174):shot.spiritFeather?128:shot.trickshot?(critical?170:138):shot.arc?(critical?176:142):critical?190:148,height:shot.glaive?(critical?170:144):shot.spiritFeather?98:shot.trickshot?(critical?170:138):shot.arc?(critical?150:120):critical?155:122,life:.4,maxLife:.4,rotation:Math.atan2(shot.vy,shot.vx),glow:impactColor});
+  effects.spriteEffects.push({asset:shot.frost||shot.gale||shot.mortar?'arsenalReactionsVfx':shot.glaive||shot.spiritFeather?'nomiGlaiveVfx':shot.arrow?'hopscotchArrow':shot.trickshot?'trickshotVfx':shot.arc?'zapArcVfx':'blasterImpactVfx',fixedFrame:shot.frost?0:shot.gale?4:shot.mortar?3:shot.glaive?2:shot.spiritFeather?3:shot.arrow?(critical?4:3):shot.trickshot?(critical?5:4):shot.arc?(critical?5:4):undefined,x:impactX,y:impactY,width:shot.frost?155:shot.gale?190:shot.mortar?210:shot.glaive?(critical?205:174):shot.spiritFeather?128:shot.trickshot?(critical?170:138):shot.arc?(critical?176:142):critical?190:148,height:shot.frost?126:shot.gale?150:shot.mortar?170:shot.glaive?(critical?170:144):shot.spiritFeather?98:shot.trickshot?(critical?170:138):shot.arc?(critical?150:120):critical?155:122,life:.4,maxLife:.4,rotation:Math.atan2(shot.vy,shot.vx),glow:impactColor});
   effects.numbers.push({ x: enemy.x, y: enemy.y - 34, vx: (Math.random() - .5) * 45, vy: -95, text:resolved.shieldDamage&&!resolved.healthDamage?String(Math.round(resolved.total)):String(damage),color:resolved.shieldDamage?'#9aff8b':critical?'#ffd833':'#fff8ed',life:.75,maxLife:.75,size:critical?32:23 });
   if(shot.ignite){applyEnemyStatus(enemy,'burn',2.8,.72);effects.spriteEffects.push({asset:'burnStatusVfx',x:enemy.x,y:enemy.y-8,width:160,height:132,life:.36,maxLife:.36,glow:'#ff7428'});spawnWord(enemy.x,enemy.y-56,'CINDER ROUND!','#ff8a2a');}
   if(shot.phaseNova&&!shot.phaseDetonated){shot.phaseDetonated=true;triggerWeaponBlast(enemy,shot,'#d94cff',165,.62,'PHASE BURST!');}
   if(shot.siegeLotus)triggerWeaponBlast(enemy,shot,'#ffd13a',230,.82,'SIEGE BLOOM!');
   if(shot.moonConstellation&&!shot.splitSpawned){shot.splitSpawned=true;spawnMoonSplinters(enemy,shot);}
   if(shot.arc)applyConductiveHit(enemy,shot,direction);
+  if(shot.frost)applyFrostbite(enemy,shot);
   if (critical || enemy.health <= 0) spawnWord(impactX, impactY - 42, enemy.health <= 0 ? 'CRASH!!' : 'ZAP!!', critical ? '#ffd938' : '#39eaff');
   playSfx(critical||isBoss?'heavyImpact':'impact',critical?.3:isBoss?.27:.16,critical?.9:isBoss?.78:1.08);
   if (enemy.health <= 0) killEnemy(enemy, direction);
+}
+
+function applyFrostbite(enemy,shot){
+  if(enemy.dead)return;const threshold=Math.max(2,(WEAPONS.frostbiteNeedle.chillThreshold||3)-(player.upgradeRanks.permafrost>0?1:0));enemy.chillStacks=Math.min(threshold,(enemy.chillStacks||0)+1);enemy.chillTime=4.2;enemy.abilityReactType='frost';enemy.abilityReactTime=Math.max(enemy.abilityReactTime||0,.44);
+  if(enemy.chillStacks<threshold){spawnWord(enemy.x,enemy.y-65,`${enemy.chillStacks} / ${threshold} CHILL`,'#80f3ff');return;}
+  enemy.chillStacks=0;enemy.chillTime=0;enemy.freezeTime=Math.max(enemy.freezeTime||0,(enemy.def.behavior==='boss'?.38:WEAPONS.frostbiteNeedle.freezeDuration)+player.upgradeRanks.permafrost*.25);enemy.abilityReactType='freeze';enemy.abilityReactTime=Math.max(enemy.abilityReactTime||0,.55);spawnWord(enemy.x,enemy.y-78,'FROZEN!','#d9fdff');effects.rings.push({x:enemy.x,y:enemy.y,radius:18,maxRadius:130,color:'#67edff',life:.52,maxLife:.52});effects.spriteEffects.push({asset:'arsenalReactionsVfx',fixedFrame:2,x:enemy.x,y:enemy.y-25,width:enemy.radius*4.4,height:enemy.radius*4.9,life:.62,maxLife:.62,glow:'#67edff'});burst(enemy.x,enemy.y-12,'#bffaff',26,390,6);playSfx('water',.26,1.32);
+  const rank=player.upgradeRanks.shatterpoint||0;if(rank>0){const radius=125+rank*18,damage=Math.max(1,Math.round(shot.damage*.45*rank));for(const target of enemies){if(target===enemy||target.dead||target.state==='waiting'||distance(enemy,target)>radius+target.radius)continue;const away=normalize(target.x-enemy.x,target.y-enemy.y);damageEnemyFromAbility(target,damage,145,away,'#bffaff',null);}effects.rings.push({x:enemy.x,y:enemy.y,radius:20,maxRadius:radius,color:'#d9fdff',life:.42,maxLife:.42});}
+}
+
+function detonateMortar(shot){
+  if(shot.detonated)return;shot.detonated=true;shot.life=0;const radius=shot.blastRadius||205;effects.spriteEffects.push({asset:'arsenalReactionsVfx',fixedFrame:3,x:shot.x,y:shot.y-18,width:radius*2.35,height:radius*1.9,life:.58,maxLife:.58,glow:'#ff862c'});effects.rings.push({x:shot.x,y:shot.y,radius:24,maxRadius:radius,color:'#ff9a2c',life:.5,maxLife:.5});burst(shot.x,shot.y,'#ffb43e',44,620,8);camera.shake=Math.max(camera.shake,14);hitStop=Math.max(hitStop,.07);playSfx('stomp',.42,.78);
+  for(const enemy of enemies){if(enemy.dead||enemy.state==='waiting'||distance(shot,enemy)>radius+enemy.radius)continue;const away=normalize(enemy.x-shot.x,enemy.y-shot.y);damageEnemyFromAbility(enemy,shot.blastDamage||18,shot.knockback||420,away,'#ff8a24',null);enemy.abilityReactType='blast';enemy.abilityReactTime=Math.max(enemy.abilityReactTime||0,.48);}
 }
 
 function applyConductiveHit(source,shot,direction){
@@ -2036,6 +2074,11 @@ function turnGlaiveForReturn(shot){
   if(!shot.glaive||shot.returning)return;shot.returning=true;shot.hitIds=new Set();shot.pierces=99;shot.life=1.35;shot.maxLife=1.35;shot.damage=(shot.baseDamage||shot.damage)*.78*player.glaiveReturnPower;shot.returnCrit=player.glaiveReturnCrit;
   effects.spriteEffects.push({asset:'nomiGlaiveVfx',fixedFrame:1,x:shot.x,y:shot.y,width:190,height:126,life:.38,maxLife:.38,rotation:Math.atan2(-shot.vy,-shot.vx),glow:'#aeefff'});effects.rings.push({x:shot.x,y:shot.y,radius:8,maxRadius:74,color:'#b65cff',life:.28,maxLife:.28});
   if(shot.skyfeatherConstellation)spawnSkyfeathers(shot);
+}
+
+function turnGaleForReturn(shot){
+  if(!shot.gale||shot.returning)return;shot.returning=true;shot.hitIds=new Set();shot.pierces=99;shot.life=1.3;shot.maxLife=1.3;shot.damage=(shot.baseDamage||shot.damage)*(.76+player.upgradeRanks.razorCurrent*.08);
+  effects.spriteEffects.push({asset:'arsenalReactionsVfx',fixedFrame:5,x:shot.x,y:shot.y-8,width:205,height:170,life:.38,maxLife:.38,rotation:Math.atan2(-shot.vy,-shot.vx),glow:'#67efff'});effects.rings.push({x:shot.x,y:shot.y,radius:8,maxRadius:82,color:'#bffcff',life:.3,maxLife:.3});
 }
 
 function spawnSkyfeathers(source){
@@ -2333,6 +2376,8 @@ function updateEnemies(dt) {
     }
     enemy.wetTime = Math.max(0, enemy.wetTime - dt);
     enemy.shockTime = Math.max(0, enemy.shockTime - dt);
+    enemy.chillTime=Math.max(0,(enemy.chillTime||0)-dt);if(enemy.chillTime<=0)enemy.chillStacks=0;
+    enemy.freezeTime=Math.max(0,(enemy.freezeTime||0)-dt);if(enemy.freezeTime>0){enemy.vx*=Math.exp(-18*dt);enemy.vy*=Math.exp(-18*dt);continue;}
     enemy.huntTime = Math.max(0, (enemy.huntTime||0) - dt);
     enemy.conductiveTime=Math.max(0,(enemy.conductiveTime||0)-dt);if(enemy.conductiveTime<=0)enemy.conductiveStacks=0;
     if(definition.behavior==='shield'&&enemy.shield<=0&&enemy.maxShield>0){enemy.guardCooldown=Math.max(0,enemy.guardCooldown-dt);if(enemy.guardCooldown<=0){enemy.shield=enemy.maxShield;spawnWord(enemy.x,enemy.y-84,'GUARD RESTORED!','#ff6a48');effects.rings.push({x:enemy.x,y:enemy.y,radius:24,maxRadius:118,color:definition.color,life:.42,maxLife:.42});}}
@@ -2411,7 +2456,7 @@ function updateEnemies(dt) {
         };
         const toOrbit = normalize(orbitTarget.x - enemy.x, orbitTarget.y - enemy.y);
         const orbitDistance = distance(enemy, orbitTarget);
-        const statusSpeed = enemy.wetTime > 0 ? 1 - ABILITIES.undertowWell.slow : 1;
+        const statusSpeed = (enemy.wetTime > 0 ? 1 - ABILITIES.undertowWell.slow : 1)*(1-(enemy.chillStacks||0)*.12);
         const speed = definition.speed * enemy.speedScale * statusSpeed * (hunting?1.18:1) * clamp(orbitDistance / 65, .38, 1.15);
         enemy.vx = lerp(enemy.vx, toOrbit.x * speed, clamp(dt * 5.5, 0, 1));
         enemy.vy = lerp(enemy.vy, toOrbit.y * speed, clamp(dt * 5.5, 0, 1));
@@ -2539,14 +2584,17 @@ function updateEffects(dt) {
   }
   for (const shot of effects.playerShots) {
     if(shot.spiritFeather&&shot.homingTarget&&!shot.homingTarget.dead){const toward=normalize(shot.homingTarget.x-shot.x,shot.homingTarget.y-shot.y),speed=Math.max(900,Math.hypot(shot.vx,shot.vy));shot.vx=lerp(shot.vx,toward.x*speed,clamp(dt*9,0,1));shot.vy=lerp(shot.vy,toward.y*speed,clamp(dt*9,0,1));}
-    if(shot.glaive&&shot.returning){const owner=shot.remoteOwner||player,toward=normalize(owner.x-shot.x,owner.y-shot.y),speed=shot.returnSpeed||1120;shot.vx=lerp(shot.vx,toward.x*speed,clamp(dt*13,0,1));shot.vy=lerp(shot.vy,toward.y*speed,clamp(dt*13,0,1));}
+    if((shot.glaive||shot.gale)&&shot.returning){const owner=shot.remoteOwner||player,toward=normalize(owner.x-shot.x,owner.y-shot.y),speed=shot.returnSpeed||1120;shot.vx=lerp(shot.vx,toward.x*speed,clamp(dt*13,0,1));shot.vy=lerp(shot.vy,toward.y*speed,clamp(dt*13,0,1));}
     shot.life -= dt; shot.x += shot.vx * dt; shot.y += shot.vy * dt;
     if(shot.glaive&&!shot.returning&&shot.life<=0)turnGlaiveForReturn(shot);
-    if(shot.glaive&&shot.returning){const owner=shot.remoteOwner||player;if(distance(shot,owner)<owner.radius+24){shot.life=0;effects.spriteEffects.push({asset:'nomiGlaiveVfx',fixedFrame:5,x:owner.x,y:owner.y-24,width:138,height:116,life:.34,maxLife:.34,glow:'#b65cff'});effects.rings.push({x:owner.x,y:owner.y,radius:8,maxRadius:52,color:'#aeefff',life:.25,maxLife:.25});if(!shot.remoteOwner)playSfx('impact',.13,1.52);continue;}}
+    if(shot.gale&&!shot.returning&&shot.life<=0)turnGaleForReturn(shot);
+    if(shot.mortar&&shot.life<=0&&!shot.detonated){detonateMortar(shot);continue;}
+    if((shot.glaive||shot.gale)&&shot.returning){const owner=shot.remoteOwner||player;if(distance(shot,owner)<owner.radius+24){shot.life=0;effects.spriteEffects.push({asset:shot.gale?'arsenalReactionsVfx':'nomiGlaiveVfx',fixedFrame:5,x:owner.x,y:owner.y-24,width:shot.gale?165:138,height:shot.gale?140:116,life:.34,maxLife:.34,glow:shot.gale?'#67efff':'#b65cff'});effects.rings.push({x:owner.x,y:owner.y,radius:8,maxRadius:52,color:shot.gale?'#bffcff':'#aeefff',life:.25,maxLife:.25});if(!shot.remoteOwner)playSfx('impact',.13,1.52);continue;}}
     if(!damageRoomMissionObjects(shot))damageDestructibles(shot);
     for (const enemy of enemies) {
       if (shot.life <= 0 || enemy.dead || enemy.state==='waiting' || shot.hitIds?.has(enemy.id) || distance(shot, enemy) >= shot.radius + enemy.radius) continue;
       shot.hitIds?.add(enemy.id);hitEnemyWithShot(enemy, shot);
+      if(shot.mortar){detonateMortar(shot);break;}
       if(redirectTrickshot(shot,enemy))continue;
       if((shot.pierces||0)>0){shot.pierces--;shot.damage*=.82;}else{shot.life=0;break;}
     }
@@ -3059,7 +3107,8 @@ function enemyMotion(enemy){
   const speed=Math.hypot(enemy.vx||0,enemy.vy||0),moving=!enemy.dead&&['chase','bossIdle'].includes(enemy.state)&&speed>24;const heavy=enemy.def.behavior==='heavy'||enemy.def.behavior==='boss';
   const t=performance.now()/1000+(enemy.spawnIndex||0)*.31,cadence=(heavy?5.8:9.8)*clamp(speed/Math.max(80,enemy.def.speed||160),.72,1.65),step=Math.sin(t*cadence);let x=0,y=moving?-Math.abs(step)*(heavy?7:5):0,rotation=moving?step*(heavy?.018:.04)*Math.sign(Math.cos(enemy.facing)||1):0,scaleX=moving?1+Math.abs(step)*(heavy?.025:.045):1,scaleY=moving?1-Math.abs(step)*(heavy?.02:.04):1,filter='none';
   if(enemy.state==='enter'){const p=clamp(1-enemy.stateTime/(enemy.spawnDuration||1.35),0,1);y=18*(1-p);scaleX=1+.04*Math.sin(p*Math.PI);scaleY=.92+.08*p;}
-  if(enemy.abilityReactTime>0){const p=enemy.abilityReactTime/(enemy.abilityReactType==='shock'?.48:enemy.abilityReactType==='burn'?.38:.44),wave=Math.sin(t*48+enemy.abilityReactSeed);if(enemy.abilityReactType==='shock'){x=wave*7;y+=Math.cos(t*55)*4;rotation=wave*.07;filter='brightness(1.75) saturate(1.8) hue-rotate(18deg)';}else if(enemy.abilityReactType==='burn'){x=wave*3;rotation=wave*.055;scaleX=1.08;scaleY=.92;filter='brightness(1.35) saturate(1.7) sepia(.35)';}else{y+=7;rotation=-Math.cos(enemy.facing)*.09;scaleX=1.12;scaleY=.84;filter='brightness(1.35) saturate(1.45) hue-rotate(145deg)';}}
+  if(enemy.freezeTime>0){x=0;y=2;rotation=0;scaleX=.98;scaleY=1.02;filter='brightness(1.35) saturate(.65) hue-rotate(135deg)';}
+  else if(enemy.abilityReactTime>0){const p=enemy.abilityReactTime/(enemy.abilityReactType==='shock'?.48:enemy.abilityReactType==='burn'?.38:.44),wave=Math.sin(t*48+enemy.abilityReactSeed);if(enemy.abilityReactType==='shock'){x=wave*7;y+=Math.cos(t*55)*4;rotation=wave*.07;filter='brightness(1.75) saturate(1.8) hue-rotate(18deg)';}else if(enemy.abilityReactType==='burn'){x=wave*3;rotation=wave*.055;scaleX=1.08;scaleY=.92;filter='brightness(1.35) saturate(1.7) sepia(.35)';}else if(enemy.abilityReactType==='frost'){x=wave*2;scaleX=1.03;scaleY=.97;filter='brightness(1.45) saturate(.85) hue-rotate(130deg)';}else{y+=7;rotation=-Math.cos(enemy.facing)*.09;scaleX=1.12;scaleY=.84;filter='brightness(1.35) saturate(1.45) hue-rotate(145deg)';}}
   if(enemy.hitReactTime>0){const p=clamp(enemy.hitReactTime/Math.max(.01,enemy.hitReactMax||.2),0,1),kick=Math.sin(p*Math.PI)*(enemy.hitReactPower||.5);x-=(enemy.hitReactX||0)*(heavy?8:17)*kick;y-=(enemy.hitReactY||0)*(heavy?4:9)*kick-Math.sin(p*Math.PI)*(heavy?2:5);rotation-=(enemy.hitReactX||0)*(heavy?.025:.09)*kick;scaleX*=1+kick*(heavy?.025:.075);scaleY*=1-kick*(heavy?.018:.06);}
   return {x,y,rotation,scaleX,scaleY,filter,moving};
 }
@@ -3069,6 +3118,8 @@ function drawEnemyStatusBack(enemy,width=135,height=105){
   if(enemy.wetTime>0)drawAtlasFrame(assets.waterImpactVfx,5,enemy.x,enemy.y+13,width*.82,height*.5,0,.32,'#35e7ff');
   if(enemy.shockTime>0)drawAtlasFrame(assets.shockImpactVfx,4,enemy.x,enemy.y+2,width*.92,height*.72,0,clamp(enemy.shockTime/.55,0,1)*.38,'#d94cff');
   if(enemy.conductiveStacks>0)drawAtlasFrame(assets.zapArcVfx,enemy.conductiveStacks>1?1:0,enemy.x,enemy.y-4,width*.72,height*.62,0,.28+enemy.conductiveStacks*.08,'#39eaff');
+  if(enemy.freezeTime>0)drawGridAtlasFrame(assets.arsenalReactionsVfx,2,3,2,enemy.x,enemy.y-height*.2,width*1.28,height*1.48,0,.88,'#67edff');
+  else if(enemy.chillStacks>0)drawGridAtlasFrame(assets.arsenalReactionsVfx,enemy.chillStacks>1?1:0,3,2,enemy.x,enemy.y-height*.08,width*(enemy.chillStacks>1?1.12:.85),height*(enemy.chillStacks>1?1.22:.78),0,.52,'#67edff');
 }
 
 function drawCoopPlayer(member){
@@ -3271,8 +3322,8 @@ function drawEffects() {
   for (const shot of effects.playerShots) {
     const angle=Math.atan2(shot.vy,shot.vx);const frame=shot.arrow||shot.trickshot?Math.floor(performance.now()/65)%3:shot.arc?2+Math.floor(performance.now()/80)%2:2+Math.floor(performance.now()/65)%3;
     const scale=shot.radius>=12?1.24:1;
-    const shotAsset=shot.glaive||shot.spiritFeather?assets.nomiGlaiveVfx:shot.arrow?assets.hopscotchArrow:shot.trickshot?assets.trickshotVfx:shot.arc?assets.zapArcVfx:assets.blasterShotVfx;const shotFrame=shot.glaive?(shot.returning?1:0):shot.spiritFeather?3:frame;const shotWidth=shot.glaive?(shot.returning?186:150):shot.spiritFeather?126:shot.arrow?168:shot.trickshot?116:shot.arc?132:112;const shotHeight=shot.glaive?(shot.returning?116:126):shot.spiritFeather?86:shot.arrow?72:shot.trickshot?92:shot.arc?82:70;
-    if(!drawAtlasFrame(shotAsset,shotFrame,shot.x,shot.y,shotWidth*scale,shotHeight*scale,angle,clamp(shot.life/.12,0,1),shot.color||'#42ecff')){
+    const arsenal=shot.frost||shot.mortar||shot.gale;const shotAsset=arsenal?assets.arsenalWeaponsVfx:shot.glaive||shot.spiritFeather?assets.nomiGlaiveVfx:shot.arrow?assets.hopscotchArrow:shot.trickshot?assets.trickshotVfx:shot.arc?assets.zapArcVfx:assets.blasterShotVfx;const shotFrame=shot.frost?3:shot.mortar?4:shot.gale?5:shot.glaive?(shot.returning?1:0):shot.spiritFeather?3:frame;const shotWidth=shot.frost?142:shot.mortar?128:shot.gale?(shot.returning?198:176):shot.glaive?(shot.returning?186:150):shot.spiritFeather?126:shot.arrow?168:shot.trickshot?116:shot.arc?132:112;const shotHeight=shot.frost?92:shot.mortar?112:shot.gale?(shot.returning?154:142):shot.glaive?(shot.returning?116:126):shot.spiritFeather?86:shot.arrow?72:shot.trickshot?92:shot.arc?82:70;
+    const drawn=arsenal?drawGridAtlasFrame(shotAsset,shotFrame,3,2,shot.x,shot.y,shotWidth*scale,shotHeight*scale,angle,clamp(shot.life/.12,0,1),shot.color||'#42ecff'):drawAtlasFrame(shotAsset,shotFrame,shot.x,shot.y,shotWidth*scale,shotHeight*scale,angle,clamp(shot.life/.12,0,1),shot.color||'#42ecff');if(!drawn){
       ctx.save();ctx.translate(shot.x,shot.y);ctx.rotate(angle);ctx.fillStyle='#fff';ctx.fillRect(-22,-5,44,10);ctx.restore();
     }
   }
@@ -3315,7 +3366,7 @@ function drawEffects() {
   }
   for (const effect of effects.spriteEffects) {
     const p=1-effect.life/effect.maxLife; const sheet=assets[effect.asset];
-    drawAtlasFrame(sheet,effect.fixedFrame??Math.floor(p*6),effect.x,effect.y,effect.width,effect.height,effect.rotation||0,clamp(effect.life/.1,0,1),effect.glow);
+    const frame=effect.fixedFrame??Math.floor(p*6);if(effect.asset==='arsenalWeaponsVfx'||effect.asset==='arsenalReactionsVfx')drawGridAtlasFrame(sheet,frame,3,2,effect.x,effect.y,effect.width,effect.height,effect.rotation||0,clamp(effect.life/.1,0,1),effect.glow);else drawAtlasFrame(sheet,frame,effect.x,effect.y,effect.width,effect.height,effect.rotation||0,clamp(effect.life/.1,0,1),effect.glow);
   }
   for (const shard of effects.shards) {
     ctx.save(); ctx.translate(shard.x,shard.y); ctx.rotate(performance.now()/180 + shard.x); ctx.globalAlpha=clamp(shard.life/.35,0,1); ctx.fillStyle=shard.color; ctx.shadowColor=shard.color; ctx.shadowBlur=14;

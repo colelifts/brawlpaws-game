@@ -114,6 +114,30 @@ export const WEAPONS = {
     projectileRadius:18,attackDuration:.52,releaseDelay:.27,muzzleDistance:60,
     recoil:30,color:'#aeefff',impactColor:'#b65cff',projectileType:'glaive',pierces:5,returnSpeed:1120,
     summary:'Throw a crescent through a line. It turns at maximum reach and can cut every target again while returning to Nomi.',tags:['RETURN','PIERCE','LINE CONTROL']
+  },
+  frostbiteNeedle: {
+    id:'frostbiteNeedle',name:'Frostbite Needle',damage:6,fireRate:.36,
+    projectileSpeed:1180,projectileLife:1.08,range:1270,
+    knockback:125,criticalChance:.12,shots:1,spread:0,
+    projectileRadius:8,attackDuration:.2,muzzleDistance:54,
+    recoil:24,color:'#67edff',impactColor:'#c9fbff',projectileType:'frost',chillThreshold:3,freezeDuration:1.15,
+    summary:'Rapid ice needles stack Chill. The third hit visibly freezes normal enemies and briefly interrupts guardians.',tags:['CHILL','FREEZE','PRECISION']
+  },
+  oniMortar: {
+    id:'oniMortar',name:'Oni Mortar',damage:7,fireRate:.82,
+    projectileSpeed:620,projectileLife:.86,range:535,
+    knockback:420,criticalChance:.06,shots:1,spread:0,
+    projectileRadius:15,attackDuration:.34,muzzleDistance:60,
+    recoil:92,color:'#ff8a24',impactColor:'#ffd069',projectileType:'mortar',blastRadius:205,blastDamage:19,
+    summary:'A deliberate arcing shell detonates in a broad Oni blast, trading speed for pack-clearing force.',tags:['AREA','DEMOLITION','HEAVY']
+  },
+  galeWarFan: {
+    id:'galeWarFan',name:'Gale War Fan',damage:8,fireRate:.54,
+    projectileSpeed:850,projectileLife:.6,range:930,
+    knockback:315,criticalChance:.11,shots:1,spread:0,
+    projectileRadius:18,attackDuration:.3,muzzleDistance:58,
+    recoil:34,color:'#bffcff',impactColor:'#67efff',projectileType:'gale',pierces:5,returnSpeed:1060,
+    summary:'A wide spirit fan carves through a line, turns at maximum reach, and knocks the pack aside again on return.',tags:['RETURN','WIDE','CONTROL']
   }
 };
 

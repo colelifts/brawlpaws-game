@@ -524,3 +524,21 @@ test('every playable hero owns authored ability and reaction poses',()=>{
   assert.match(game,/state==='won' \? 'victory'/);
   assert.match(game,/sheet\.naturalHeight \/ \(authoredState\?2:4\)/);
 });
+
+test('level three forces an authored arsenal awakening with distinct combat contracts',()=>{
+  for(const weapon of ['frostbiteNeedle','oniMortar','galeWarFan'])assert.match(data,new RegExp(`${weapon}: \\{[\\s\\S]{0,520}projectileType:`));
+  for(const upgrade of ['equipFrostbiteNeedle','equipOniMortar','equipGaleWarFan','permafrost','shatterpoint','oniPayload','blastChamber','razorCurrent','typhoonReach'])assert.match(game,new RegExp(`id:'${upgrade}'`));
+  assert.match(game,/const arsenal=pool\.filter\(\(upgrade\)=>upgrade\.type==='ARSENAL AWAKENING'\);if\(arsenal\.length\)\{currentUpgradeChoices=arsenal;return;\}/);
+  assert.match(game,/currentUpgradeChoices\.every\(\(upgrade\)=>upgrade\.type==='ARSENAL AWAKENING'\)/);
+  assert.match(styles,/arsenal-weapons-v1\.png/);
+});
+
+test('arsenal projectiles create whole-enemy freeze, mortar, and return reactions',()=>{
+  for(const fn of ['equipWeapon','applyFrostbite','detonateMortar','turnGaleForReturn'])assert.match(game,new RegExp(`function ${fn}\\(`));
+  assert.match(game,/chillStacks:0,chillTime:0,freezeTime:0/);
+  assert.match(game,/enemy\.freezeTime>0\)\{enemy\.vx\*=Math\.exp\(-18\*dt\)/);
+  assert.match(game,/drawGridAtlasFrame\(assets\.arsenalReactionsVfx,2,3,2/);
+  assert.match(game,/if\(shot\.mortar\)\{detonateMortar\(shot\);break;\}/);
+  assert.match(game,/if\(shot\.gale&&!shot\.returning&&shot\.life<=0\)turnGaleForReturn\(shot\)/);
+  assert.match(game,/weaponId:player\?\.weaponId\|\|heroDef\.weapon/);
+});

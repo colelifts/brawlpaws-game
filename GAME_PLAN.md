@@ -2,6 +2,15 @@
 
 This document turns the master brief and concept art into a staged production plan. The concept images remain the visual source of truth. Every phase must preserve the distant 3/4 camera, small detailed fighters, saturated Jade Grove lighting, brush-edged UI, readable telegraphs, and comic-impact combat language.
 
+## Implemented milestone: Arsenal Awakening
+
+- Level 3 forces a clear, non-skippable run-weapon decision: Frostbite Needle, Oni Mortar, or Gale War Fan.
+- Frostbite builds visible Chill and freezes the whole enemy body; Freeze pauses normal AI and briefly interrupts guardians.
+- Oni Mortar has a true impact/expiry area detonation with authored Oni blast art and weapon-specific scaling.
+- Gale War Fan pierces outward, turns at maximum reach, clears its hit history, and damages/knocks back again on return.
+- Each arsenal has two dedicated upgrade paths, survives checkpoints, and is transmitted with co-op attacks.
+- Authored production atlases and exact generation notes live in `assets/source-art/arsenal-v1/` and `assets/vfx/`.
+
 ## Current playable baseline
 
 The current Visual Combat Prototype V2 provides the first quality gate:
