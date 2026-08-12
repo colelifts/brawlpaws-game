@@ -571,3 +571,14 @@ test('every guardian exposes a named skill-based counter window',()=>{
   assert.match(game,/openBossCounter\(enemy,profile/);
   assert.match(game,/enemy\.def\.behavior==='boss'&&enemy\.counterTime>0/);
 });
+
+test('level five paths and level ten masteries create distinct combat loops',()=>{
+  for(const id of ['pathGunner','pathElementalist','pathVanguard'])assert.match(game,new RegExp(`id:'${id}'[\\s\\S]{0,260}LEVEL 5 FIGHTING STYLE`));
+  for(const id of ['masterGunner','masterElementalist','masterVanguard'])assert.match(game,new RegExp(`id:'${id}'[\\s\\S]{0,260}LEVEL 10 PATH MASTERY`));
+  assert.match(game,/const paths=pool\.filter\(\(upgrade\)=>upgrade\.type==='LEVEL 5 FIGHTING STYLE'\)/);
+  assert.match(game,/const mastery=pool\.filter\(\(upgrade\)=>upgrade\.type==='LEVEL 10 PATH MASTERY'\)/);
+  assert.match(game,/function spawnHunterSeekers\(/);
+  assert.match(game,/function triggerPrismaticRupture\(/);
+  assert.match(game,/vanguardCrush=player\.buildMastery==='vanguard'&&player\.masteryCharge>=1/);
+  assert.match(game,/buildPath:null,buildMastery:null,masteryCharge:0/);
+});

@@ -225,6 +225,7 @@ button span { color: #ffe43f; font-size: 24px; margin-left: 10px; }
 .levelup-actions .skip-action { border-color:#836b31; }.levelup-actions .skip-action span{color:#ffda52}
 .levelup-actions .secondary-action:disabled { opacity:.38; cursor:not-allowed; filter:none; }
 .levelup-screen.arsenal-draft .levelup-actions{display:none}.levelup-screen.arsenal-draft .levelup-hint{margin-top:18px;color:#dffcff}
+.levelup-screen.mastery-draft .upgrade-grid{grid-template-columns:minmax(340px,480px);justify-content:center}.levelup-screen.mastery-draft .upgrade-card{min-height:320px;padding-inline:34px}.levelup-screen.mastery-draft .upgrade-card .upgrade-icon{width:112px;height:112px}.levelup-screen.mastery-draft .upgrade-card strong{font-size:31px}.levelup-screen.mastery-draft .upgrade-comparison{font-size:23px}
 .levelup-hint { margin: 22px 0 0; color: #9d96aa; font-size: 11px; font-weight: 900; letter-spacing: 2px; }
 .story-screen { z-index: 13; }
 .story-screen{--story-accent:#8cff39}.story-screen::before { background: linear-gradient(90deg, rgba(2,1,8,.95), rgba(7,4,20,.58) 62%, rgba(1,0,5,.84)), radial-gradient(circle at 72% 50%, color-mix(in srgb,var(--story-accent) 16%,transparent), transparent 36%); backdrop-filter: blur(4px) saturate(.7); }

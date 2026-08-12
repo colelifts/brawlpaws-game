@@ -252,8 +252,8 @@ function activeDifficulty(){
 
 function expectedPowerForProgress(progress){return 1+progress*.18;}
 function currentBuildPower(){
-  if(!player)return 1;const abilityRanks=Object.values(player.abilityPower).reduce((sum,value)=>sum+Math.max(0,value-1),0)*.28;const unlockPower=player.unlockedAbilities.size*.14;const projectilePower=(player.bonusProjectiles+player.bonusPierces*.35+player.bonusRicochets*.5)*.12;const capstone=player.weaponEvolution?.2:0;const evolvedPower=Object.values(player.abilityEvolutions||{}).filter(Boolean).length*.16;
-  return .55+player.damageMultiplier*(1/Math.max(.48,player.fireRateMultiplier))*.45+abilityRanks+unlockPower+projectilePower+capstone+evolvedPower+Math.max(0,player.level-1)*.045;
+  if(!player)return 1;const abilityRanks=Object.values(player.abilityPower).reduce((sum,value)=>sum+Math.max(0,value-1),0)*.28;const unlockPower=player.unlockedAbilities.size*.14;const projectilePower=(player.bonusProjectiles+player.bonusPierces*.35+player.bonusRicochets*.5)*.12;const capstone=player.weaponEvolution?.2:0;const evolvedPower=Object.values(player.abilityEvolutions||{}).filter(Boolean).length*.16,pathPower=player.buildPath?.12:0,masteryPower=player.buildMastery?.2:0;
+  return .55+player.damageMultiplier*(1/Math.max(.48,player.fireRateMultiplier))*.45+abilityRanks+unlockPower+projectilePower+capstone+evolvedPower+pathPower+masteryPower+Math.max(0,player.level-1)*.045;
 }
 function createCorruptionDirector(waveIndex,saved={}){
   const progress=chapterIndex*chapter.waves.length+waveIndex;const scripted=Math.min(CORRUPTION_TIERS.length-1,Math.floor(progress/3));const ahead=currentBuildPower()/expectedPowerForProgress(progress);const adaptive=ahead>1.75?2:ahead>1.34?1:0;const tier=clamp(saved.tier??scripted+adaptive,0,CORRUPTION_TIERS.length-1);const definition=CORRUPTION_TIERS[tier];
@@ -816,6 +816,12 @@ const UPGRADES = [
   ,{id:'nineTailInferno',name:'Nine-Tail Inferno',icon:'FIRE',type:'FOXFIRE EVOLUTION',color:'#ff6a24',description:'Fire nine spirit flames. Burning enemies spread Foxfire when they fall.',detail:'9 flames / death spreads burn',available:()=>player.level>=9&&player.upgradeRanks.hungryFlame>=2&&!player.abilityEvolutions.foxfireVolley,apply:()=>{player.abilityEvolutions.foxfireVolley=true;}}
   ,{id:'guardianBloom',name:'Guardian Bloom',icon:'HEART',type:'WILD HEART EVOLUTION',color:'#68ef50',description:'When Wild Heart ends, a life-draining bloom blasts the nearby pack and restores health per target.',detail:'Expiry blast / life drain',available:()=>player.level>=9&&player.upgradeRanks.heartBloom>=2&&!player.abilityEvolutions.wildHeart,apply:()=>{player.abilityEvolutions.wildHeart=true;}}
   ,{id:'heavensVerdict',name:"Heaven's Verdict",icon:'STORM',type:'ULTIMATE EVOLUTION',color:'#d94cff',description:'Shock Paws ends with a final judgment bolt against every surviving enemy in the room.',detail:'Global finishing strike',available:()=>player.level>=9&&player.upgradeRanks.stormHeart>=2&&!player.abilityEvolutions.shockPaws,apply:()=>{player.abilityEvolutions.shockPaws=true;}}
+  ,{id:'pathGunner',name:'Spirit Gunner',icon:'SHOT',type:'LEVEL 5 FIGHTING STYLE',color:'#45eaff',description:'Commit this run to ranged execution. Every weapon gains another line of penetration and strikes harder.',detail:'+1 pierce / +12% weapon power',available:()=>player.level>=5&&!player.buildPath,apply:()=>{player.buildPath='gunner';player.bonusPierces++;player.damageMultiplier*=1.12;}}
+  ,{id:'pathElementalist',name:'Elementalist',icon:'STATUS',type:'LEVEL 5 FIGHTING STYLE',color:'#d94cff',description:'Commit this run to elemental reactions. Techniques grow stronger and Burn, Wet, Shock, and Freeze hold longer.',detail:'+15% ability power / +20% status',available:()=>player.level>=5&&!player.buildPath,apply:()=>{player.buildPath='elementalist';for(const id of Object.keys(player.abilityPower))player.abilityPower[id]*=1.15;player.statusDurationMultiplier*=1.2;}}
+  ,{id:'pathVanguard',name:'Warpath Vanguard',icon:'WARD',type:'LEVEL 5 FIGHTING STYLE',color:'#78ef63',description:'Commit this run to aggressive survival. Take less damage and gain enough health to fight inside the pack.',detail:'+35 max HP / -8% damage',available:()=>player.level>=5&&!player.buildPath,apply:()=>{player.buildPath='vanguard';player.maxHealth+=35;player.health+=35;player.damageTakenMultiplier*=.92;}}
+  ,{id:'masterGunner',name:'Hunter Constellation',icon:'TARGET',type:'LEVEL 10 PATH MASTERY',color:'#45eaff',description:'Every fifth volley launches two spirit seekers that curve around the battlefield and hunt separate enemies.',detail:'5th volley / 2 homing seekers',available:()=>player.level>=10&&player.buildPath==='gunner'&&!player.buildMastery,apply:()=>{player.buildMastery='gunner';}}
+  ,{id:'masterElementalist',name:'Prismatic Rupture',icon:'BURST',type:'LEVEL 10 PATH MASTERY',color:'#d94cff',description:'Applying a second elemental condition ruptures the target in a readable area blast and damages its nearby pack.',detail:'2 statuses / elemental rupture',available:()=>player.level>=10&&player.buildPath==='elementalist'&&!player.buildMastery,apply:()=>{player.buildMastery='elementalist';}}
+  ,{id:'masterVanguard',name:'Stampede Chamber',icon:'RUN',type:'LEVEL 10 PATH MASTERY',color:'#78ef63',description:'A full sprint charges your next volley into an oversized impact that throws apart the entire firing lane.',detail:'Sprint charge / crushing volley',available:()=>player.level>=10&&player.buildPath==='vanguard'&&!player.buildMastery,apply:()=>{player.buildMastery='vanguard';}}
 ];
 
 const RELICS=[
@@ -914,7 +920,8 @@ const UPGRADE_RARITIES={
   spiritCylinder:'common',phaseRounds:'epic',foxstepMastery:'rare',ironBelly:'rare',scatterBore:'epic',guardianHide:'rare',
   capacitorBank:'rare',chainLogic:'rare',rapidCycle:'common',
   moonEdge:'rare',secondPassage:'rare',cranePoise:'common',skyfeatherConstellation:'epic',
-  phaseNova:'epic',siegeLotus:'epic',moonConstellation:'epic',deadeyeCircuit:'epic',thunderheadArray:'epic',abyssalMaw:'epic',nineTailInferno:'epic',guardianBloom:'epic',heavensVerdict:'epic'
+  phaseNova:'epic',siegeLotus:'epic',moonConstellation:'epic',deadeyeCircuit:'epic',thunderheadArray:'epic',abyssalMaw:'epic',nineTailInferno:'epic',guardianBloom:'epic',heavensVerdict:'epic',
+  pathGunner:'rare',pathElementalist:'rare',pathVanguard:'rare',masterGunner:'epic',masterElementalist:'epic',masterVanguard:'epic'
 };
 const RARITY_STYLES={common:{name:'COMMON',color:'#a9b4c3',weight:56},rare:{name:'RARE',color:'#39e8ff',weight:32},epic:{name:'EPIC',color:'#e04cff',weight:12}};
 const SYNERGIES=[
@@ -1140,7 +1147,7 @@ function resetGame() {
     attack: null, shotCooldown: 0,weaponId:weapon.id,arsenalAwakened:false,
     abilityCooldowns: { undertowWell: 0, foxfireVolley: 0, wildHeart: 0, shockPaws: 0 },
     unlockedAbilities: new Set(), dualWield:Boolean(heroDef.naturalDual), damageMultiplier: 1+profile.forgeRank*.03, fireRateMultiplier: 1,
-    rerolls:1+(contractClaimed('sealRunner')?1:0),paidRerolls:0,synergies:new Set(),eventHistory:new Set(),shotsFired:0,
+    rerolls:1+(contractClaimed('sealRunner')?1:0),paidRerolls:0,synergies:new Set(),eventHistory:new Set(),shotsFired:0,buildPath:null,buildMastery:null,masteryCharge:0,
     abilityPower: { undertowWell: 1+profile.attunementRank*.04, foxfireVolley:(1+profile.attunementRank*.04)*(contractClaimed('foxfireHunt')?1.06:1), wildHeart: 1+profile.attunementRank*.04, shockPaws: 1+profile.attunementRank*.04 },
     abilityEvolutions:{undertowWell:false,foxfireVolley:false,wildHeart:false,shockPaws:false},
     upgradeRanks:{spiritRounds:0,quickPaws:0,vitality:0,undertow:0,hungryFlame:0,heartBloom:0,stormHeart:0,wardbreaker:0,spiritHunter:0,spiritCatalyst:0,pressureChamber:0,headhunter:0,keenEye:0,moonPiercer:0,perfectDraw:0,glassFang:0,spiritMomentum:0,guardianHunter:0,deepReserves:0,bankShot:0,loadedDice:0,quickdraw:0,spiritCylinder:0,phaseRounds:0,foxstepMastery:0,ironBelly:0,scatterBore:0,guardianHide:0,capacitorBank:0,chainLogic:0,rapidCycle:0,moonEdge:0,secondPassage:0,cranePoise:0,permafrost:0,shatterpoint:0,oniPayload:0,blastChamber:0,razorCurrent:0,typhoonReach:0},
@@ -1166,11 +1173,21 @@ function resetGame() {
 
 function applyEnemyStatus(enemy,id,duration,power=1){
   const status=STATUS_EFFECTS[id];if(!status||enemy.dead)return false;
+  const beforeElements=activeElementCount(enemy);
   duration*=player?.statusDurationMultiplier||1;
   enemy[status.field]=Math.max(enemy[status.field]||0,duration);
   enemy.abilityReactType=id;enemy.abilityReactTime=Math.max(enemy.abilityReactTime||0,id==='shock'?.48:id==='burn'?.38:.44);
   if(id==='burn'){enemy.burnTick=Math.min(enemy.burnTick||.45,.45);enemy.burnPower=Math.max(enemy.burnPower||1,power);}
+  if(player?.buildMastery==='elementalist'&&beforeElements<2&&activeElementCount(enemy)>=2&&(enemy.elementalRuptureCooldown||0)<=0)triggerPrismaticRupture(enemy,power);
   return true;
+}
+
+function activeElementCount(enemy){return Number((enemy.burnTime||0)>0)+Number((enemy.wetTime||0)>0)+Number((enemy.shockTime||0)>0)+Number((enemy.freezeTime||0)>0);}
+
+function triggerPrismaticRupture(origin,power=1){
+  origin.elementalRuptureCooldown=1.1;const radius=210,damage=Math.round(22*Math.max(1,power));effects.rings.push({x:origin.x,y:origin.y,radius:22,maxRadius:radius,color:'#e66cff',life:.52,maxLife:.52});effects.spriteEffects.push({asset:'shockImpactVfx',fixedFrame:5,x:origin.x,y:origin.y-18,width:390,height:310,life:.55,maxLife:.55,glow:'#e66cff'});spawnWord(origin.x,origin.y-86,'PRISMATIC RUPTURE!','#f4a2ff');burst(origin.x,origin.y-12,'#65efff',32,460,6);
+  for(const target of enemies){if(target.dead||target.state==='waiting'||distance(origin,target)>radius+target.radius)continue;const away=normalize(target.x-origin.x,target.y-origin.y);damageEnemyFromAbility(target,damage,165,away,'#e66cff',null);}
+  camera.shake=Math.max(camera.shake,10);hitStop=Math.max(hitStop,.05);playSfx('lightning',.24,1.18);
 }
 
 function resolveEnemyDamage(enemy,amount,incomingDirection=null){
@@ -1204,7 +1221,7 @@ function makeEnemy(spawn, index) {
     health:maxHealth,maxHealth,shield:maxShield,maxShield,guardCooldown:0,eliteId:eliteDef?.id||null,eliteDef,eliteRewardScale:eliteDef?.rewardScale||1,splitDepth:spawn.splitDepth||0,
     facing: Math.PI / 2, state: spawn.delay > 0 ? 'waiting' : 'enter', stateTime: spawn.delay || spawnDuration, spawnDuration,cooldown: 1.2 + index * .16,
     flash: 0, stagger: 0, dead: false, deathTime: 0, hitPlayer: false, bob: Math.random() * Math.PI * 2,
-    burnTime: 0, burnTick: 0, wetTime: 0, shockTime: 0, huntTime: 0,conductiveStacks:0,conductiveTime:0,chillStacks:0,chillTime:0,freezeTime:0,abilityReactTime:0,abilityReactType:'',abilityReactSeed:Math.random()*20,
+    burnTime: 0, burnTick: 0, wetTime: 0, shockTime: 0, huntTime: 0,conductiveStacks:0,conductiveTime:0,chillStacks:0,chillTime:0,freezeTime:0,elementalRuptureCooldown:0,abilityReactTime:0,abilityReactType:'',abilityReactSeed:Math.random()*20,
     orbitAngle: Math.atan2(spawn.y - room.playerSpawn.y, spawn.x - room.playerSpawn.x),
     orbitRadius: definition.behavior === 'ranged' ? 430 : definition.behavior === 'summoner' ? 480 : definition.behavior === 'bomber' ? 390 : definition.behavior === 'assassin' ? 250 : definition.behavior === 'heavy' || definition.behavior === 'shield' ? 105 : definition.behavior === 'boss' ? 260 : definition.behavior === 'basic' ? 86 : 180 + (index % 2) * 34,
     orbitDrift: index % 2 ? 1 : -1, spawnIndex: index, shotSide: index % 2 ? 1 : -1,
@@ -1607,6 +1624,8 @@ function rarityForUpgrade(upgrade){return UPGRADE_RARITIES[upgrade.id]||'common'
 
 function upgradeOfferClass(upgrade){
   if(upgrade.type==='ARSENAL AWAKENING')return 'CHOOSE ONE WEAPON';
+  if(upgrade.type==='LEVEL 5 FIGHTING STYLE')return 'CHOOSE ONE PATH';
+  if(upgrade.type==='LEVEL 10 PATH MASTERY')return 'PATH MASTERY';
   if(upgrade.id.startsWith('unlock'))return 'NEW ABILITY';
   if(['abyssalMaw','nineTailInferno','guardianBloom','heavensVerdict'].includes(upgrade.id))return 'ABILITY EVOLUTION';
   if(['phaseNova','siegeLotus','moonConstellation','deadeyeCircuit','thunderheadArray','skyfeatherConstellation'].includes(upgrade.id))return 'WEAPON CAPSTONE';
@@ -1630,6 +1649,12 @@ function upgradeComparison(upgrade){
     ironBelly:()=>`${percent(player.braceDamageMultiplier)} BRACED  →  ${percent(Math.max(.52,player.braceDamageMultiplier-.07))}`,scatterBore:()=>`+${player.bonusProjectiles} PELLETS  →  +${player.bonusProjectiles+1}`,guardianHide:()=>`${player.maxHealth} HP  →  ${player.maxHealth+28} HP`,
     capacitorBank:()=>`${percent(player.arcChainPower)} CHAIN  →  ${percent(player.arcChainPower*1.18)} CHAIN`,chainLogic:()=>`${2+player.arcChainBonus} TARGETS  →  ${3+player.arcChainBonus} TARGETS`,rapidCycle:()=>`${percent(1/player.fireRateMultiplier)} RATE  →  ${percent(1/(player.fireRateMultiplier*.87))} RATE`
   };
+  if(upgrade.id==='pathGunner')return 'BASE SHOTS  →  PIERCING SHOTS';
+  if(upgrade.id==='pathElementalist')return 'BASE STATUS  →  120% DURATION';
+  if(upgrade.id==='pathVanguard')return `${player.maxHealth} HP  →  ${player.maxHealth+35} HP`;
+  if(upgrade.id==='masterGunner')return '5th VOLLEY  →  2 SEEKERS';
+  if(upgrade.id==='masterElementalist')return '2 ELEMENTS  →  PACK RUPTURE';
+  if(upgrade.id==='masterVanguard')return 'FULL SPRINT  →  CRUSHING VOLLEY';
   if(comparisons[upgrade.id])return comparisons[upgrade.id]();
   if(upgrade.id==='moonEdge')return `${percent(player.glaiveReturnPower)} RETURN POWER`;
   if(upgrade.id==='secondPassage')return `${percent(player.glaiveReturnSpeed)} RETURN SPEED`;
@@ -1655,6 +1680,8 @@ function weightedUpgradeIndex(pool){
 function rollUpgradeChoices(available=UPGRADES.filter((upgrade)=>upgrade.available())){
   const pool=[...available];currentUpgradeChoices=[];
   const arsenal=pool.filter((upgrade)=>upgrade.type==='ARSENAL AWAKENING');if(arsenal.length){currentUpgradeChoices=arsenal;return;}
+  const paths=pool.filter((upgrade)=>upgrade.type==='LEVEL 5 FIGHTING STYLE');if(paths.length){currentUpgradeChoices=paths;return;}
+  const mastery=pool.filter((upgrade)=>upgrade.type==='LEVEL 10 PATH MASTERY');if(mastery.length){currentUpgradeChoices=mastery;return;}
   const earnedUnlock=pool.find((upgrade)=>upgrade.id==='unlockShock')||pool.find((upgrade)=>upgrade.id==='unlockHeart')||pool.find((upgrade)=>upgrade.id==='unlockFoxfire')||pool.find((upgrade)=>upgrade.id==='unlockUndertow');
   if(earnedUnlock){currentUpgradeChoices.push(earnedUnlock);pool.splice(pool.indexOf(earnedUnlock),1);}
   while(currentUpgradeChoices.length<Math.min(3,available.length)){const index=weightedUpgradeIndex(pool);currentUpgradeChoices.push(pool.splice(index,1)[0]);}
@@ -1662,6 +1689,7 @@ function rollUpgradeChoices(available=UPGRADES.filter((upgrade)=>upgrade.availab
 
 function renderUpgradeChoices(){
   const awakened=player.unlockedAbilities.size,arsenalDraft=currentUpgradeChoices.every((upgrade)=>upgrade.type==='ARSENAL AWAKENING');ui.levelupSubtitle.textContent=arsenalDraft?'LEVEL 3  ARSENAL AWAKENING  ·  CHOOSE YOUR RUN WEAPON':`LEVEL ${player.level} BUILD  ·  ${awakened} / ${Object.keys(ABILITIES).length} ABILITIES AWAKENED`;
+  const pathDraft=currentUpgradeChoices.every((upgrade)=>upgrade.type==='LEVEL 5 FIGHTING STYLE'),masteryDraft=currentUpgradeChoices.every((upgrade)=>upgrade.type==='LEVEL 10 PATH MASTERY');levelupScreen.classList.toggle('mastery-draft',masteryDraft);if(pathDraft)ui.levelupSubtitle.textContent='LEVEL 5  CHOOSE YOUR FIGHTING STYLE';else if(masteryDraft)ui.levelupSubtitle.textContent=`LEVEL 10  MASTER ${player.buildPath.toUpperCase()}`;
   upgradeGrid.innerHTML = currentUpgradeChoices.map((upgrade, index) => `
     <button class="upgrade-card" title="${upgrade.description}" aria-label="${upgrade.name}. ${upgrade.detail}" data-rarity="${rarityForUpgrade(upgrade)}" style="--card-color:${upgrade.color};--rarity:${RARITY_STYLES[rarityForUpgrade(upgrade)].color}" data-upgrade-index="${index}">
       <span class="upgrade-card-top"><b class="choice-number">${index + 1}</b><i class="upgrade-rarity">${RARITY_STYLES[rarityForUpgrade(upgrade)].name}</i></span>
@@ -1675,29 +1703,31 @@ function renderUpgradeChoices(){
     button.addEventListener('click', () => chooseUpgrade(Number(button.dataset.upgradeIndex)));
   }
   const cost=30+player.paidRerolls*15;ui.rerollCost.textContent=player.rerolls>0?`FREE  ${player.rerolls} LEFT`:` ${cost} GOLD`;
+  if(pathDraft||masteryDraft){ui.rerollButton.disabled=true;document.querySelector('#skip-upgrade').disabled=true;levelupScreen.classList.add('arsenal-draft');document.querySelector('.levelup-hint').textContent=pathDraft?'PRESS 1, 2, OR 3 TO COMMIT YOUR BUILD':'PRESS 1 TO MASTER YOUR PATH';return;}
   ui.rerollButton.disabled=arsenalDraft||(player.rerolls<=0&&player.gold<cost);document.querySelector('#skip-upgrade').disabled=arsenalDraft;levelupScreen.classList.toggle('arsenal-draft',arsenalDraft);document.querySelector('.levelup-hint').textContent=arsenalDraft?'PRESS 1, 2, OR 3 TO CHOOSE YOUR WEAPON':'PRESS 1, 2, OR 3 TO CHOOSE · R TO REROLL';
 }
 
 function upgradeIconFrame(upgrade){
+  if(upgrade.id==='pathGunner'||upgrade.id==='masterGunner')return 11;if(upgrade.id==='pathElementalist'||upgrade.id==='masterElementalist')return 3;if(upgrade.id==='pathVanguard'||upgrade.id==='masterVanguard')return 6;
   if(upgrade.id==='unlockUndertow'||upgrade.type.includes('UNDERTOW'))return 0;if(upgrade.id==='unlockFoxfire'||upgrade.type.includes('FOXFIRE'))return 1;if(upgrade.id==='unlockHeart'||upgrade.type.includes('HEART'))return 2;if(upgrade.id==='unlockShock'||upgrade.type.includes('ULTIMATE'))return 3;
   if(upgrade.id==='dualWield')return 4;if(['spiritRounds','quickPaws','quickdraw','spiritCylinder','rapidCycle','capacitorBank'].includes(upgrade.id))return 5;if(['wardbreaker','ironBelly','guardianHide','vitality','glassFang'].includes(upgrade.id))return 6;if(['keenEye','perfectDraw','loadedDice','spiritHunter'].includes(upgrade.id))return 7;
   if(['guardianHunter','headhunter'].includes(upgrade.id)||upgrade.type.includes('CAPSTONE')||upgrade.type.includes('EVOLUTION'))return 8;if(['spiritMomentum','foxstepMastery'].includes(upgrade.id))return 9;if(upgrade.id==='deepReserves')return 10;if(['moonPiercer','phaseRounds'].includes(upgrade.id))return 11;if(['bankShot','deadeyeCircuit','chainLogic','thunderheadArray'].includes(upgrade.id))return 12;if(['perfectDraw','moonConstellation'].includes(upgrade.id))return 13;if(['pressureChamber','scatterBore','siegeLotus'].includes(upgrade.id))return 14;return 15;
 }
 
 function rerollUpgrades(){
-  if(state!=='levelup')return;const cost=30+player.paidRerolls*15;
+  if(state!=='levelup'||currentUpgradeChoices.every((upgrade)=>['ARSENAL AWAKENING','LEVEL 5 FIGHTING STYLE','LEVEL 10 PATH MASTERY'].includes(upgrade.type)))return;const cost=30+player.paidRerolls*15;
   if(player.rerolls>0)player.rerolls--;else if(player.gold>=cost){player.gold-=cost;player.paidRerolls++;}else return;
   rollUpgradeChoices();renderUpgradeChoices();spawnWord(player.x,player.y-90,'FATE REROLLED!','#45eaff');playSfx('upgrade',.2,.9);updateHud();
 }
 
 function finishLevelUpFlow(){
-  levelupScreen.classList.remove('active','arsenal-draft');state='playing';updateHud();
+  levelupScreen.classList.remove('active','arsenal-draft','mastery-draft');state='playing';updateHud();
   if(encounter.startWaveAfterUpgrade!==null){const nextWave=encounter.startWaveAfterUpgrade;encounter.startWaveAfterUpgrade=null;startWave(nextWave);return;}
   if(pendingLevelUps>0)setTimeout(openLevelUp,180);
 }
 
 function skipUpgrade(){
-  if(state!=='levelup'||currentUpgradeChoices.every((upgrade)=>upgrade.type==='ARSENAL AWAKENING'))return;player.gold+=20;player.health=Math.min(player.maxHealth,player.health+18);spawnWord(player.x,player.y-92,'POWER BANKED!','#ffd13a');effects.rings.push({x:player.x,y:player.y,radius:15,maxRadius:105,color:'#ffd13a',life:.5,maxLife:.5});playSfx('heal',.2,1.22);finishLevelUpFlow();
+  if(state!=='levelup'||currentUpgradeChoices.every((upgrade)=>['ARSENAL AWAKENING','LEVEL 5 FIGHTING STYLE','LEVEL 10 PATH MASTERY'].includes(upgrade.type)))return;player.gold+=20;player.health=Math.min(player.maxHealth,player.health+18);spawnWord(player.x,player.y-92,'POWER BANKED!','#ffd13a');effects.rings.push({x:player.x,y:player.y,radius:15,maxRadius:105,color:'#ffd13a',life:.5,maxLife:.5});playSfx('heal',.2,1.22);finishLevelUpFlow();
 }
 
 function chooseUpgrade(index) {
@@ -1745,6 +1775,8 @@ function begin() {
     resolveSynergies();updateHud();
   }
   if(debugSystem==='levelup'){player.level=Number(debugParams.get('level')||2);pendingLevelUps=1;encounter.startWaveAfterUpgrade=0;openLevelUp();return;}
+  if(debugSystem==='path'){player.level=5;player.arsenalAwakened=true;pendingLevelUps=1;encounter.startWaveAfterUpgrade=0;openLevelUp();return;}
+  if(debugSystem==='mastery'){player.level=10;player.arsenalAwakened=true;player.buildPath=['gunner','elementalist','vanguard'].includes(debugParams.get('path'))?debugParams.get('path'):'gunner';pendingLevelUps=1;encounter.startWaveAfterUpgrade=0;openLevelUp();return;}
   if(debugSystem==='arsenal'){player.level=3;pendingLevelUps=1;encounter.startWaveAfterUpgrade=0;openLevelUp();return;}
   if(debugSystem==='contracts'){if(debugParams.has('restore')){profile.spiritShards=764;profile.contractProgress={...DEFAULT_CONTRACT_PROGRESS};profile.claimedContracts=[];saveProfile();}if(debugParams.has('ready'))for(const contract of CAMPAIGN_CONTRACTS)profile.contractProgress[contract.id]=contract.target;enterHub();openHubStation(HUB_STATIONS.find((station)=>station.id==='missionBoard'));return;}
   if(debugSystem==='story'){const storyBeat=['intro','interlude2','interlude4','boss'].includes(debugParams.get('beat'))?debugParams.get('beat'):'interlude2';showStory(storyBeat);return;}
@@ -1901,7 +1933,7 @@ function releaseWeaponVolley() {
   const direction = { x: Math.cos(attackFacing), y: Math.sin(attackFacing) };
   const muzzleDistance=weapon.muzzleDistance||48;
   const muzzle = { x: player.x + direction.x * muzzleDistance, y: player.y + direction.y * muzzleDistance - 7 };
-  player.shotsFired++;const burningVolley=player.synergies.has('twinCinders')&&player.shotsFired%8===0;
+  player.shotsFired++;const burningVolley=player.synergies.has('twinCinders')&&player.shotsFired%8===0,gunnerSeekers=player.buildMastery==='gunner'&&player.shotsFired%5===0,vanguardCrush=player.buildMastery==='vanguard'&&player.masteryCharge>=1;
   const evolution=player.weaponEvolution;const phaseNova=evolution==='phaseNova'&&player.shotsFired%5===0;const siegeLotus=evolution==='siegeLotus'&&player.shotsFired%3===0;const moonConstellation=evolution==='moonConstellation'&&player.shotsFired%4===0;const deadeyeCircuit=evolution==='deadeyeCircuit'&&player.shotsFired%6===0;const thunderheadArray=evolution==='thunderheadArray'&&player.shotsFired%3===0;const skyfeatherConstellation=evolution==='skyfeatherConstellation'&&player.shotsFired%4===0;
   const volleyCount=weapon.baseVolleys||(player.dualWield?2:1);const pelletCount=(weapon.shots||1)+player.bonusProjectiles;const echoPenalty=(player.dualWield&&!weapon.baseVolleys) ? .8 : 1;
   for(let volley=0;volley<volleyCount;volley++){
@@ -1914,17 +1946,23 @@ function releaseWeaponVolley() {
       const sideX=-direction.y*volleySide*12,sideY=direction.x*volleySide*12;
       const shotMuzzle={x:muzzle.x+sideX,y:muzzle.y+sideY};
       const type=weapon.projectileType,arrow=type==='arrow',trickshot=type==='trickshot',arc=type==='arc',glaive=type==='glaive',frost=type==='frost',mortar=type==='mortar',gale=type==='gale';
-      const arsenalPower=frost?1:mortar?Math.pow(1.18,player.upgradeRanks.oniPayload):gale?Math.pow(1.14,player.upgradeRanks.razorCurrent):1;const shotDamage=weapon.damage*player.damageMultiplier*echoPenalty*arsenalPower*(siegeShell?1.7:thunderheadArray?1.12:1);
+      const arsenalPower=frost?1:mortar?Math.pow(1.18,player.upgradeRanks.oniPayload):gale?Math.pow(1.14,player.upgradeRanks.razorCurrent):1;const shotDamage=weapon.damage*player.damageMultiplier*echoPenalty*arsenalPower*(vanguardCrush?1.75:siegeShell?1.7:thunderheadArray?1.12:1);
       const rangeBoost=gale?1+player.upgradeRanks.typhoonReach*.12:1;
-      effects.playerShots.push({x:shotMuzzle.x,y:shotMuzzle.y,vx:shotDirection.x*weapon.projectileSpeed,vy:shotDirection.y*weapon.projectileSpeed,radius:(weapon.projectileRadius||9)*(siegeShell?1.75:1),damage:shotDamage,baseDamage:shotDamage,color:phaseNova?'#d94cff':siegeShell?'#ffd13a':moonConstellation?'#ff5fbd':deadeyeCircuit?'#ff9b32':thunderheadArray?'#fff177':skyfeatherConstellation?'#d98cff':burningVolley?'#ff8a2a':weapon.color,ignite:burningVolley,arrow,trickshot,arc,glaive,frost,mortar,gale,returning:false,returnSpeed:(weapon.returnSpeed||1120)*player.glaiveReturnSpeed,knockback:weapon.knockback*(gale?1+player.upgradeRanks.typhoonReach*.18:1),criticalChance:weapon.criticalChance,blastRadius:(weapon.blastRadius||0)+player.upgradeRanks.blastChamber*28,blastDamage:(weapon.blastDamage||0)*player.damageMultiplier*Math.pow(1.18,player.upgradeRanks.oniPayload),skyfeatherConstellation,phaseNova,siegeLotus:siegeShell,moonConstellation,deadeyeCircuit,thunderheadArray:thunderheadArray&&volley===0&&pellet===0,guaranteedCrit:deadeyeCircuit,ricochets:(weapon.ricochets||0)+player.bonusRicochets+(deadeyeCircuit?2:0),ricochetRange:(weapon.ricochetRange||0)+(deadeyeCircuit?220:0),ricochetRetention:deadeyeCircuit?1:player.ricochetDamageRetention,pierces:glaive||gale?99:(weapon.pierces||0)+player.bonusPierces+(phaseNova?4:0),hitIds:new Set(),life:weapon.projectileLife*rangeBoost,maxLife:weapon.projectileLife*rangeBoost});
+      effects.playerShots.push({x:shotMuzzle.x,y:shotMuzzle.y,vx:shotDirection.x*weapon.projectileSpeed,vy:shotDirection.y*weapon.projectileSpeed,radius:(weapon.projectileRadius||9)*(vanguardCrush?1.8:siegeShell?1.75:1),damage:shotDamage,baseDamage:shotDamage,color:vanguardCrush?'#78ef63':phaseNova?'#d94cff':siegeShell?'#ffd13a':moonConstellation?'#ff5fbd':deadeyeCircuit?'#ff9b32':thunderheadArray?'#fff177':skyfeatherConstellation?'#d98cff':burningVolley?'#ff8a2a':weapon.color,ignite:burningVolley,arrow,trickshot,arc,glaive,frost,mortar,gale,vanguardCrush,returning:false,returnSpeed:(weapon.returnSpeed||1120)*player.glaiveReturnSpeed,knockback:weapon.knockback*(vanguardCrush?2.2:gale?1+player.upgradeRanks.typhoonReach*.18:1),criticalChance:weapon.criticalChance,blastRadius:(weapon.blastRadius||0)+player.upgradeRanks.blastChamber*28,blastDamage:(weapon.blastDamage||0)*player.damageMultiplier*Math.pow(1.18,player.upgradeRanks.oniPayload),skyfeatherConstellation,phaseNova,siegeLotus:siegeShell,moonConstellation,deadeyeCircuit,thunderheadArray:thunderheadArray&&volley===0&&pellet===0,guaranteedCrit:deadeyeCircuit,ricochets:(weapon.ricochets||0)+player.bonusRicochets+(deadeyeCircuit?2:0),ricochetRange:(weapon.ricochetRange||0)+(deadeyeCircuit?220:0),ricochetRetention:deadeyeCircuit?1:player.ricochetDamageRetention,pierces:glaive||gale?99:(weapon.pierces||0)+player.bonusPierces+(phaseNova?4:0)+(vanguardCrush?3:0),hitIds:new Set(),life:weapon.projectileLife*rangeBoost,maxLife:weapon.projectileLife*rangeBoost});
       effects.spriteEffects.push({asset:glaive?'nomiGlaiveVfx':frost||mortar||gale?'arsenalWeaponsVfx':arrow?'hopscotchArrow':trickshot?'trickshotVfx':arc?'zapArcVfx':'blasterImpactVfx',fixedFrame:glaive?0:frost?3:mortar?4:gale?5:arrow||trickshot||arc?0:undefined,x:shotMuzzle.x,y:shotMuzzle.y,width:glaive?128:frost?100:mortar?104:gale?118:arrow?92:trickshot?76:arc?82:selectedHeroId==='bamboo'?82:68,height:glaive?104:frost?70:mortar?80:gale?96:arrow?52:trickshot?76:arc?68:selectedHeroId==='bamboo'?70:58,life:.16,maxLife:.16,rotation:angle,glow:weapon.impactColor});
     }
   }
+  if(gunnerSeekers)spawnHunterSeekers(muzzle,weapon.damage*player.damageMultiplier);
+  if(vanguardCrush){player.masteryCharge=0;spawnWord(player.x,player.y-88,'STAMPEDE CHAMBER!','#78ef63');effects.rings.push({x:player.x,y:player.y,radius:18,maxRadius:150,color:'#78ef63',life:.5,maxLife:.5});camera.shake=Math.max(camera.shake,9);}
   if(phaseNova||siegeLotus||moonConstellation||deadeyeCircuit||thunderheadArray||skyfeatherConstellation){const label=phaseNova?'PHASE NOVA!':siegeLotus?'SIEGE LOTUS!':moonConstellation?'MOON CONSTELLATION!':deadeyeCircuit?'DEADEYE CIRCUIT!':skyfeatherConstellation?'SKYFEATHER READY!':'THUNDERHEAD!';const color=phaseNova?'#d94cff':siegeLotus?'#ffd13a':moonConstellation?'#ff5fbd':deadeyeCircuit?'#ff9b32':skyfeatherConstellation?'#d98cff':'#39eaff';spawnWord(player.x,player.y-86,label,color);effects.rings.push({x:player.x,y:player.y,radius:18,maxRadius:115,color,life:.42,maxLife:.42});}
   burst(muzzle.x,muzzle.y,weapon.impactColor,selectedHeroId==='bamboo'?22:selectedHeroId==='rusty'?20:14,selectedHeroId==='bamboo'?330:selectedHeroId==='rusty'?300:260,selectedHeroId==='bamboo'?5:3);
   player.vx-=direction.x*(weapon.recoil||42);player.vy-=direction.y*(weapon.recoil||42);
   camera.kick=Math.max(camera.kick,selectedHeroId==='bamboo'?15:selectedHeroId==='hopscotch'?7:selectedHeroId==='rusty'?11:9);camera.shake=Math.max(camera.shake,selectedHeroId==='bamboo'?4.5:selectedHeroId==='hopscotch'?2:selectedHeroId==='rusty'?3:2.5);
   const releaseType=weapon.projectileType;playSfx(releaseType==='frost'?'arrow':releaseType==='mortar'?'stomp':releaseType==='gale'?'slice':selectedHeroId==='hopscotch'?'arrow':selectedHeroId==='bamboo'||selectedHeroId==='nomi'?'slice':selectedHeroId==='zap'?'lightning':'blaster',releaseType==='mortar'?.38:releaseType==='gale'?.29:selectedHeroId==='bamboo'?.42:selectedHeroId==='nomi'?.3:selectedHeroId==='zap'?.24:.3,releaseType==='mortar'?.82:releaseType==='frost'?1.3:releaseType==='gale'?1.18:selectedHeroId==='rusty'?1.12:selectedHeroId==='nomi'?1.28:selectedHeroId==='zap'?1.32:1);
+}
+
+function spawnHunterSeekers(source,damage){
+  const targets=enemies.filter((enemy)=>!enemy.dead&&enemy.state!=='waiting').sort((a,b)=>distance(source,a)-distance(source,b)).slice(0,2);for(const target of targets){const direction=normalize(target.x-source.x,target.y-source.y);effects.playerShots.push({x:source.x,y:source.y,vx:direction.x*1040,vy:direction.y*1040,radius:8,damage:damage*.72,baseDamage:damage*.72,color:'#45eaff',hunterSeeker:true,homingTarget:target,guaranteedCrit:false,ricochets:0,pierces:0,hitIds:new Set(),life:1.05,maxLife:1.05});}if(targets.length){spawnWord(player.x,player.y-88,'HUNTER CONSTELLATION!','#45eaff');effects.rings.push({x:player.x,y:player.y,radius:15,maxRadius:125,color:'#45eaff',life:.42,maxLife:.42});playSfx('arrow',.2,1.34);}
 }
 
 function aimDirection() {
@@ -2013,6 +2051,7 @@ function updatePlayer(dt) {
   const wantsSprint=input.keys.has(' ')&&Boolean(move.x||move.y)&&!player.attack&&player.castTime<=0&&player.dashTime<=0;
   player.sprinting=wantsSprint&&player.sprint>2;
   player.sprint=clamp(player.sprint+(player.sprinting?-27:28)*dt,0,100);
+  if(player.buildMastery==='vanguard'){player.masteryCharge=clamp((player.masteryCharge||0)+(player.sprinting?dt/1.4:-dt*.16),0,1);if(player.masteryCharge>=1&&player.masteryReady!==true){player.masteryReady=true;spawnWord(player.x,player.y-78,'STAMPEDE READY!','#78ef63');effects.rings.push({x:player.x,y:player.y,radius:14,maxRadius:92,color:'#78ef63',life:.35,maxLife:.35});}if(player.masteryCharge<1)player.masteryReady=false;}
   if(selectedHeroId==='bamboo'&&player.dashTime<=0&&!move.x&&!move.y&&!player.attack){player.braceTime+=dt;player.braced=player.braceTime>=player.braceDelay;}else{player.braceTime=0;player.braced=false;}
   if (player.dashTime > 0) {
     const wasDashing = player.dashTime > 0;
@@ -2411,6 +2450,7 @@ function updateEnemies(dt) {
     const definition = enemy.def;
     enemy.flash = Math.max(0, enemy.flash - dt);
     enemy.abilityReactTime=Math.max(0,(enemy.abilityReactTime||0)-dt);
+    enemy.elementalRuptureCooldown=Math.max(0,(enemy.elementalRuptureCooldown||0)-dt);
     enemy.hitReactTime=Math.max(0,(enemy.hitReactTime||0)-dt);
     enemy.cooldown = Math.max(0, enemy.cooldown - dt);
     enemy.bob += dt * 5;
@@ -2653,7 +2693,7 @@ function updateEffects(dt) {
     if(!hazard.triggered&&hazard.life<=(hazard.triggerAt??.16)){hazard.triggered=true;const bomb=hazard.type==='bomb';effects.rings.push({x:hazard.x,y:hazard.y,radius:24,maxRadius:hazard.radius,color:hazard.color,life:.44,maxLife:.44});burst(hazard.x,hazard.y,bomb?'#ffbd42':hazard.color,bomb?46:38,bomb?610:520,bomb?8:7);effects.spriteEffects.push({asset:bomb?'specialEnemyVfx':'crimsonCombatVfx',fixedFrame:bomb?4:5,x:hazard.x,y:hazard.y,width:hazard.radius*2.65,height:hazard.radius*2.2,life:.58,maxLife:.58,glow:hazard.color});camera.shake=Math.max(camera.shake,bomb?18:15);hitStop=Math.max(hitStop,bomb ? .08 : .07);playSfx(bomb?'stomp':'heavyImpact',bomb?.4:.3,bomb?.8:.72);if(distance(hazard,player)<hazard.radius+player.radius)hurtPlayer(hazard.damage,hazard,bomb ? .4 : .28);}
   }
   for (const shot of effects.playerShots) {
-    if(shot.spiritFeather&&shot.homingTarget&&!shot.homingTarget.dead){const toward=normalize(shot.homingTarget.x-shot.x,shot.homingTarget.y-shot.y),speed=Math.max(900,Math.hypot(shot.vx,shot.vy));shot.vx=lerp(shot.vx,toward.x*speed,clamp(dt*9,0,1));shot.vy=lerp(shot.vy,toward.y*speed,clamp(dt*9,0,1));}
+    if((shot.spiritFeather||shot.hunterSeeker)&&shot.homingTarget&&!shot.homingTarget.dead){const toward=normalize(shot.homingTarget.x-shot.x,shot.homingTarget.y-shot.y),speed=Math.max(900,Math.hypot(shot.vx,shot.vy));shot.vx=lerp(shot.vx,toward.x*speed,clamp(dt*9,0,1));shot.vy=lerp(shot.vy,toward.y*speed,clamp(dt*9,0,1));}
     if((shot.glaive||shot.gale)&&shot.returning){const owner=shot.remoteOwner||player,toward=normalize(owner.x-shot.x,owner.y-shot.y),speed=shot.returnSpeed||1120;shot.vx=lerp(shot.vx,toward.x*speed,clamp(dt*13,0,1));shot.vy=lerp(shot.vy,toward.y*speed,clamp(dt*13,0,1));}
     shot.life -= dt; shot.x += shot.vx * dt; shot.y += shot.vy * dt;
     if(shot.glaive&&!shot.returning&&shot.life<=0)turnGlaiveForReturn(shot);
