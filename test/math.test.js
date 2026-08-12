@@ -74,6 +74,15 @@ test('the hero roster contains distinct ranged archetypes',()=>{
   assert.ok(WEAPONS.moonreturnGlaive.releaseDelay>.2);
 });
 
+test('the legend arsenal adds three distinct late-run weapon contracts',()=>{
+  assert.equal(WEAPONS.embercoilRepeater.projectileType,'embercoil');
+  assert.equal(WEAPONS.tempestChakram.projectileType,'chakram');
+  assert.equal(WEAPONS.moonpiercerRailbow.projectileType,'railbow');
+  assert.ok(WEAPONS.embercoilRepeater.shots>=3);
+  assert.ok(WEAPONS.tempestChakram.pierces>=8);
+  assert.ok(WEAPONS.moonpiercerRailbow.releaseDelay>=.45);
+});
+
 test('the starter ability loadout is complete and data-driven', () => {
   assert.deepEqual(Object.keys(ABILITIES), ['undertowWell', 'foxfireVolley', 'wildHeart', 'shockPaws']);
   assert.equal(new Set(Object.values(ABILITIES).map((ability) => ability.id)).size, 4);

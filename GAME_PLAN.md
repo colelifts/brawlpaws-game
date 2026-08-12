@@ -10,6 +10,7 @@ This document turns the master brief and concept art into a staged production pl
 - Gale War Fan pierces outward, turns at maximum reach, clears its hit history, and damages/knocks back again on return.
 - Each arsenal has two dedicated upgrade paths, survives checkpoints, and is transmitted with co-op attacks.
 - Authored production atlases and exact generation notes live in `assets/source-art/arsenal-v1/` and `assets/vfx/`.
+- Level 7 adds the Legend Arsenal: Embercoil Repeater, Tempest Chakram, and Moonpiercer Railbow replace the current run weapon with burst-Burn, returning lane-control, or charged execution play. Six exclusive upgrade branches and persistent collection discovery deepen weapon progression; authored source and alpha atlases live in `assets/source-art/arsenal-v2/` and `assets/vfx/arsenal-tier2-v1.png`.
 
 ## Current playable baseline
 

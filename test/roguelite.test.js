@@ -585,6 +585,20 @@ test('arsenal projectiles create whole-enemy freeze, mortar, and return reaction
   assert.match(game,/weaponId:player\?\.weaponId\|\|heroDef\.weapon/);
 });
 
+test('level seven forces an authored legend arsenal with persistent collection tracking',()=>{
+  for(const weapon of ['embercoilRepeater','tempestChakram','moonpiercerRailbow'])assert.match(data,new RegExp(`${weapon}: \\{[\\s\\S]{0,620}projectileType:`));
+  for(const upgrade of ['equipEmbercoilRepeater','equipTempestChakram','equipMoonpiercerRailbow','cinderDrum','ruptureMagazine','cycloneEdge','crosswindRecall','lunarCapacitor','horizonBore'])assert.match(game,new RegExp(`id:'${upgrade}'`));
+  assert.match(game,/const legendArsenal=pool\.filter\(\(upgrade\)=>upgrade\.type==='LEGEND ARSENAL'\)/);
+  assert.match(game,/function turnChakramForReturn\(shot\)/);
+  assert.match(game,/profile\.collectedWeapons\.push\(id\)/);
+  assert.match(game,/debugSystem==='legendArsenal'/);
+  assert.match(game,/LEGEND_ARSENAL_COLLECTION/);
+  assert.match(game,/debugSystem==='forgeCollection'/);
+  assert.match(game,/forge-collection-card/);
+  assert.match(styles,/\.forge-collection-card \.forge-weapon-art/);
+  assert.match(styles,/arsenal-tier2-v1\.png/);
+});
+
 test('chapters attack with distinct readable warpack formations',()=>{
   for(const id of ['jadeChapter','bambooChapter','crimsonChapter','stormChapter','neonChapter','shadowChapter'])assert.match(game,new RegExp(`${id}:\\{name:`));
   for(const formation of ['arc','pincer','wall','cross','mirror'])assert.match(game,new RegExp(`formation:'${formation}'`));

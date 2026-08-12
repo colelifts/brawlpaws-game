@@ -138,6 +138,30 @@ export const WEAPONS = {
     projectileRadius:18,attackDuration:.3,muzzleDistance:58,
     recoil:34,color:'#bffcff',impactColor:'#67efff',projectileType:'gale',pierces:5,returnSpeed:1060,
     summary:'A wide spirit fan carves through a line, turns at maximum reach, and knocks the pack aside again on return.',tags:['RETURN','WIDE','CONTROL']
+  },
+  embercoilRepeater: {
+    id:'embercoilRepeater',name:'Embercoil Repeater',damage:5,fireRate:.42,
+    projectileSpeed:1080,projectileLife:.88,range:950,
+    knockback:155,criticalChance:.1,shots:3,spread:.055,
+    projectileRadius:9,attackDuration:.24,muzzleDistance:58,
+    recoil:54,color:'#ff5b27',impactColor:'#ffd052',projectileType:'embercoil',burnDuration:2.8,burnPower:.68,ruptureEvery:4,
+    summary:'A three-barrel spirit repeater opens burning wounds; every fourth volley ignites a compact pack rupture.',tags:['BURST','BURN','RUPTURE']
+  },
+  tempestChakram: {
+    id:'tempestChakram',name:'Tempest Chakram',damage:11,fireRate:.68,
+    projectileSpeed:820,projectileLife:.72,range:980,
+    knockback:355,criticalChance:.12,shots:1,spread:0,
+    projectileRadius:24,attackDuration:.34,muzzleDistance:62,
+    recoil:38,color:'#5deeff',impactColor:'#d8ffff',projectileType:'chakram',pierces:8,returnSpeed:1180,
+    summary:'A broad moon-ring cleaves an entire lane, turns at maximum reach, and cuts the displaced pack again on return.',tags:['RETURN','WIDE','LANE CONTROL']
+  },
+  moonpiercerRailbow: {
+    id:'moonpiercerRailbow',name:'Moonpiercer Railbow',damage:28,fireRate:.98,
+    projectileSpeed:1480,projectileLife:1.05,range:1550,
+    knockback:420,criticalChance:.2,shots:1,spread:0,
+    projectileRadius:13,attackDuration:.76,releaseDelay:.48,muzzleDistance:68,
+    recoil:110,color:'#b55cff',impactColor:'#f4dcff',projectileType:'railbow',pierces:7,
+    summary:'A deliberate moon-charge fires through a full enemy column, rewarding alignment with brutal precision damage.',tags:['CHARGE','PIERCE','EXECUTION']
   }
 };
 

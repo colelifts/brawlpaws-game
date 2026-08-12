@@ -2,7 +2,7 @@
 
 A dependency-free playable browser roguelite with a walkable hub, permanent profile progression, six escalating chapters, branching routes, six production heroes, post-clear Ascension ranks, and six giant guardian bosses. Its 4,800×2,700 rooms include a circular live minimap for active threats, mission objectives, co-op allies, rewards, village services, and guardian chambers; players can disable it under Accessibility.
 
-Runs begin with the selected hero's signature weapon and earned abilities. At level 3, Arsenal Awakening offers a mandatory three-way pivot: Frostbite Needle (Chill/Freeze), Oni Mortar (area demolition), or Gale War Fan (outward/return control). The chosen weapon, upgrades, and elemental enemy states persist through checkpoints and co-op actions.
+Runs begin with the selected hero's signature weapon and earned abilities. At level 3, Arsenal Awakening offers a mandatory three-way pivot: Frostbite Needle (Chill/Freeze), Oni Mortar (area demolition), or Gale War Fan (outward/return control). Level 7 forces a second Legend Arsenal pivot into Embercoil Repeater (burst Burn/rupture), Tempest Chakram (wide outbound/return control), or Moonpiercer Railbow (charged line execution). Each legend weapon has two exclusive upgrade branches and persistent collection discovery, while fresh runs still begin at base power.
 
 ## Run it
 
@@ -139,7 +139,7 @@ Chapter 2 QA is available at `?chapter=2`, with `?chapter=2&boss=1` for Moonfang
 Chapter 4 QA is available at `?chapter=4`, with `?chapter=4&boss=1` for Raijin Kirin. Add `&difficulty=nightmare` to validate maximum pressure.
 Chapter 5 QA is available at `?chapter=5`, with `?chapter=5&boss=1` for Daikyo Oni. Use `?chapter=5&system=pressure` and `?chapter=5&system=signature` for its arena systems.
 Hub station QA is available at `?hub=heroShrine` or `?hub=portal`; normal play enters the village at its central plaza.
-Systems QA is available at `?system=levelup`, `?system=statusDraft`, `?system=statuses`, `?system=story&beat=interlude2`, `?system=story&beat=interlude4`, `?system=contracts`, `?system=contracts&ready=1`, `?system=event`, `?system=secret`, `?system=synergy`, `?system=elites`, `?system=specialists`, `?system=specialists&set=late`, `?system=capstone`, `?system=evolutions`, `?system=pressure`, `?system=room6`, `?system=signature`, and `?system=codex`.
+Systems QA is available at `?system=levelup`, `?system=legendArsenal`, `?system=legendCombat&weapon=embercoilRepeater`, `?system=forgeCollection`, `?system=statusDraft`, `?system=statuses`, `?system=story&beat=interlude2`, `?system=story&beat=interlude4`, `?system=contracts`, `?system=contracts&ready=1`, `?system=event`, `?system=secret`, `?system=synergy`, `?system=elites`, `?system=specialists`, `?system=specialists&set=late`, `?system=capstone`, `?system=evolutions`, `?system=pressure`, `?system=room6`, `?system=signature`, and `?system=codex`.
 Mission QA is available at `?system=mission&mission=anchors`, `?system=mission&mission=rescue`, and `?system=mission&mission=defend`; add `&chapter=2` or `&chapter=3` to validate biome-specific mission schedules and palettes.
 Guardian reward QA is available at `?system=guardianReward`; combine it with `&chapter=2` for Moonfang or `&chapter=3` for Pyreclaw’s final-vow and epilogue sequence.
 Sealing Crossfire can be inspected immediately at `?system=crossfire`; combine it with `&chapter=2` or `&chapter=3` for each guardian's profile-scaled version.
