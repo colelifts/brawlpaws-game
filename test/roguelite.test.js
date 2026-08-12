@@ -466,3 +466,11 @@ test('late armies and guardians escalate pressure without changing the tutorial 
   assert.match(game,/updateBossDomain\(enemy,profile,dt\)/);
   assert.match(game,/enemy\.patternWindup=pattern\.windup\*tempo/);
 });
+
+test('Bamboo, Crimson, and guardian locomotion use authored pose atlases',()=>{
+  for(const asset of ['bamboo-enemies-move-v1.png','crimson-enemies-move-v1.png','jadeguard-tanuki-move-v1.png','moonfang-komainu-move-v1.png','pyreclaw-shogun-move-v1.png'])assert.match(game,new RegExp(asset.replace('.','\\.')));
+  assert.match(game,/const useMove=!attacking&&motion\.moving/);
+  assert.match(game,/const frame=definition\.spriteColumn\+\(attacking\?3:useMove\?walkRow\*3:0\)/);
+  assert.match(game,/const useMove=motion\.moving&&enemy\.state==='bossIdle'/);
+  assert.match(game,/drawGridAtlasFrame\(moveSheet,moveFrame,2,1/);
+});

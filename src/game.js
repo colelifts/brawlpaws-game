@@ -63,8 +63,8 @@ const assets = {
   blasterShotVfx: new Image(), blasterImpactVfx: new Image(), spiritArrowVfx: new Image(), spiritArrowImpactVfx: new Image(), hopscotchArrow: new Image(), trickshotVfx: new Image(),
   burnStatusVfx: new Image(), waterImpactVfx: new Image(), clawSlashVfx: new Image(), hammerSlamVfx: new Image(),
   shockImpactVfx: new Image(), shockLinkVfx: new Image(), spiritWispVfx: new Image(), lanternFlameVfx: new Image(), waterRippleVfx: new Image(),
-  jadeguardTanuki: new Image(), bambooEnemies: new Image(), moonfangKomainu: new Image(),
-  crimsonEnemies: new Image(), pyreclawShogun: new Image(), crimsonCombatVfx: new Image(),
+  jadeguardTanuki: new Image(), jadeguardTanukiMove: new Image(), bambooEnemies: new Image(), bambooEnemiesMove: new Image(), moonfangKomainu: new Image(), moonfangKomainuMove: new Image(),
+  crimsonEnemies: new Image(), crimsonEnemiesMove: new Image(), pyreclawShogun: new Image(), pyreclawShogunMove: new Image(), crimsonCombatVfx: new Image(),
   bellweaverCat: new Image(), powderkegToad: new Image(), gatewardenRhino: new Image(), mistclawLynx: new Image(), specialEnemyVfx: new Image(), guardianSignatureVfx: new Image()
 };
 const assetSources = {
@@ -102,10 +102,15 @@ const assetSources = {
   lanternFlameVfx: 'assets/environment/animated/lantern-flame.png',
   waterRippleVfx: 'assets/environment/animated/water-ripple.png',
   jadeguardTanuki: 'assets/characters/jadeguard-tanuki-v2.png',
+  jadeguardTanukiMove: 'assets/characters/jadeguard-tanuki-move-v1.png',
   bambooEnemies: 'assets/characters/bamboo-enemies-v3.png',
+  bambooEnemiesMove: 'assets/characters/bamboo-enemies-move-v1.png',
   moonfangKomainu: 'assets/characters/moonfang-komainu.png',
+  moonfangKomainuMove: 'assets/characters/moonfang-komainu-move-v1.png',
   crimsonEnemies: 'assets/characters/crimson-enemies.png',
+  crimsonEnemiesMove: 'assets/characters/crimson-enemies-move-v1.png',
   pyreclawShogun: 'assets/characters/pyreclaw-shogun.png',
+  pyreclawShogunMove: 'assets/characters/pyreclaw-shogun-move-v1.png',
   crimsonCombatVfx: 'assets/vfx/crimson-combat-vfx.png',
   bellweaverCat: 'assets/characters/bellweaver-cat.png',
   powderkegToad: 'assets/characters/powderkeg-toad.png',
@@ -2935,18 +2940,24 @@ function drawBoss(enemy){
   ctx.restore();
   const bob=enemy.state==='bossIdle'?Math.sin(time*2.3)*4:0;const pulse=enemy.state==='bossEnrage'?1+Math.sin(time*15)*.035:1;
   ctx.save();ctx.filter=enemy.flash>0?'brightness(2.2) saturate(.35)':motion.filter;ctx.globalAlpha=alpha;ctx.translate(enemy.x+motion.x,enemy.y+bob+motion.y);ctx.rotate(motion.rotation);ctx.scale(pulse*motion.scaleX,pulse*motion.scaleY);
-  const bossSheet=crimson?assets.pyreclawShogun:bamboo?assets.moonfangKomainu:assets.jadeguardTanuki;const bossSize=crimson?600:bamboo?540:500;
-  drawAtlasFrame(bossSheet,frame,0,crimson?-125:bamboo?-112:-104,bossSize,bossSize,0,1,enemy.bossPhase>=3?'#ff3fbc':bossColor);ctx.restore();ctx.filter='none';
+  const bossSheet=crimson?assets.pyreclawShogun:bamboo?assets.moonfangKomainu:assets.jadeguardTanuki;
+  const moveSheet=crimson?assets.pyreclawShogunMove:bamboo?assets.moonfangKomainuMove:assets.jadeguardTanukiMove;
+  const bossSize=crimson?600:bamboo?540:500;const useMove=motion.moving&&enemy.state==='bossIdle'&&moveSheet?.complete&&moveSheet.naturalWidth;
+  if(useMove){const speed=Math.hypot(enemy.vx||0,enemy.vy||0),cadence=clamp(speed/32,2.8,5.2),moveFrame=Math.floor((time+(enemy.spawnIndex||0)*.19)*cadence)%2;drawGridAtlasFrame(moveSheet,moveFrame,2,1,0,crimson?-125:bamboo?-112:-104,bossSize,bossSize,0,1,enemy.bossPhase>=3?'#ff3fbc':bossColor);}
+  else drawAtlasFrame(bossSheet,frame,0,crimson?-125:bamboo?-112:-104,bossSize,bossSize,0,1,enemy.bossPhase>=3?'#ff3fbc':bossColor);ctx.restore();ctx.filter='none';
   if(enemy.dead){const p=1-alpha;ctx.save();ctx.translate(enemy.x,enemy.y-80);ctx.globalAlpha=alpha;ctx.strokeStyle=bossColor;ctx.shadowColor=bossColor;ctx.shadowBlur=32;ctx.lineWidth=12;ctx.beginPath();ctx.arc(0,0,80+p*260,0,Math.PI*2);ctx.stroke();ctx.restore();}
 }
 
 function drawBambooEnemy(enemy) {
-  const sheet=enemy.def.biome==='crimson'?assets.crimsonEnemies:assets.bambooEnemies;
-  if (!sheet.complete || !sheet.naturalWidth) return;
+  const baseSheet=enemy.def.biome==='crimson'?assets.crimsonEnemies:assets.bambooEnemies;
+  const moveSheet=enemy.def.biome==='crimson'?assets.crimsonEnemiesMove:assets.bambooEnemiesMove;
+  if (!baseSheet.complete || !baseSheet.naturalWidth) return;
   const definition=enemy.def;const alpha=enemy.dead?clamp(enemy.deathTime/.72,0,1):1;
-  const attacking=['windup','strike','slam','recover'].includes(enemy.state);const frame=definition.spriteColumn+(attacking?3:0);
+  const attacking=['windup','strike','slam','recover'].includes(enemy.state);const motion=enemyMotion(enemy);const useMove=!attacking&&motion.moving&&moveSheet?.complete&&moveSheet.naturalWidth;
+  const speed=Math.hypot(enemy.vx||0,enemy.vy||0),cadence=clamp(speed/24,4.2,10.5),walkRow=Math.floor((performance.now()/1000+(enemy.spawnIndex||0)*.17)*cadence)%2;
+  const sheet=useMove?moveSheet:baseSheet;const frame=definition.spriteColumn+(attacking?3:useMove?walkRow*3:0);
   const sw=sheet.naturalWidth/3,sh=sheet.naturalHeight/2;
-  const sx=(frame%3)*sw,sy=Math.floor(frame/3)*sh;const baseH=(definition.behavior==='heavy'?148:138)*definition.scale;const baseW=baseH*(sw/sh);const motion=enemyMotion(enemy);
+  const sx=(frame%3)*sw,sy=Math.floor(frame/3)*sh;const baseH=(definition.behavior==='heavy'?148:138)*definition.scale;const baseW=baseH*(sw/sh);
   const flip=Math.cos(enemy.facing)<0?-1:1;let scaleX=1,scaleY=1,rotation=0;
   if(enemy.state==='enter'){scaleX=1;scaleY=1;}
   if(enemy.state==='windup'){scaleX=1.08;scaleY=.92;}
