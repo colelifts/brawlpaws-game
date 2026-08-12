@@ -254,4 +254,6 @@ Systems communicate through gameplay events such as `attackStarted`, `hitResolve
 
 ## Immediate next milestone
 
+Implemented audio milestone: all six realms now select their own licensed combat music, guardian encounters switch to realm-tuned heavy variants, and the persistent master/music/SFX/ability/UI mix remains fully adjustable.
+
 Expand the remaining weapon roster, deepen hero-specific upgrade trees, add further earned evolutions, and tune the full six-chapter difficulty curve from the low-power opening through Tsukiko and Ascension without weakening the current animation, telegraph, and combat-feedback bar. Nomi and her Moonreturn Glaive are complete; the next content milestone is broader arsenal choice and deeper mastery progression.

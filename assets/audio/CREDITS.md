@@ -25,3 +25,8 @@ License reference: https://mixkit.co/license/
 - `music-combat-orchestral.mp3` — “Battle Theme” by Wolfgang_, CC0, OpenGameArt: https://opengameart.org/content/battle-theme-0
 - `music-combat-rush.ogg` — “Fast fight / battle music” by Ville Nousiainen / Xythe / mutkanto, CC0, OpenGameArt: https://opengameart.org/content/fast-fight-battle-music
 - `music-boss-oh.mp3` — “Oh! boss!” by haruta, CC0, OpenGameArt: https://opengameart.org/content/oh-boss
+- `music-bamboo-heartfelt.ogg` — “Heartfelt Battle” by request, CC0, OpenGameArt: https://opengameart.org/content/heartfelt-battle-loopable-fantasy-stringspianohorn
+- `music-storm-ocean.ogg` — “Enemy Ship Approaching” by yd, CC0, OpenGameArt: https://opengameart.org/content/enemy-ship-approaching
+- `music-neon-robotic.ogg` — “Friendly Talk On a Robotic Battlefield” by illin, CC0, OpenGameArt: https://opengameart.org/content/friendly-talk-on-a-robotic-battlefield-looped
+- `music-shadow-dark.mp3` — “Shadow Dark” by cinameng / James Gargette, CC0, OpenGameArt: https://opengameart.org/content/shadow-2
+- `music-boss-heavy.mp3` — “Heavy Boss Battle 1” by MintoDog, CC0, OpenGameArt: https://opengameart.org/content/heavy-boss-battle-1

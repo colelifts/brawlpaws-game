@@ -446,7 +446,22 @@ let comboUiTimer = 0;
 const lastSfxAt=new Map();
 const AUDIO_SOURCES={blaster:'assets/audio/weapon-blaster.mp3',arrow:'assets/audio/weapon-arrow.mp3',slice:'assets/audio/weapon-magic-slice.mp3',impact:'assets/audio/impact-body.mp3',strike:'assets/audio/impact-strike.mp3',heavyImpact:'assets/audio/impact-heavy.mp3',dash:'assets/audio/dash-whoosh.mp3',heal:'assets/audio/ability-heal.mp3',upgrade:'assets/audio/upgrade-awaken.mp3',fire:'assets/audio/ability-fire.mp3',water:'assets/audio/ability-water.mp3',lightning:'assets/audio/ability-lightning.mp3',stomp:'assets/audio/boss-stomp.mp3'};
 const audioSamples=Object.fromEntries(Object.entries(AUDIO_SOURCES).map(([id,src])=>[id,new Audio(src)]));
-const MUSIC_TRACKS={menu:'assets/audio/music-menu-upbeat.mp3',hub:'assets/audio/music-spirit-woods.mp3',grove:'assets/audio/music-combat-orchestral.mp3',rush:'assets/audio/music-combat-rush.ogg',boss:'assets/audio/music-boss-oh.mp3'};
+const MUSIC_TRACKS={
+  menu:{src:'assets/audio/music-menu-upbeat.mp3',gain:1,rate:1},
+  hub:{src:'assets/audio/music-spirit-woods.mp3',gain:.9,rate:1},
+  jade:{src:'assets/audio/music-combat-orchestral.mp3',gain:.88,rate:1},
+  bamboo:{src:'assets/audio/music-bamboo-heartfelt.ogg',gain:.9,rate:1},
+  crimson:{src:'assets/audio/music-combat-rush.ogg',gain:.78,rate:1.02},
+  storm:{src:'assets/audio/music-storm-ocean.ogg',gain:.82,rate:1},
+  neon:{src:'assets/audio/music-neon-robotic.ogg',gain:.82,rate:1.04},
+  shadow:{src:'assets/audio/music-shadow-dark.mp3',gain:.82,rate:1},
+  guardianJade:{src:'assets/audio/music-boss-oh.mp3',gain:.88,rate:.94},
+  guardianBamboo:{src:'assets/audio/music-boss-oh.mp3',gain:.9,rate:1},
+  guardianCrimson:{src:'assets/audio/music-boss-heavy.mp3',gain:.84,rate:.96},
+  guardianStorm:{src:'assets/audio/music-boss-heavy.mp3',gain:.86,rate:1},
+  guardianNeon:{src:'assets/audio/music-boss-heavy.mp3',gain:.84,rate:1.05},
+  guardianShadow:{src:'assets/audio/music-boss-heavy.mp3',gain:.88,rate:1.1}
+};
 const musicPlayers=[new Audio(),new Audio()];for(const musicPlayer of musicPlayers)musicPlayer.loop=true;
 let audioUnlocked=false,activeMusicPlayer=0,activeMusicTrack='',musicFade=0;
 let enemyId = 0;
@@ -1939,12 +1954,13 @@ function resize() {
 function musicTrackForState(){
   if(state==='preview'||state==='codex'||state==='settings'&&settingsReturnState==='preview')return 'menu';
   if(state==='hub'||state==='hubMenu'||room.id==='spiritVillage')return 'hub';
-  if(encounter?.bossActive||state==='guardianReward')return 'boss';
-  return chapterIndex===0?'grove':chapterIndex%2?'rush':'grove';
+  const realms=['Jade','Bamboo','Crimson','Storm','Neon','Shadow'];
+  if(encounter?.bossActive||state==='guardianReward')return `guardian${realms[chapterIndex]}`;
+  return realms[chapterIndex].toLowerCase();
 }
-function applyAudioMix(){const volume=profile.settings.masterVolume*profile.settings.musicVolume*.68;for(let i=0;i<musicPlayers.length;i++)musicPlayers[i].volume=clamp(volume*(musicFade>0?(i===activeMusicPlayer?musicFade:1-musicFade):(i===activeMusicPlayer?1:0)),0,1);}
+function applyAudioMix(){const volume=profile.settings.masterVolume*profile.settings.musicVolume*.68;for(let i=0;i<musicPlayers.length;i++){const track=MUSIC_TRACKS[musicPlayers[i].dataset.track]||{gain:1};musicPlayers[i].volume=clamp(volume*track.gain*(musicFade>0?(i===activeMusicPlayer?musicFade:1-musicFade):(i===activeMusicPlayer?1:0)),0,1);}}
 function switchMusic(trackId){
-  if(!audioUnlocked||trackId===activeMusicTrack||!MUSIC_TRACKS[trackId])return;const next=1-activeMusicPlayer,player=musicPlayers[next];player.src=MUSIC_TRACKS[trackId];player.currentTime=0;player.volume=0;player.play().catch(()=>{});activeMusicPlayer=next;activeMusicTrack=trackId;musicFade=.001;
+  const track=MUSIC_TRACKS[trackId];if(!audioUnlocked||trackId===activeMusicTrack||!track)return;const next=1-activeMusicPlayer,player=musicPlayers[next];player.src=track.src;player.dataset.track=trackId;player.playbackRate=track.rate||1;player.currentTime=0;player.volume=0;player.play().catch(()=>{});activeMusicPlayer=next;activeMusicTrack=trackId;document.documentElement.dataset.musicTrack=trackId;musicFade=.001;
 }
 function updateAudioDirector(dt){if(!audioUnlocked)return;switchMusic(musicTrackForState());if(musicFade>0)musicFade=Math.min(1,musicFade+dt*1.65);applyAudioMix();if(musicFade>=1){musicPlayers[1-activeMusicPlayer].pause();musicFade=0;applyAudioMix();}}
 function ensureAudio(){audioUnlocked=true;switchMusic(musicTrackForState());updateAudioDirector(.016);}

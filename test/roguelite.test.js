@@ -81,6 +81,15 @@ test('Chrome performance, adaptive audio, and readable choice art are production
   assert.match(game,/class="choice-art item-icon"/);
 });
 
+test('all six campaign realms and guardians own adaptive soundtrack identities',()=>{
+  for(const track of ['jade','bamboo','crimson','storm','neon','shadow','guardianJade','guardianBamboo','guardianCrimson','guardianStorm','guardianNeon','guardianShadow'])assert.match(game,new RegExp(`${track}:\\{src:`));
+  assert.match(game,/const realms=\['Jade','Bamboo','Crimson','Storm','Neon','Shadow'\]/);
+  assert.match(game,/return `guardian\$\{realms\[chapterIndex\]\}`/);
+  assert.match(game,/musicPlayers\[i\]\.dataset\.track/);
+  assert.match(game,/document\.documentElement\.dataset\.musicTrack=trackId/);
+  for(const file of ['music-bamboo-heartfelt.ogg','music-storm-ocean.ogg','music-neon-robotic.ogg','music-shadow-dark.mp3','music-boss-heavy.mp3'])assert.match(game,new RegExp(file.replace('.','\\.')));
+});
+
 test('each chapter has checkpoint-safe mid-run story continuity',()=>{
   for(const chapterId of ['jadeChapter','bambooChapter','crimsonChapter'])assert.match(game,new RegExp(`${chapterId}:\\{accent:[\\s\\S]{0,4000}interlude2:[\\s\\S]{0,4000}interlude4:`));
   assert.match(game,/encounter\.wave===1\)showStory\('interlude2'\)/);
