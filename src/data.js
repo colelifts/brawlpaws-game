@@ -236,6 +236,7 @@ export const ENEMIES = {
 export const ENCOUNTERS = {
   jadeChapter: {
     id: 'jadeChapter', name: 'The Silent Bells', room: 'jadeCourtyard', rooms: ['jadeCourtyard','jadeMoonbridge','jadeRootGarden','jadeBellTerraces','jadeLanternCanals','jadeWardenProcessional'], bossRoom:'jadeGuardianApproach', boss: 'jadeguardTanuki',
+    pressure:{id:'bellEcho',name:'BELL ECHO',startWave:1,baseInterval:10.5,minInterval:5.8,warning:1.25,radius:138,damage:9,color:'#8cff39'},
     waves: [
       { name: 'Whispering Scouts', roster: ['groveMinion','groveMinion','groveMinion','groveMinion'], spawnRate: 1.05, healthScale: 1, speedScale: 1, damageScale: 1, mission:{type:'eliminate',title:'SILENCE THE SCOUTS'} },
       { name: 'Broken Shrine Pack', roster: ['groveMinion','jadeBrawler','groveMinion','spiritArcher','groveMinion','jadeBrawler','groveMinion','spiritArcher'], targetCount:10, spawnRate: .62, healthScale: 1.18, speedScale: 1.16, damageScale: 1.12, mission:{type:'rescue',title:'FREE THE BELLKEEPERS',count:2} },
@@ -247,6 +248,7 @@ export const ENCOUNTERS = {
   },
   bambooChapter: {
     id: 'bambooChapter', name: 'Breath Beneath the Reeds', room: 'bambooHollow', rooms: ['bambooHollow','bambooMoonbridge','bambooSporeMarsh','bambooMoonlotusReservoir','bambooSporelightMonastery','bambooMoonstoneCauseway'], bossRoom:'bambooMoonfangBurrow', boss: 'moonfangKomainu',
+    pressure:{id:'sporeBloom',name:'SPORE BLOOM',startWave:0,baseInterval:9.4,minInterval:5.1,warning:1.15,activeDuration:3.2,radius:168,damage:6,slow:.32,color:'#7dff9c'},
     waves: [
       { name: 'Reedblade Scouts', roster: ['bambooStalker','bambooStalker','sporeArcher','bambooStalker','sporeArcher','bambooStalker','bambooStalker','sporeArcher'], targetCount:14, spawnRate: .42, healthScale: 1.08, speedScale: 1.12, damageScale: 1.05, mission:{type:'eliminate',title:'CLEAR THE REEDBLADES'} },
       { name: 'Hollow Hunting Party', roster: ['bambooStalker','sporeArcher','bambooStalker','powderkegToad','sporeArcher','bambooStalker','bambooStalker','sporeArcher','bambooStalker','mossBrute','sporeArcher','bambooStalker','bambooStalker','sporeArcher'], spawnRate: .34, healthScale: 1.28, speedScale: 1.16, damageScale: 1.18, mission:{type:'rescue',title:'FREE THE MOON MONKS',count:3} },
@@ -258,6 +260,7 @@ export const ENCOUNTERS = {
   },
   crimsonChapter: {
     id: 'crimsonChapter', name: 'The Gate of Ash', room: 'crimsonDojo', rooms: ['crimsonDojo','crimsonBellCourt','crimsonWarYard','crimsonCinderRooftops','crimsonDrumFoundry','crimsonWarProcessional'], bossRoom:'crimsonOniGate', boss: 'pyreclawShogun',
+    pressure:{id:'emberLane',name:'EMBER CORRIDOR',startWave:0,baseInterval:8,minInterval:4.25,warning:1.05,activeDuration:1.25,width:82,damage:12,color:'#ff5b27'},
     waves: [
       { name: 'First Bell Challengers', roster: ['emberAkita','gongwing','mistclawLynx','emberAkita','gongwing','emberAkita','gongwing','emberAkita','mistclawLynx','gongwing','emberAkita','gongwing'], spawnRate: .42, healthScale: 1.15, speedScale: 1.1, damageScale: 1.12, mission:{type:'eliminate',title:'WIN THE FIRST BELL'} },
       { name: 'Crimson Trial', roster: ['emberAkita','gongwing','emberAkita','gatewardenRhino','gongwing','emberAkita','emberAkita','gongwing','emberAkita','ironhorn','gongwing','emberAkita','emberAkita','gongwing','gatewardenRhino','emberAkita','gongwing','emberAkita','emberAkita','gongwing'], spawnRate: .26, healthScale: 1.42, speedScale: 1.22, damageScale: 1.28, mission:{type:'anchors',title:'BREAK THE EXECUTION SEALS',count:3,health:105} },

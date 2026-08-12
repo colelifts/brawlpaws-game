@@ -95,6 +95,7 @@ Current unlockable loadout:
 - **Foxfire Volley:** five-shot directional flame fan, direct damage, visible four-second burn, 6-second cooldown
 - **Wild Heart:** instant heal, green aura, temporary 35% damage reduction, 12-second cooldown
 - **Shock Paws:** 4.2-second global storm with repeated links and impacts against every active enemy; deals 50% bonus damage to Wet targets
+- **Ability evolutions:** level-9+ Epic capstones now turn each invested ability into a new behavior: Undertow collapses twice, Foxfire becomes a nine-flame spreading inferno, Wild Heart ends in a life-draining bloom, and Shock Paws delivers a final room-wide judgment strike
 
 Next ability work:
 
@@ -102,6 +103,7 @@ Next ability work:
 - Add per-ability upgrade hooks rather than branching logic inside the player controller
 - Move remaining duration ticks and VFX routing fully behind the shared status registry
 - Produce dedicated cast/action/recovery animation sheets and sound layers for every hero ability
+- Continue balancing evolution availability and damage against chapter corruption, guardian health, and high-rank Ascension armies
 
 **Exit gate:** abilities are mechanically distinct, readable at game scale, aim correctly in eight directions, and display clear cooldown states.
 
@@ -109,7 +111,7 @@ Next ability work:
 
 - XP thresholds, level progression, and combat pause during selection are playable
 - Three-card level-up presentation, weighted Common/Rare/Epic rarity, keyboard/mouse selection, one free reroll, escalating gold rerolls, and a recovery skip are playable; detailed before/after comparison remains next
-- 37 meaningful upgrade definitions now cover four hero weapon capstones, weapon evolution, four ability unlocks, hero-specific mastery, damage, speed, health, per-ability ranks, shield breaking, elite and guardian hunting, critical mastery, piercing, economy, and bonus projectiles
+- 41 meaningful upgrade definitions now cover four hero weapon capstones, four ability evolutions, weapon evolution, four ability unlocks, hero-specific mastery, damage, speed, health, per-ability ranks, shield breaking, elite and guardian hunting, critical mastery, piercing, economy, and bonus projectiles
 - Twelve functional relics: Lucky Coin, Spirit Mask, Thunder Seal, Blood Vial, Dragon Scale, Rainbow Feather, Ward Bell, Oni Contract, Moon Pearl, Phoenix Plume, River Mirror, and Guardian Fang
 - Four automatic recipe synergies are playable and visible in the HUD: Steam Burst, Storm Current, Guardian Tempest, and Twin Cinders
 - Gold, spirit shards, keys, hero tokens, loot tables, pickup bursts, and reward summaries

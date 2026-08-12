@@ -372,3 +372,22 @@ test('every campaign wave advances into its own production-painted combat locati
   assert.doesNotMatch(data,/rooms: \[[^\]]*'crimsonOniGate'/);
   for(const asset of ['jade-bell-terraces.png','jade-lantern-canals.png','jade-warden-processional.png','bamboo-moonlotus-reservoir.png','bamboo-sporelight-monastery.png','bamboo-moonstone-causeway.png','crimson-cinder-rooftops.png','crimson-drum-foundry.png','crimson-war-processional.png'])assert.match(data,new RegExp(asset.replace('.','\\.')));
 });
+
+test('each chapter escalates through a unique biome pressure mechanic',()=>{
+  const pressures=Object.values(ENCOUNTERS).map((chapter)=>chapter.pressure);
+  assert.deepEqual(pressures.map((pressure)=>pressure.id),['bellEcho','sporeBloom','emberLane']);
+  for(const pressure of pressures){assert.ok(pressure.baseInterval>pressure.minInterval);assert.ok(pressure.warning>=1);assert.ok(pressure.damage>0);}
+  assert.match(game,/function scheduleBiomePressure/);assert.match(game,/function updateBiomePressure/);assert.match(game,/effects\.biomePressures/);
+});
+
+test('every unlocked ability earns a behavior-changing late-run evolution',()=>{
+  for(const id of ['abyssalMaw','nineTailInferno','guardianBloom','heavensVerdict'])assert.match(game,new RegExp(`id:'${id}'`));
+  assert.match(game,/abilityEvolutions:\{undertowWell:false,foxfireVolley:false,wildHeart:false,shockPaws:false\}/);
+  assert.match(game,/restored\.abilityEvolutions=\{\.\.\.player\.abilityEvolutions,\.\.\.saved\.abilityEvolutions\}/);
+  assert.match(game,/vortex\.evolved&&!vortex\.midCollapsed/);
+  assert.match(game,/const shots=player\.abilityEvolutions\.foxfireVolley\?9/);
+  assert.match(game,/function triggerGuardianBloom\(/);
+  assert.match(game,/function triggerHeavensVerdict\(/);
+  assert.match(game,/storm\.verdict&&!storm\.verdictResolved/);
+  assert.match(game,/debugSystem==='evolutions'/);
+});

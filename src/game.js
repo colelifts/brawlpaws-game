@@ -266,7 +266,7 @@ function selectDifficulty(id){
 
 const input = { keys: new Set(), pressed: new Set(), pointer: { x: 0, y: 0, active: false }, attack: false, attackHeld: false };
 const camera = { x: room.playerSpawn.x, y: room.playerSpawn.y, zoom: 1, shake: 0, kick: 0 };
-const effects = { particles: [], afterimages: [], numbers: [], words: [], rings: [], shards: [], projectiles: [], playerShots: [], vortices: [], shockStorms: [], flameBolts: [], fireTrails: [], blooms: [], spriteEffects: [], shockLinks: [], stars: [], enemyHazards: [], guardianSignatures: [] };
+const effects = { particles: [], afterimages: [], numbers: [], words: [], rings: [], shards: [], projectiles: [], playerShots: [], vortices: [], shockStorms: [], flameBolts: [], fireTrails: [], blooms: [], spriteEffects: [], shockLinks: [], stars: [], enemyHazards: [], guardianSignatures: [], biomePressures: [] };
 const props = [
   { col: 0, row: 0, x: 690, y: 530, scale: .62, radius: 44, light: '#ff9b2c' },
   { col: 1, row: 0, x: 1810, y: 560, scale: .56, radius: 42, light: '#2de9ff' },
@@ -490,6 +490,7 @@ function restorePlayerCheckpoint(saved){
   restored.unlockedAbilities=new Set(migratedAbilities);
   restored.abilityCooldowns={...player.abilityCooldowns,...saved.abilityCooldowns};if('riptide' in restored.abilityCooldowns){restored.abilityCooldowns.undertowWell=restored.abilityCooldowns.riptide;delete restored.abilityCooldowns.riptide;}
   restored.abilityPower={...player.abilityPower,...saved.abilityPower};if('riptide' in restored.abilityPower){restored.abilityPower.undertowWell=restored.abilityPower.riptide;delete restored.abilityPower.riptide;}
+  restored.abilityEvolutions={...player.abilityEvolutions,...saved.abilityEvolutions};
   restored.synergies=new Set(Array.isArray(saved.synergies)?saved.synergies:[]);
   restored.eventHistory=new Set(Array.isArray(saved.eventHistory)?saved.eventHistory:[]);
   restored.shopPurchases=new Set(Array.isArray(saved.shopPurchases)?saved.shopPurchases:[]);
@@ -680,6 +681,10 @@ const UPGRADES = [
   ,{id:'siegeLotus',name:'Siege Lotus',icon:'SIEGE',type:'BAMBOO CAPSTONE',color:'#ffd13a',description:'Every third cannon blast loads an immense spirit shell that erupts on contact and throws the whole pack outward.',detail:'3rd blast / heavy area explosion',available:()=>player.level>=7&&selectedHeroId==='bamboo'&&!player.weaponEvolution&&player.upgradeRanks.scatterBore>=1&&player.upgradeRanks.guardianHide>=1,apply:()=>{player.weaponEvolution='siegeLotus';}}
   ,{id:'moonConstellation',name:'Moon Constellation',icon:'SPLIT',type:'HOPSCOTCH CAPSTONE',color:'#ff5fbd',description:'Every fourth fully drawn arrow fractures after impact and hunts two additional enemies.',detail:'4th arrow / two seeking splinters',available:()=>player.level>=7&&selectedHeroId==='hopscotch'&&!player.weaponEvolution&&player.upgradeRanks.moonPiercer>=2&&player.upgradeRanks.perfectDraw>=1,apply:()=>{player.weaponEvolution='moonConstellation';}}
   ,{id:'deadeyeCircuit',name:'Deadeye Circuit',icon:'CHAIN',type:'RUSTY CAPSTONE',color:'#ff9b32',description:'Every sixth twin-revolver volley becomes a guaranteed critical execution chain with two additional full-force banks.',detail:'6th volley / critical ricochet chain',available:()=>player.level>=7&&selectedHeroId==='rusty'&&!player.weaponEvolution&&player.upgradeRanks.bankShot>=2&&player.upgradeRanks.loadedDice>=1,apply:()=>{player.weaponEvolution='deadeyeCircuit';}}
+  ,{id:'abyssalMaw',name:'Abyssal Maw',icon:'VORTEX',type:'UNDERTOW EVOLUTION',color:'#35e7ff',description:'The well implodes twice, crushing its trapped pack halfway through and again at the end.',detail:'2 crushing collapses',available:()=>player.level>=9&&player.upgradeRanks.undertow>=2&&!player.abilityEvolutions.undertowWell,apply:()=>{player.abilityEvolutions.undertowWell=true;}}
+  ,{id:'nineTailInferno',name:'Nine-Tail Inferno',icon:'FIRE',type:'FOXFIRE EVOLUTION',color:'#ff6a24',description:'Fire nine spirit flames. Burning enemies spread Foxfire when they fall.',detail:'9 flames / death spreads burn',available:()=>player.level>=9&&player.upgradeRanks.hungryFlame>=2&&!player.abilityEvolutions.foxfireVolley,apply:()=>{player.abilityEvolutions.foxfireVolley=true;}}
+  ,{id:'guardianBloom',name:'Guardian Bloom',icon:'HEART',type:'WILD HEART EVOLUTION',color:'#68ef50',description:'When Wild Heart ends, a life-draining bloom blasts the nearby pack and restores health per target.',detail:'Expiry blast / life drain',available:()=>player.level>=9&&player.upgradeRanks.heartBloom>=2&&!player.abilityEvolutions.wildHeart,apply:()=>{player.abilityEvolutions.wildHeart=true;}}
+  ,{id:'heavensVerdict',name:"Heaven's Verdict",icon:'STORM',type:'ULTIMATE EVOLUTION',color:'#d94cff',description:'Shock Paws ends with a final judgment bolt against every surviving enemy in the room.',detail:'Global finishing strike',available:()=>player.level>=9&&player.upgradeRanks.stormHeart>=2&&!player.abilityEvolutions.shockPaws,apply:()=>{player.abilityEvolutions.shockPaws=true;}}
 ];
 
 const RELICS=[
@@ -751,7 +756,7 @@ const UPGRADE_RARITIES={
   spiritRounds:'common',quickPaws:'common',vitality:'common',undertow:'rare',hungryFlame:'rare',heartBloom:'rare',stormHeart:'epic',
   wardbreaker:'common',spiritHunter:'rare',spiritCatalyst:'rare',pressureChamber:'epic',headhunter:'rare',keenEye:'common',
   spiritCylinder:'common',phaseRounds:'epic',foxstepMastery:'rare',ironBelly:'rare',scatterBore:'epic',guardianHide:'rare',
-  phaseNova:'epic',siegeLotus:'epic',moonConstellation:'epic',deadeyeCircuit:'epic'
+  phaseNova:'epic',siegeLotus:'epic',moonConstellation:'epic',deadeyeCircuit:'epic',abyssalMaw:'epic',nineTailInferno:'epic',guardianBloom:'epic',heavensVerdict:'epic'
 };
 const RARITY_STYLES={common:{name:'COMMON',color:'#a9b4c3',weight:56},rare:{name:'RARE',color:'#39e8ff',weight:32},epic:{name:'EPIC',color:'#e04cff',weight:12}};
 const SYNERGIES=[
@@ -960,6 +965,7 @@ function resetGame() {
     unlockedAbilities: new Set(), dualWield:Boolean(heroDef.naturalDual), damageMultiplier: 1+profile.forgeRank*.03, fireRateMultiplier: 1,
     rerolls:1,paidRerolls:0,synergies:new Set(),eventHistory:new Set(),shotsFired:0,
     abilityPower: { undertowWell: 1+profile.attunementRank*.04, foxfireVolley: 1+profile.attunementRank*.04, wildHeart: 1+profile.attunementRank*.04, shockPaws: 1+profile.attunementRank*.04 },
+    abilityEvolutions:{undertowWell:false,foxfireVolley:false,wildHeart:false,shockPaws:false},
     upgradeRanks:{spiritRounds:0,quickPaws:0,vitality:0,undertow:0,hungryFlame:0,heartBloom:0,stormHeart:0,wardbreaker:0,spiritHunter:0,spiritCatalyst:0,pressureChamber:0,headhunter:0,keenEye:0,moonPiercer:0,perfectDraw:0,glassFang:0,spiritMomentum:0,guardianHunter:0,deepReserves:0,bankShot:0,loadedDice:0,quickdraw:0,spiritCylinder:0,phaseRounds:0,foxstepMastery:0,ironBelly:0,scatterBore:0,guardianHide:0},
     heartBonus: 0, stormBonus: 0,guardianBlessings:[],endingVow:null,victoryShardBonus:0,
     gold:legacyGold,goldMultiplier:1,relics:[],shopPurchases:new Set(),killHeal:0,damageTakenMultiplier:heroDef.damageTakenMultiplier,speedMultiplier:1,dashCooldownMultiplier:1,
@@ -1089,7 +1095,7 @@ function startWave(index,modifiers={}) {
   const wave = chapter.waves[index];
   const difficulty=activeDifficulty();
   Object.values(effects).forEach((list)=>list.splice(0));activateRoom(roomForWave(index),{reposition:true,announce:true,waveIndex:index,subtitle:wave.name.toUpperCase()});
-  encounter.wave=index; encounter.transitioning=false; encounter.bossActive=false;encounter.nodeType=modifiers.nodeType||'combat';encounter.modifiers={...modifiers};corruptionDirector=createCorruptionDirector(index,modifiers.corruption);const corruption=corruptionTier();encounter.rewardScale=(modifiers.rewardScale||1)*difficulty.rewardScale*corruption.reward;enemies=[];state='playing';roomInteractable=null;spawnRoomDestructibles(index,modifiers.brokenProps||[]);spawnRoomMission(wave.mission,modifiers.missionState);refreshCorruptionHud({surge:corruptionDirector.tier>=2});
+  encounter.wave=index; encounter.transitioning=false; encounter.bossActive=false;encounter.nodeType=modifiers.nodeType||'combat';encounter.modifiers={...modifiers};encounter.biomePressureClock=biomePressureInterval(index)*.72;encounter.biomePressureCount=0;corruptionDirector=createCorruptionDirector(index,modifiers.corruption);const corruption=corruptionTier();encounter.rewardScale=(modifiers.rewardScale||1)*difficulty.rewardScale*corruption.reward;enemies=[];state='playing';roomInteractable=null;spawnRoomDestructibles(index,modifiers.brokenProps||[]);spawnRoomMission(wave.mission,modifiers.missionState);refreshCorruptionHud({surge:corruptionDirector.tier>=2});
   if(PHYSICAL_ROUTE_NODES.has(encounter.nodeType)){spawnRoomInteractable(encounter.nodeType);if(modifiers.interactableUsed)roomInteractable.used=true;}
   ui.waveLabel.textContent=`CHAPTER ${chapterIndex+1}  WAVE ${index+1} / ${chapter.waves.length}`;
   const eliteNode=encounter.nodeType==='elite'||encounter.nodeType?.includes('Elite');ui.roomState.textContent=eliteNode?`MUTATED  ${wave.name.toUpperCase()}`:wave.name.toUpperCase();ui.roomState.style.color=eliteNode?'#f13b8c':index>=2?'#ff7448':'#ff38b5';
@@ -1105,6 +1111,27 @@ function startWave(index,modifiers={}) {
   if(roomMission?.type!=='eliminate')setTimeout(()=>{if(state==='playing'&&roomMission)spawnWord(player.x,player.y-145,roomMission.title,roomMission.color);},420);
   effects.rings.push({x:player.x,y:player.y,radius:18,maxRadius:170,color:index>=2?'#ff5d42':'#45eaff',life:.7,maxLife:.7});
   encounter.modifiers.missionState=serializeMissionState();encounter.modifiers.corruption=serializeCorruptionDirector();saveRunCheckpoint({kind:'wave',wave:index,modifiers:encounter.modifiers});if(!coop.applyingSignal)coopSignal({kind:'wave',chapter:chapterIndex,wave:index,nodeType:encounter.nodeType});
+}
+
+function biomePressureInterval(waveIndex=encounter?.wave||0){const pressure=chapter.pressure;if(!pressure)return 999;return Math.max(pressure.minInterval,pressure.baseInterval-waveIndex*.82-(selectedDifficulty==='nightmare'?.65:selectedDifficulty==='ascension'?1.05:0));}
+
+function scheduleBiomePressure(){
+  const pressure=chapter.pressure;if(!pressure||encounter.wave<pressure.startWave||encounter.transitioning||encounter.bossActive)return;
+  const b=room.combatBounds,index=encounter.biomePressureCount++,lead=.42+encounter.wave*.055;
+  if(pressure.id==='bellEcho'){
+    const target={x:clamp(player.x+player.vx*lead,b.x-b.radiusX*.72,b.x+b.radiusX*.72),y:clamp(player.y+player.vy*lead,b.y-b.radiusY*.72,b.y+b.radiusY*.72)};
+    effects.biomePressures.push({type:'bellEcho',x:target.x,y:target.y,radius:pressure.radius+encounter.wave*8,damage:pressure.damage+encounter.wave*2,color:pressure.color,life:pressure.warning,maxLife:pressure.warning,stage:'warning',triggered:false,index});
+  }else if(pressure.id==='sporeBloom'){
+    const angle=index*2.21+encounter.wave*.47,lane=.28+(index%3)*.18;effects.biomePressures.push({type:'sporeBloom',x:b.x+Math.cos(angle)*b.radiusX*lane,y:b.y+Math.sin(angle)*b.radiusY*lane,radius:pressure.radius+encounter.wave*7,damage:pressure.damage+encounter.wave,color:pressure.color,life:pressure.warning,maxLife:pressure.warning,activeDuration:pressure.activeDuration,slow:pressure.slow,stage:'warning',triggered:false,index});
+  }else{
+    const angle=Math.atan2(player.y-b.y,player.x-b.x)+(index%2?Math.PI/2:0)+Math.sin(index*1.7)*.22;effects.biomePressures.push({type:'emberLane',x:b.x,y:b.y,angle,width:pressure.width+encounter.wave*6,length:b.radiusX*2.25,damage:pressure.damage+encounter.wave*2,color:pressure.color,life:pressure.warning,maxLife:pressure.warning,activeDuration:pressure.activeDuration,stage:'warning',triggered:false,index});
+  }
+  spawnWord(player.x,player.y-130,pressure.name,pressure.color);
+}
+
+function updateBiomePressure(dt){
+  if(state!=='playing'||encounter.bossActive||encounter.transitioning)return;const pressure=chapter.pressure;if(!pressure||encounter.wave<pressure.startWave)return;
+  encounter.biomePressureClock=(encounter.biomePressureClock??biomePressureInterval())-dt;if(encounter.biomePressureClock<=0){encounter.biomePressureClock=biomePressureInterval();scheduleBiomePressure();}
 }
 
 function startSpecialistShowcase(){
@@ -1444,7 +1471,8 @@ function resolveSynergies(){
 }
 
 function refreshSynergyHud(){
-  const active=SYNERGIES.filter((synergy)=>player.synergies.has(synergy.id));const capstones={phaseNova:{name:'PHASE NOVA',color:'#d94cff'},siegeLotus:{name:'SIEGE LOTUS',color:'#ffd13a'},moonConstellation:{name:'MOON CONSTELLATION',color:'#ff5fbd'},deadeyeCircuit:{name:'DEADEYE CIRCUIT',color:'#ff9b32'}};const capstone=capstones[player.weaponEvolution];const key=`${active.map((synergy)=>synergy.id).join('|')}|${player.weaponEvolution||''}`;if(ui.synergyStrip.dataset.key===key)return;ui.synergyStrip.dataset.key=key;
+  const active=SYNERGIES.filter((synergy)=>player.synergies.has(synergy.id));const capstones={phaseNova:{name:'PHASE NOVA',color:'#d94cff'},siegeLotus:{name:'SIEGE LOTUS',color:'#ffd13a'},moonConstellation:{name:'MOON CONSTELLATION',color:'#ff5fbd'},deadeyeCircuit:{name:'DEADEYE CIRCUIT',color:'#ff9b32'}};const capstone=capstones[player.weaponEvolution];
+  const key=`${active.map((synergy)=>synergy.id).join('|')}|${player.weaponEvolution||''}`;if(ui.synergyStrip.dataset.key===key)return;ui.synergyStrip.dataset.key=key;
   ui.synergyStrip.innerHTML=`${capstone?`<span class="synergy-badge capstone" style="--synergy:${capstone.color}" title="Hero weapon capstone active">${capstone.name}</span>`:''}${active.map((synergy)=>`<span class="synergy-badge" style="--synergy:${synergy.color}" title="${synergy.description}">${synergy.name}</span>`).join('')}`;
 }
 
@@ -1477,6 +1505,8 @@ function begin() {
   if(debugSystem==='specialists'){startSpecialistShowcase();return;}
   if(debugSystem==='capstone'){player.level=10;player.maxHealth=1200;player.health=1200;player.damageMultiplier=2.4;player.weaponEvolution=selectedHeroId==='kitsune'?'phaseNova':selectedHeroId==='bamboo'?'siegeLotus':selectedHeroId==='hopscotch'?'moonConstellation':'deadeyeCircuit';player.bonusPierces=selectedHeroId==='hopscotch'?2:player.bonusPierces;player.bonusRicochets=selectedHeroId==='rusty'?2:player.bonusRicochets;refreshSynergyHud();startWave(4);return;}
   if(debugSystem==='room6'){player.level=10;player.maxHealth=1400;player.health=1400;startWave(5);return;}
+  if(debugSystem==='pressure'){player.maxHealth=900;player.health=900;player.unlockedAbilities.add('undertowWell');startWave(Math.min(4,chapter.waves.length-1));encounter.biomePressureClock=.35;return;}
+  if(debugSystem==='evolutions'){player.level=12;player.maxHealth=1200;player.health=1200;player.damageMultiplier=1.35;for(const id of Object.keys(ABILITIES))player.unlockedAbilities.add(id);for(const id of Object.keys(player.abilityEvolutions))player.abilityEvolutions[id]=true;player.stormBonus=1;refreshSynergyHud();startWave(Math.min(4,chapter.waves.length-1));return;}
   if(debugSystem==='mission'){const type=['anchors','rescue','defend'].includes(debugMission)?debugMission:'anchors';const missionWave=chapter.waves.findIndex((wave)=>wave.mission?.type===type);player.maxHealth=900;player.health=900;player.damageMultiplier=type==='anchors'?4:1.6;startWave(Math.max(0,missionWave));if(roomMission?.actors?.[0]){roomMission.actors[0].x=player.x+125;roomMission.actors[0].y=player.y;}if(roomMission?.ward){roomMission.ward.x=player.x+90;roomMission.ward.y=player.y+40;}return;}
   if(debugSystem==='guardianReward'){openGuardianReward(chapter.boss);return;}
   if(debugSystem==='codex'){openCodex('enemies');return;}
@@ -1655,13 +1685,14 @@ function useAbility(id) {
   if (id === 'undertowWell') {
     player.castTime=.34;
     const power=player.abilityPower.undertowWell;
-    effects.vortices.push({x:player.x+direction.x*300,y:player.y+direction.y*300,life:definition.duration,maxLife:definition.duration,radius:definition.radius*Math.sqrt(power),pull:definition.pull*power,hit:new Set(),collapsed:false,definition,rotation:0});
+    effects.vortices.push({x:player.x+direction.x*300,y:player.y+direction.y*300,life:definition.duration,maxLife:definition.duration,radius:definition.radius*Math.sqrt(power),pull:definition.pull*power,hit:new Set(),collapsed:false,midCollapsed:false,evolved:player.abilityEvolutions.undertowWell,definition,rotation:0});
     effects.rings.push({x:player.x,y:player.y,radius:18,maxRadius:80,color:definition.color,life:.3,maxLife:.3});
     burst(player.x,player.y,definition.color,25,260,4); playSfx('water',.38,.9);
   } else if (id === 'foxfireVolley') {
     player.castTime=.28;
-    for(let i=0;i<definition.shots;i++){
-      const angle=player.facing+(i-(definition.shots-1)/2)*definition.spread;
+    const shots=player.abilityEvolutions.foxfireVolley?9:definition.shots;const spread=player.abilityEvolutions.foxfireVolley?definition.spread*.66:definition.spread;
+    for(let i=0;i<shots;i++){
+      const angle=player.facing+(i-(shots-1)/2)*spread;
       effects.flameBolts.push({x:player.x+Math.cos(angle)*46,y:player.y+Math.sin(angle)*46-7,vx:Math.cos(angle)*definition.speed,vy:Math.sin(angle)*definition.speed,radius:12,life:definition.life,maxLife:definition.life,definition,power:player.abilityPower.foxfireVolley});
     }
     burst(player.x,player.y,definition.color,28,320,5); camera.kick=18; camera.shake=5; playSfx('fire',.42,1.04);
@@ -1672,11 +1703,24 @@ function useAbility(id) {
     burst(player.x,player.y,definition.color,36,300,5); playTone(330,.45,'sine',.035,260);
   } else if (id === 'shockPaws') {
     player.castTime=.5; player.ultimateFlash=.12; player.invulnerable=Math.max(player.invulnerable,.45);
-    effects.shockStorms.push({x:player.x,y:player.y,life:definition.duration+player.stormBonus,maxLife:definition.duration+player.stormBonus,tick:0,pulse:0,definition,power:player.abilityPower.shockPaws});
+    effects.shockStorms.push({x:player.x,y:player.y,life:definition.duration+player.stormBonus,maxLife:definition.duration+player.stormBonus,tick:0,pulse:0,definition,power:player.abilityPower.shockPaws,verdict:player.abilityEvolutions.shockPaws,verdictResolved:false});
     effects.spriteEffects.push({asset:'shockImpactVfx',x:player.x,y:player.y-26,width:190,height:170,life:.6,maxLife:.6,glow:definition.color});
     effects.rings.push({x:player.x,y:player.y,radius:20,maxRadius:230,color:definition.color,life:.7,maxLife:.7});
     camera.kick=24; camera.shake=8; hitStop=.05; playSfx('lightning',.5,.92);
   }
+}
+
+function triggerGuardianBloom(){
+  const radius=285;const targets=enemies.filter((enemy)=>!enemy.dead&&enemy.state!=='waiting'&&distance(player,enemy)<radius+enemy.radius);let drained=0;
+  for(const enemy of targets){damageEnemyFromAbility(enemy,Math.round(42*player.abilityPower.wildHeart),185,normalize(enemy.x-player.x,enemy.y-player.y),'#9dff79',null);drained++;}
+  if(drained)player.health=Math.min(player.maxHealth,player.health+Math.min(30,drained*4));
+  effects.blooms.push({x:player.x,y:player.y-20,life:1.05,maxLife:1.05,color:'#9dff79',evolved:true});effects.rings.push({x:player.x,y:player.y,radius:28,maxRadius:radius,color:'#9dff79',life:.72,maxLife:.72});burst(player.x,player.y-12,'#9dff79',48,520,7);spawnWord(player.x,player.y-92,'GUARDIAN BLOOM!','#9dff79');camera.shake=Math.max(camera.shake,11);hitStop=Math.max(hitStop,.06);playSfx('impact',.34,.82);
+}
+
+function triggerHeavensVerdict(storm){
+  storm.verdictResolved=true;const targets=enemies.filter((enemy)=>!enemy.dead&&enemy.state!=='waiting');
+  for(const enemy of targets){effects.shockLinks.push({x1:player.x,y1:player.y-95,x2:enemy.x,y2:enemy.y-22,life:.48,maxLife:.48,phase:storm.pulse+3,verdict:true});effects.spriteEffects.push({asset:'shockImpactVfx',fixedFrame:5,x:enemy.x,y:enemy.y-28,width:235,height:210,life:.6,maxLife:.6,glow:'#f4ddff'});effects.stars.push({x:enemy.x,y:enemy.y-18,size:68,color:'#f4ddff',facing:enemy.facing,life:.5,maxLife:.5});damageEnemyFromAbility(enemy,Math.round(54*storm.power),105,normalize(enemy.x-player.x,enemy.y-player.y),'#f4ddff',null);applyEnemyStatus(enemy,'shock',1.1);}
+  if(targets.length){spawnWord(player.x,player.y-120,"HEAVEN'S VERDICT!",'#f4ddff');effects.rings.push({x:player.x,y:player.y,radius:38,maxRadius:330,color:'#d94cff',life:.85,maxLife:.85});camera.shake=Math.max(camera.shake,18);hitStop=Math.max(hitStop,.1);player.ultimateFlash=.16;playSfx('lightning',.65,.72);}
 }
 
 function updatePlayer(dt) {
@@ -1688,7 +1732,7 @@ function updatePlayer(dt) {
   player.dashCooldown = Math.max(0, player.dashCooldown - dt*recoveryRate);
   player.shotCooldown = Math.max(0, player.shotCooldown - dt);
   player.ultimateFlash = Math.max(0, player.ultimateFlash - dt);
-  player.castTime=Math.max(0,player.castTime-dt); player.wildHeartTime=Math.max(0,player.wildHeartTime-dt);
+  player.castTime=Math.max(0,player.castTime-dt);const wildHeartWasActive=player.wildHeartTime>0;player.wildHeartTime=Math.max(0,player.wildHeartTime-dt);if(wildHeartWasActive&&player.wildHeartTime<=0&&player.abilityEvolutions.wildHeart)triggerGuardianBloom();
   for(const id of Object.keys(player.abilityCooldowns)) player.abilityCooldowns[id]=Math.max(0,player.abilityCooldowns[id]-dt*recoveryRate);
   player.comboDrop = Math.max(0, player.comboDrop - dt);
   if (player.comboDrop <= 0) player.hitCount = 0;
@@ -1812,7 +1856,7 @@ function redirectTrickshot(shot,sourceEnemy){
 }
 
 function killEnemy(enemy, direction) {
-  enemy.dead = true; enemy.deathTime = .72;
+  const foxfireSpread=enemy.burnTime>0&&player.abilityEvolutions?.foxfireVolley;const spreadingPower=enemy.burnPower||1;enemy.dead = true; enemy.deathTime = .72;
   if(enemy.practice){dojoState.kills++;dojoState.respawnTimer=.82;enemy.vx+=direction.x*220;enemy.vy+=direction.y*220;burst(enemy.x,enemy.y,'#72ef5b',34,390,7);spawnWord(enemy.x,enemy.y-90,'TARGET BROKEN!','#72ef5b');camera.shake=10;return;}
   if(enemy.def.behavior==='boss'){
     enemy.deathTime=2.8;encounter.bossDefeated=true;clearDelay=3.2;encounter.defeatedGuardianId=enemy.def.id;ui.bossPanel.classList.remove('active');
@@ -1823,6 +1867,11 @@ function killEnemy(enemy, direction) {
     return;
   }
   recordCorruptionKill();
+  if(foxfireSpread){
+    const spreadTargets=enemies.filter((target)=>target!==enemy&&!target.dead&&target.state!=='waiting'&&distance(enemy,target)<360+target.radius).sort((a,b)=>distance(enemy,a)-distance(enemy,b)).slice(0,3);
+    for(const target of spreadTargets){applyEnemyStatus(target,'burn',ABILITIES.foxfireVolley.burnDuration*.8,spreadingPower*.85);effects.spriteEffects.push({asset:'burnStatusVfx',x:target.x,y:target.y-12,width:178,height:146,life:.46,maxLife:.46,glow:'#ff8a2a'});effects.fireTrails.push({x:(enemy.x+target.x)/2,y:(enemy.y+target.y)/2,color:'#ff6a24',life:.46,maxLife:.46});}
+    if(spreadTargets.length){effects.rings.push({x:enemy.x,y:enemy.y,radius:20,maxRadius:190,color:'#ff6a24',life:.45,maxLife:.45});burst(enemy.x,enemy.y-12,'#ff8a2a',28,430,6);spawnWord(enemy.x,enemy.y-78,'FOXFIRE SPREAD!','#ff8a2a');}
+  }
   if(enemy.eliteId==='volatile'){
     effects.enemyHazards.push({x:enemy.x,y:enemy.y+5,radius:enemy.eliteDef.blastRadius,damage:Math.round(enemy.eliteDef.blastDamage*enemy.damageScale),color:enemy.eliteDef.color,life:.78,maxLife:.78,triggerAt:.16,triggered:false,type:'volatile'});
     spawnWord(enemy.x,enemy.y-82,'CORE UNSTABLE!',enemy.eliteDef.color);
@@ -2236,6 +2285,18 @@ function updateEffects(dt) {
   for (const effect of effects.spriteEffects) effect.life -= dt;
   for (const link of effects.shockLinks) link.life -= dt;
   for (const signature of effects.guardianSignatures) signature.life -= dt;
+  for(const pressure of effects.biomePressures){
+    pressure.life-=dt;
+    if(pressure.stage==='warning'&&pressure.life<=0){pressure.stage='active';pressure.life=pressure.type==='bellEcho'?.7:pressure.activeDuration;pressure.maxLife=pressure.life;pressure.triggered=false;
+      if(pressure.type==='bellEcho'){effects.rings.push({x:pressure.x,y:pressure.y,radius:18,maxRadius:pressure.radius,color:pressure.color,life:.5,maxLife:.5});burst(pressure.x,pressure.y-16,pressure.color,30,420,6);playSfx('lightning',.28,1.28);}
+      else if(pressure.type==='sporeBloom'){effects.rings.push({x:pressure.x,y:pressure.y,radius:22,maxRadius:pressure.radius,color:pressure.color,life:.55,maxLife:.55});burst(pressure.x,pressure.y,pressure.color,28,260,5);playSfx('water',.22,.74);}
+      else{camera.shake=Math.max(camera.shake,9);playSfx('fire',.32,.82);}
+    }
+    if(pressure.stage!=='active')continue;
+    if(pressure.type==='bellEcho'&&!pressure.triggered){pressure.triggered=true;const hit=distance(pressure,player)<pressure.radius+player.radius;if(hit)hurtPlayer(pressure.damage,pressure,.18);const count=8+Math.floor(encounter.wave/2)*2;for(let i=0;i<count;i++){const a=i/count*Math.PI*2+pressure.index*.27;effects.projectiles.push({x:pressure.x,y:pressure.y-14,vx:Math.cos(a)*(310+encounter.wave*30),vy:Math.sin(a)*(310+encounter.wave*30),radius:11,color:pressure.color,damage:Math.max(4,Math.round(pressure.damage*.7)),life:2.8,maxLife:2.8});}}
+    else if(pressure.type==='sporeBloom'){if(distance(pressure,player)<pressure.radius+player.radius){player.vx*=Math.exp(-pressure.slow*8*dt);player.vy*=Math.exp(-pressure.slow*8*dt);pressure.tick=(pressure.tick||0)-dt;if(pressure.tick<=0){pressure.tick=.72;hurtPlayer(pressure.damage,pressure);}}}
+    else if(pressure.type==='emberLane'&&!pressure.triggered){pressure.triggered=true;const dx=player.x-pressure.x,dy=player.y-pressure.y,side=Math.abs(-Math.sin(pressure.angle)*dx+Math.cos(pressure.angle)*dy),along=Math.abs(Math.cos(pressure.angle)*dx+Math.sin(pressure.angle)*dy);if(side<pressure.width+player.radius&&along<pressure.length*.5)hurtPlayer(pressure.damage,pressure,.24);effects.fireTrails.push(...Array.from({length:15},(_,i)=>({x:pressure.x+Math.cos(pressure.angle)*(i-7)*pressure.length/14,y:pressure.y+Math.sin(pressure.angle)*(i-7)*pressure.length/14,color:pressure.color,life:.92,maxLife:.92})));}
+  }
   for(const hazard of effects.enemyHazards){
     hazard.life-=dt;
     if(!hazard.triggered&&hazard.life<=(hazard.triggerAt??.16)){hazard.triggered=true;const bomb=hazard.type==='bomb';effects.rings.push({x:hazard.x,y:hazard.y,radius:24,maxRadius:hazard.radius,color:hazard.color,life:.44,maxLife:.44});burst(hazard.x,hazard.y,bomb?'#ffbd42':hazard.color,bomb?46:38,bomb?610:520,bomb?8:7);effects.spriteEffects.push({asset:bomb?'specialEnemyVfx':'crimsonCombatVfx',fixedFrame:bomb?4:5,x:hazard.x,y:hazard.y,width:hazard.radius*2.65,height:hazard.radius*2.2,life:.58,maxLife:.58,glow:hazard.color});camera.shake=Math.max(camera.shake,bomb?18:15);hitStop=Math.max(hitStop,bomb ? .08 : .07);playTone(bomb?52:64,.35,'sawtooth',.07,30);if(distance(hazard,player)<hazard.radius+player.radius)hurtPlayer(hazard.damage,hazard,bomb ? .4 : .28);}
@@ -2283,10 +2344,11 @@ function updateEffects(dt) {
         effects.spriteEffects.push({asset:'waterImpactVfx',x:enemy.x,y:enemy.y-20,width:190,height:160,life:.56,maxLife:.56,glow:vortex.definition.color});
       }
     }
+    if(vortex.evolved&&!vortex.midCollapsed&&progress>=.5){vortex.midCollapsed=true;const targets=enemies.filter((enemy)=>!enemy.dead&&enemy.state!=='waiting'&&distance(vortex,enemy)<vortex.radius*.78+enemy.radius);for(const enemy of targets){const inward=normalize(vortex.x-enemy.x,vortex.y-enemy.y);damageEnemyFromAbility(enemy,Math.round(vortex.definition.collapseDamage*player.abilityPower.undertowWell*.68),110,inward,'#96f7ff',null);applyEnemyStatus(enemy,'wet',vortex.definition.wetDuration);}effects.rings.push({x:vortex.x,y:vortex.y,radius:vortex.radius*.2,maxRadius:vortex.radius*.82,color:'#96f7ff',life:.38,maxLife:.38});effects.spriteEffects.push({asset:'waterImpactVfx',fixedFrame:5,x:vortex.x,y:vortex.y-10,width:vortex.radius*2.1,height:vortex.radius*1.55,life:.5,maxLife:.5,glow:'#96f7ff'});burst(vortex.x,vortex.y,'#96f7ff',28,410,6);spawnWord(vortex.x,vortex.y-70,'ABYSSAL MAW!','#96f7ff');camera.shake=Math.max(camera.shake,8);hitStop=Math.max(hitStop,.045);}
     if(!vortex.collapsed&&vortex.life<=vortex.definition.holdDuration){vortex.collapsed=true;const targets=enemies.filter((enemy)=>!enemy.dead&&enemy.state!=='waiting'&&distance(vortex,enemy)<vortex.radius*.72+enemy.radius);for(const enemy of targets){const inward=normalize(vortex.x-enemy.x,vortex.y-enemy.y);damageEnemyFromAbility(enemy,Math.round(vortex.definition.collapseDamage*player.abilityPower.undertowWell),85,inward,vortex.definition.color,'UNDERTOW!');applyEnemyStatus(enemy,'wet',vortex.definition.wetDuration);}effects.rings.push({x:vortex.x,y:vortex.y,radius:vortex.radius*.5,maxRadius:vortex.radius*1.12,color:'#dfffff',life:.48,maxLife:.48});burst(vortex.x,vortex.y,'#dfffff',36,470,7);camera.shake=Math.max(camera.shake,10);hitStop=Math.max(hitStop,.055);playTone(92,.3,'sawtooth',.045,380);}
   }
   for (const storm of effects.shockStorms) {
-    storm.life -= dt; storm.tick -= dt;
+    storm.life -= dt;if(storm.life<=0){if(storm.verdict&&!storm.verdictResolved)triggerHeavensVerdict(storm);continue;}storm.tick -= dt;
     if (storm.tick > 0) continue;
     storm.tick = storm.definition.tickRate; storm.pulse++;
     const targets = enemies.filter((enemy)=>!enemy.dead&&enemy.state!=='waiting');
@@ -2355,6 +2417,8 @@ function updateHud() {
     controls.fill.style.height = `${cooldownPercent}%`;
     controls.card.classList.toggle('locked', !unlocked);
     controls.card.classList.toggle('ready', unlocked && cooldownPercent <= 0);
+    controls.card.classList.toggle('evolved',Boolean(player.abilityEvolutions?.[id]));
+    controls.card.dataset.evolution=id==='undertowWell'?'ABYSSAL MAW':id==='foxfireVolley'?'NINE-TAIL':id==='wildHeart'?'GUARDIAN':"VERDICT";
   }
   ui.xpFill.style.width = `${clamp(player.xp/player.xpToNext*100,0,100)}%`; ui.xpText.textContent = `${player.xp} / ${player.xpToNext}`;
   ui.levelBadge.textContent = String(player.level);
@@ -2382,6 +2446,7 @@ function update(dt, screen) {
       updatePlayer(dt);
       updateEnemies(dt);
       updateCorruptionDirector(dt);
+      updateBiomePressure(dt);
       updateEncounter(dt);
       if (clearDelay >= 0) { clearDelay -= dt; if (clearDelay <= 0){clearDelay=-1;openGuardianReward(encounter.defeatedGuardianId||chapter.boss);} }
     }
@@ -2883,6 +2948,13 @@ function drawGridAtlasFrame(sheet, frame, columns, rows, x, y, width, height, ro
 }
 
 function drawEffects() {
+  for(const pressure of effects.biomePressures){
+    const warning=pressure.stage==='warning',p=1-pressure.life/pressure.maxLife,pulse=.82+Math.sin(performance.now()/85+pressure.index)*.14;ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=warning?.35+p*.4:.44;
+    if(pressure.type==='bellEcho'){ctx.translate(pressure.x,pressure.y);ctx.scale(1,.58);ctx.strokeStyle=warning?'#fff3a1':pressure.color;ctx.fillStyle=`${pressure.color}18`;ctx.shadowColor=pressure.color;ctx.shadowBlur=22;ctx.lineWidth=warning?4+p*5:8;ctx.setLineDash(warning?[22,11,5,10]:[]);ctx.lineDashOffset=-performance.now()/30;ctx.beginPath();ctx.arc(0,0,pressure.radius*pulse,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.rotate(performance.now()/900);for(let i=0;i<8;i++){ctx.rotate(Math.PI/4);ctx.strokeRect(pressure.radius*.66,-7,14,14);}ctx.setLineDash([]);}
+    else if(pressure.type==='sporeBloom'){ctx.translate(pressure.x,pressure.y);ctx.scale(1,.55);ctx.fillStyle=`${pressure.color}${warning?'20':'35'}`;ctx.strokeStyle=warning?'#e8ffd7':pressure.color;ctx.shadowColor=pressure.color;ctx.shadowBlur=28;ctx.lineWidth=5;ctx.setLineDash(warning?[18,10]:[]);ctx.lineDashOffset=-performance.now()/35;ctx.beginPath();ctx.arc(0,0,pressure.radius*pulse,0,Math.PI*2);ctx.fill();ctx.stroke();for(let i=0;i<7;i++){const a=i/7*Math.PI*2+performance.now()/1100;ctx.beginPath();ctx.arc(Math.cos(a)*pressure.radius*.58,Math.sin(a)*pressure.radius*.58,8+Math.sin(a*4)*3,0,Math.PI*2);ctx.fill();}ctx.setLineDash([]);}
+    else{ctx.translate(pressure.x,pressure.y);ctx.rotate(pressure.angle);const grad=ctx.createLinearGradient(0,-pressure.width,0,pressure.width);grad.addColorStop(0,'rgba(255,42,40,0)');grad.addColorStop(.5,warning?'rgba(255,180,70,.18)':'rgba(255,74,30,.42)');grad.addColorStop(1,'rgba(255,42,40,0)');ctx.fillStyle=grad;ctx.strokeStyle=warning?'#ffd06a':pressure.color;ctx.shadowColor=pressure.color;ctx.shadowBlur=26;ctx.lineWidth=warning?4:11;ctx.setLineDash(warning?[32,16,7,12]:[]);ctx.lineDashOffset=-performance.now()/25;ctx.fillRect(-pressure.length/2,-pressure.width,pressure.length,pressure.width*2);ctx.beginPath();ctx.moveTo(-pressure.length/2,0);ctx.lineTo(pressure.length/2,0);ctx.stroke();ctx.setLineDash([]);}
+    ctx.restore();
+  }
   for(const signature of effects.guardianSignatures){
     const p=1-signature.life/signature.maxLife;const impact=signature.stage===1;const frame=signature.row*3+(impact?(p>.58?2:1):0);const size=signature.radius*(impact?2.95:2.5);drawGridAtlasFrame(assets.guardianSignatureVfx,frame,3,3,signature.x,signature.y-24,size,size*.72,0,clamp(signature.life/.12,0,1)*(impact?1:.82),signature.color);
     if(!impact){ctx.save();ctx.translate(signature.x,signature.y);ctx.scale(1,.58);ctx.strokeStyle=signature.color;ctx.shadowColor=signature.color;ctx.shadowBlur=18;ctx.lineWidth=5+p*6;ctx.setLineDash([30,14,8,11]);ctx.lineDashOffset=-performance.now()/24;ctx.beginPath();ctx.arc(0,0,signature.radius*(.72+p*.28),0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();}

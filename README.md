@@ -30,6 +30,7 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - `C` — Foxfire Volley, earned at level 4; a five-shot burning fan
 - `F` — Wild Heart, earned at level 6; an instant heal plus temporary damage reduction
 - `Q` — Shock Paws, earned at level 8; a 5.4-second storm that repeatedly hits every active enemy
+- At level 9+, investing twice in an ability can surface its Epic evolution: Abyssal Maw double-collapses, Nine-Tail Inferno fires nine flames and spreads burn on death, Guardian Bloom life-drains nearby enemies when Wild Heart ends, and Heaven's Verdict finishes every surviving enemy with a global strike.
 - `K` — open or close the Spirit Archive Codex; combat pauses while it is open
 - `1` / `2` / `3` — choose an upgrade when a level-up pauses combat
 - `R` — restart from a result screen
@@ -72,7 +73,8 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - Eighteen escalating pre-boss combats across the campaign: Chapter I grows from 4 slow scouts to 72 enemies, Chapter II reaches 112, and Chapter III reaches a 150-enemy cataclysm before Pyreclaw
 - Every pre-boss room now carries an authored mission: eliminate a named warband, shoot and shatter curse anchors, reach and free captive spirits, or defend a damageable ward until its seal stabilizes. Mission progress is visible in the HUD, gates room completion, grants gold/XP, fails the run when a ward breaks, and persists in room-safe checkpoints.
 - Physical Sacred Springs, Spirit Vaults, and Hero Shrines selected from the route screen must be reached and activated inside combat rooms; destructible pots and crates provide optional gold and XP
-- Real level progression with rising XP thresholds, combat-pausing three-card choices, 37 upgrade definitions, repeatable ranks, Dual-Wield, hero-specific branches, piercing, critical-draw, guardian-hunter, mobility, economy, and four earned weapon capstones
+- Real level progression with rising XP thresholds, combat-pausing three-card choices, 41 upgrade definitions, repeatable ranks, Dual-Wield, hero-specific branches, piercing, critical-draw, guardian-hunter, mobility, economy, four earned weapon capstones, and four behavior-changing ability evolutions
+- Every chapter adds a distinct escalating arena threat: Jade Bell Echoes launch radial spirit volleys, Bamboo Spore Blooms create persistent slowing damage zones, and Crimson Ember Corridors cut temporary fire lanes through the battlefield.
 - Faster enemy pursuit, shorter windups, and stronger pressure balanced against reduced player speed and starting damage
 - Six escalating Jade Grove waves: 4 teaching scouts, then 10, 18, 30, 48, and a 72-enemy siege; Bamboo and Crimson finales reach 112 and 150 enemies before difficulty, corruption, and co-op multipliers
 - Large armies use a difficulty-, chapter-, and party-scaled active combat budget. The entire authored army remains present as reinforcements, but excess enemies wait at the perimeter and replace defeated fighters instead of forming an unreadable instant pileup.
@@ -123,7 +125,7 @@ Route QA checkpoints are available at `?route=1`, `?route=2`, and `?route=3`; th
 Chapter 2 QA is available at `?chapter=2`, with `?chapter=2&boss=1` for Moonfang; these QA routes provide a reinforced test loadout and do not affect normal balance.
 Chapter 3 QA is available at `?chapter=3`, with `?chapter=3&boss=1` for Pyreclaw. Add `&difficulty=nightmare` to validate maximum pressure.
 Hub station QA is available at `?hub=heroShrine` or `?hub=portal`; normal play enters the village at its central plaza.
-Systems QA is available at `?system=levelup`, `?system=event`, `?system=secret`, `?system=synergy`, `?system=elites`, `?system=specialists`, `?system=capstone`, `?system=room6`, and `?system=codex`.
+Systems QA is available at `?system=levelup`, `?system=event`, `?system=secret`, `?system=synergy`, `?system=elites`, `?system=specialists`, `?system=capstone`, `?system=evolutions`, `?system=pressure`, `?system=room6`, and `?system=codex`.
 Mission QA is available at `?system=mission&mission=anchors`, `?system=mission&mission=rescue`, and `?system=mission&mission=defend`; add `&chapter=2` or `&chapter=3` to validate biome-specific mission schedules and palettes.
 Guardian reward QA is available at `?system=guardianReward`; combine it with `&chapter=2` for Moonfang or `&chapter=3` for Pyreclaw’s final-vow and epilogue sequence.
 Sealing Crossfire can be inspected immediately at `?system=crossfire`; combine it with `&chapter=2` or `&chapter=3` for each guardian's profile-scaled version.
