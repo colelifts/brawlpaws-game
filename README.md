@@ -1,6 +1,6 @@
-# BrawlPaws — Five-Chapter Roguelite Campaign
+# BrawlPaws — Six-Chapter Roguelite Campaign
 
-A dependency-free playable browser roguelite with a walkable hub, permanent profile progression, six escalating chapters, branching routes, five production heroes, post-clear Ascension ranks, and six giant guardian bosses. Its 4,800×2,700 rooms include a circular live minimap for active threats, mission objectives, co-op allies, rewards, village services, and guardian chambers; players can disable it under Accessibility.
+A dependency-free playable browser roguelite with a walkable hub, permanent profile progression, six escalating chapters, branching routes, six production heroes, post-clear Ascension ranks, and six giant guardian bosses. Its 4,800×2,700 rooms include a circular live minimap for active threats, mission objectives, co-op allies, rewards, village services, and guardian chambers; players can disable it under Accessibility.
 
 ## Run it
 

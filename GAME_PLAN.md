@@ -85,7 +85,7 @@ Every milestone is reviewed against the supplied gameplay, loadout, hub, hero-ro
 - Contact shadows reduced to soft ellipses directly under the feet
 - Muzzle flashes, trails, impact stars, elemental colors, comic words, XP shards, and enemy death bursts
 - Recorded Mixkit audio layers now cover weapons, dash, light/heavy impacts, enemy strikes, elemental abilities, healing, upgrades, boss slams, and soft background music; independent music/SFX controls and anti-stacking mix limits keep large armies clean
-- All five playable heroes now own production-painted eight-pose state atlases: distinct Undertow, Foxfire, Wild Heart, and Shock Paws casts plus authored hit recoil, stun, defeat, and victory silhouettes. These frames are routed from live combat state and preserve the existing eight-direction primary-fire sheets.
+- All six playable heroes now own production-painted eight-pose state atlases: distinct Undertow, Foxfire, Wild Heart, and Shock Paws casts plus authored hit recoil, stun, defeat, and victory silhouettes. These frames are routed from live combat state and preserve the existing eight-direction primary-fire sheets.
 
 **Exit gate:** screenshots and live motion plausibly belong to the same game as the concept art. No attack can look like a static sprite sliding into a target.
 
@@ -242,4 +242,4 @@ Systems communicate through gameplay events such as `attackStarted`, `hitResolve
 
 ## Immediate next milestone
 
-Finish Nomi and the remaining weapon roster, deepen hero-specific upgrade trees, add further earned evolutions, and tune the full six-chapter difficulty curve from the low-power opening through Tsukiko and Ascension without weakening the current animation, telegraph, and combat-feedback bar. Shadow Realm is complete; the next content milestone is the final hero/weapon roster and deeper mastery progression.
+Expand the remaining weapon roster, deepen hero-specific upgrade trees, add further earned evolutions, and tune the full six-chapter difficulty curve from the low-power opening through Tsukiko and Ascension without weakening the current animation, telegraph, and combat-feedback bar. Nomi and her Moonreturn Glaive are complete; the next content milestone is broader arsenal choice and deeper mastery progression.

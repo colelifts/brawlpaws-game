@@ -51,6 +51,17 @@ export const HEROES = {
     damageTakenMultiplier:1.04,knockbackResistance:1,
     portrait:'assets/characters/zap-portrait-v1.png',moveAsset:'zap',fireAsset:'zapFire',stateAsset:'zapStates',accent:'#39eaff',
     unlockRequirement:'Complete two full campaigns.'
+  },
+  nomi: {
+    id:'nomi',name:'Nomi',role:'Spirit Lancer',maxHealth:114,
+    speed:312,acceleration:2020,drag:10.3,radius:29,
+    dashSpeed:920,dashDuration:.145,dashCooldown:.96,dashInvulnerability:.22,
+    weapon:'moonreturnGlaive',dashName:'Feather Drift',passiveName:'Second Passage',
+    summary:'A ranged spirit-lancer whose thrown moon glaive cuts through a line, turns, and strikes the pack again on its return.',
+    ratings:{power:4,toughness:2,mobility:4,control:5},difficulty:'Advanced',
+    damageTakenMultiplier:1.03,knockbackResistance:.96,
+    portrait:'assets/characters/nomi-portrait-v1.png',moveAsset:'nomi',fireAsset:'nomiFire',stateAsset:'nomiStates',accent:'#b65cff',
+    unlockRequirement:'Defeat Tsukiko and complete the six-chapter campaign.'
   }
 };
 
@@ -95,6 +106,14 @@ export const WEAPONS = {
     recoil:28,color:'#40eaff',impactColor:'#ffd43b',projectileType:'arc',baseVolleys:2,
     chainThreshold:3,chainRange:360,chainTargets:2,chainDamage:.55,
     summary:'Paired low-damage pulses build Conductive marks; the third hit discharges a controlled chain into nearby enemies.',tags:['DUAL','CONDUCTIVE','CHAIN']
+  },
+  moonreturnGlaive: {
+    id:'moonreturnGlaive',name:'Moonreturn Glaive',damage:10,fireRate:.62,
+    projectileSpeed:900,projectileLife:.62,range:980,
+    knockback:240,criticalChance:.13,shots:1,spread:0,
+    projectileRadius:18,attackDuration:.52,releaseDelay:.27,muzzleDistance:60,
+    recoil:30,color:'#aeefff',impactColor:'#b65cff',projectileType:'glaive',pierces:5,returnSpeed:1120,
+    summary:'Throw a crescent through a line. It turns at maximum reach and can cut every target again while returning to Nomi.',tags:['RETURN','PIERCE','LINE CONTROL']
   }
 };
 

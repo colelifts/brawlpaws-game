@@ -236,7 +236,7 @@ test('story and secret route events present consequential branching choices',()=
 });
 
 test('title and Hero Shrine support persistent hero selection',()=>{
-  for(const hero of ['kitsune','bamboo','hopscotch','rusty','zap'])assert.match(html,new RegExp(`data-hero="${hero}"`));
+  for(const hero of ['kitsune','bamboo','hopscotch','rusty','zap','nomi'])assert.match(html,new RegExp(`data-hero="${hero}"`));
   for(const id of ['hero-portrait','hero-name','hero-role','weapon-name','dash-name','start-hero-name'])assert.match(html,new RegExp(`id="${id}"`));
   for(const fn of ['applyHeroUi','selectHero','drawHero'])assert.match(game,new RegExp(`function ${fn}\\(`));
   assert.match(game,/selectedHero:'kitsune'/);
@@ -244,6 +244,17 @@ test('title and Hero Shrine support persistent hero selection',()=>{
   assert.match(game,/damageTakenMultiplier:heroDef\.damageTakenMultiplier/);
   assert.match(game,/knockbackResistance:heroDef\.knockbackResistance/);
   assert.match(game,/unlockedAbilities: new Set\(\)/);
+});
+
+test('Nomi is an earned returning-glaive hero with a homing capstone',()=>{
+  for(const asset of ['nomi-portrait-v1.png','nomi-crane-v1.png','nomi-fire-v1.png','nomi-states-v1.png','nomi-glaive-vfx-v1.png'])assert.match(game+html,new RegExp(asset.replace('.','\\.')));
+  assert.match(game,/profile\.unlockedHeroes\.push\('nomi'\)/);
+  assert.match(game,/function turnGlaiveForReturn\(/);
+  assert.match(game,/shot\.hitIds=new Set\(\)/);
+  assert.match(game,/shot\.glaive&&!shot\.returning&&shot\.life<=0/);
+  assert.match(game,/function spawnSkyfeathers\(/);
+  assert.match(game,/homingTarget:target/);
+  for(const id of ['moonEdge','secondPassage','cranePoise','skyfeatherConstellation'])assert.match(game,new RegExp(`id:'${id}'`));
 });
 
 test('Rusty is an Ascension-earned twin-revolver ricochet hero',()=>{

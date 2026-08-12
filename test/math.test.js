@@ -40,7 +40,7 @@ test('Phase 1 definitions are internally valid', () => {
 });
 
 test('the hero roster contains distinct ranged archetypes',()=>{
-  assert.deepEqual(Object.keys(HEROES),['kitsune','bamboo','hopscotch','rusty','zap']);
+  assert.deepEqual(Object.keys(HEROES),['kitsune','bamboo','hopscotch','rusty','zap','nomi']);
   assert.equal(HEROES.kitsune.weapon,'spiritBlaster');
   assert.equal(HEROES.bamboo.weapon,'bambooCannon');
   assert.ok(HEROES.bamboo.maxHealth>HEROES.kitsune.maxHealth);
@@ -68,6 +68,10 @@ test('the hero roster contains distinct ranged archetypes',()=>{
   assert.equal(WEAPONS.arcCasters.baseVolleys,2);
   assert.equal(WEAPONS.arcCasters.chainThreshold,3);
   assert.ok(WEAPONS.arcCasters.damage<WEAPONS.spiritBlaster.damage);
+  assert.equal(HEROES.nomi.weapon,'moonreturnGlaive');
+  assert.equal(WEAPONS.moonreturnGlaive.projectileType,'glaive');
+  assert.ok(WEAPONS.moonreturnGlaive.returnSpeed>WEAPONS.moonreturnGlaive.projectileSpeed);
+  assert.ok(WEAPONS.moonreturnGlaive.releaseDelay>.2);
 });
 
 test('the starter ability loadout is complete and data-driven', () => {
