@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { BOSS_PROFILES, ENCOUNTERS } from '../src/data.js';
+import { BOSS_PATTERNS, BOSS_PROFILES, ENCOUNTERS } from '../src/data.js';
 import { encounterActiveLimit } from '../src/math.js';
 
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
@@ -554,4 +554,20 @@ test('arsenal projectiles create whole-enemy freeze, mortar, and return reaction
   assert.match(game,/if\(shot\.mortar\)\{detonateMortar\(shot\);break;\}/);
   assert.match(game,/if\(shot\.gale&&!shot\.returning&&shot\.life<=0\)turnGaleForReturn\(shot\)/);
   assert.match(game,/weaponId:player\?\.weaponId\|\|heroDef\.weapon/);
+});
+
+test('chapters attack with distinct readable warpack formations',()=>{
+  for(const id of ['jadeChapter','bambooChapter','crimsonChapter','stormChapter','neonChapter','shadowChapter'])assert.match(game,new RegExp(`${id}:\\{name:`));
+  for(const formation of ['arc','pincer','wall','cross','mirror'])assert.match(game,new RegExp(`formation:'${formation}'`));
+  assert.match(game,/updateChapterWarpack\(dt\)/);
+  assert.match(game,/activeCount>26&&!important/);
+});
+
+test('every guardian exposes a named skill-based counter window',()=>{
+  for(const profile of Object.values(BOSS_PROFILES)){
+    assert.ok(BOSS_PATTERNS[profile.counterPattern],`${profile.id} needs a valid counter pattern`);
+    assert.ok(profile.counterName&&profile.counterDuration>=1&&profile.counterMultiplier>1);
+  }
+  assert.match(game,/openBossCounter\(enemy,profile/);
+  assert.match(game,/enemy\.def\.behavior==='boss'&&enemy\.counterTime>0/);
 });

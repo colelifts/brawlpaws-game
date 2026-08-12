@@ -277,6 +277,47 @@ function updateCorruptionDirector(dt){
   const huntInterval=Math.max(6,11-corruptionDirector.tier);if(corruptionDirector.tier>=3&&corruptionDirector.huntClock>=huntInterval){const active=enemies.filter((enemy)=>!enemy.dead&&enemy.state!=='waiting');if(active.length){corruptionDirector.huntClock=0;for(const enemy of active)enemy.huntTime=Math.max(enemy.huntTime||0,3.8);spawnWord(player.x,player.y-126,'THE PACK HUNTS!',corruptionTier().color);effects.rings.push({x:player.x,y:player.y,radius:20,maxRadius:210,color:corruptionTier().color,life:.58,maxLife:.58});refreshCorruptionHud({surge:true});playSfx('strike',.24,.82);}}
 }
 
+const CHAPTER_WARPACKS={
+  jadeChapter:{name:'BELL RALLY',color:'#8cff39',formation:'arc',minWave:2,interval:18,count:5},
+  bambooChapter:{name:'MOON PINCER',color:'#41f5da',formation:'pincer',minWave:2,interval:17,count:6},
+  crimsonChapter:{name:'ONI PHALANX',color:'#ff5b27',formation:'wall',minWave:1,interval:16,count:7},
+  stormChapter:{name:'TIDEBREAK FLANK',color:'#37dfff',formation:'pincer',minWave:1,interval:15,count:8},
+  neonChapter:{name:'OVERCLOCK SQUAD',color:'#ff3ab8',formation:'cross',minWave:1,interval:14,count:9},
+  shadowChapter:{name:'MIRROR HUNT',color:'#b84dff',formation:'mirror',minWave:1,interval:13,count:10}
+};
+
+function warpackPosition(formation,index,count,bounds,beat){
+  const playerAngle=Math.atan2(player.y-bounds.y,player.x-bounds.x),side=index%2?1:-1,rank=Math.floor(index/2),spread=(rank-(Math.ceil(count/2)-1)/2)*.12;
+  let angle=playerAngle+Math.PI+spread;
+  if(formation==='pincer')angle=playerAngle+side*(Math.PI*.56+rank*.055);
+  else if(formation==='wall')angle=playerAngle+Math.PI/2+(index-(count-1)/2)*.085;
+  else if(formation==='cross')angle=playerAngle+Math.PI/4+(index%4)*Math.PI/2+Math.floor(index/4)*.06;
+  else if(formation==='mirror')angle=playerAngle+(index<count/2?Math.PI:.08)+(index%Math.ceil(count/2)-(Math.ceil(count/2)-1)/2)*.1;
+  const lane=.82+(index%3)*.045;
+  return {x:bounds.x+Math.cos(angle)*bounds.radiusX*lane,y:bounds.y+Math.sin(angle)*bounds.radiusY*lane,beat};
+}
+
+function spawnChapterWarpack(){
+  const doctrine=CHAPTER_WARPACKS[chapter.id],wave=chapter.waves[encounter.wave];if(!doctrine||!wave)return;
+  const difficulty=activeDifficulty(),tier=corruptionTier(),party=coopPressure(),bounds=room.combatBounds;
+  const count=Math.min(doctrine.count+Math.floor(encounter.wave/2)+party.reinforcements*2,14);
+  for(let i=0;i<count;i++){
+    const position=warpackPosition(doctrine.formation,i,count,bounds,encounter.warpackCount||0),type=wave.roster[(i*2+(encounter.warpackCount||0))%wave.roster.length];
+    const rawSpeed=wave.speedScale*difficulty.speedScale*tier.speed*(1.05+chapterIndex*.015),speedScale=rawSpeed<=1?rawSpeed:Math.min(2.4,1+(rawSpeed-1)*.58);
+    const enemy=makeEnemy({type,eliteId:eliteModifierFor(enemies.length+i,encounter.wave,encounter.nodeType),delay:.2+i*.1,spawnDuration:.62,x:position.x,y:position.y,healthScale:wave.healthScale*difficulty.healthScale*tier.health*party.health,speedScale,damageScale:wave.damageScale*difficulty.damageScale*tier.damage*party.damage},enemies.length+i);
+    enemy.warpack=true;enemy.huntTime=doctrine.formation==='mirror'||doctrine.formation==='pincer'?3.2:1.8;enemies.push(enemy);
+  }
+  encounter.warpackCount=(encounter.warpackCount||0)+1;spawnWord(player.x,player.y-142,doctrine.name,doctrine.color);effects.rings.push({x:player.x,y:player.y,radius:26,maxRadius:245,color:doctrine.color,life:.72,maxLife:.72});camera.shake=Math.max(camera.shake,8);playSfx('heavyImpact',.24,.9);
+}
+
+function updateChapterWarpack(dt){
+  const doctrine=CHAPTER_WARPACKS[chapter.id];if(!doctrine||encounter.bossActive||encounter.transitioning||encounter.wave<doctrine.minWave)return;
+  const maxWarpackBeats=1+Math.floor(encounter.wave/2);if((encounter.warpackCount||0)>=maxWarpackBeats)return;
+  const alive=enemies.some((enemy)=>!enemy.dead);if(!alive)return;
+  encounter.warpackClock=(encounter.warpackClock??doctrine.interval*.78)-dt;
+  if(encounter.warpackClock<=0){spawnChapterWarpack();encounter.warpackClock=doctrine.interval+Math.max(0,2-encounter.wave*.35);}
+}
+
 function refreshProfileUi(){
   const record=profile.campaignClears?`ASCENSION ${profile.ascensionRank}`:profile.bestDifficulty?`BEST ${profile.bestDifficulty.toUpperCase()}`:'NO CLEARS YET';
   ui.profileSummary.textContent=`SPIRIT SHARDS ${profile.spiritShards} / CAMPAIGN CLEARS ${profile.campaignClears} / ${record}`;
@@ -480,7 +521,7 @@ function applyCoopSnapshot(payload){
 }
 function updateCoop(dt){
   if(!coop.connected||!player)return;coop.presenceClock-=dt;coop.snapshotClock-=dt;if(coop.presenceClock<=0){coop.presenceClock=.08;sendCoop('presence',{x:player.x,y:player.y,facing:player.facing,health:player.health,hero:selectedHeroId,state,room:room.id});}
-  if(coopIsHost()&&coop.snapshotClock<=0&&state==='playing'){coop.snapshotClock=.1;sendCoop('snapshot',{payload:{room:room.id,enemies:enemies.map(({id,type,x,y,vx,vy,facing,state,stateTime,health,maxHealth,shield,maxShield,dead,deathTime,burnTime,wetTime,shockTime,conductiveStacks,conductiveTime,bossPhase,chillStacks,chillTime,freezeTime})=>({id,type,x,y,vx,vy,facing,state,stateTime,health,maxHealth,shield,maxShield,dead,deathTime,burnTime,wetTime,shockTime,conductiveStacks,conductiveTime,bossPhase,chillStacks,chillTime,freezeTime}))}});}
+  if(coopIsHost()&&coop.snapshotClock<=0&&state==='playing'){coop.snapshotClock=.1;sendCoop('snapshot',{payload:{room:room.id,enemies:enemies.map(({id,type,x,y,vx,vy,facing,state,stateTime,health,maxHealth,shield,maxShield,dead,deathTime,burnTime,wetTime,shockTime,conductiveStacks,conductiveTime,bossPhase,counterTime,chillStacks,chillTime,freezeTime})=>({id,type,x,y,vx,vy,facing,state,stateTime,health,maxHealth,shield,maxShield,dead,deathTime,burnTime,wetTime,shockTime,conductiveStacks,conductiveTime,bossPhase,counterTime,chillStacks,chillTime,freezeTime}))}});}
 }
 
 const CORRUPTION_TIERS=[
@@ -1133,7 +1174,8 @@ function applyEnemyStatus(enemy,id,duration,power=1){
 }
 
 function resolveEnemyDamage(enemy,amount,incomingDirection=null){
-  let remaining=Math.max(0,amount);let shieldDamage=0;let blocked=false;
+  const bossCounter=enemy.def.behavior==='boss'&&enemy.counterTime>0?(BOSS_PROFILES[enemy.def.id]?.counterMultiplier||1):1;
+  let remaining=Math.max(0,amount)*bossCounter;let shieldDamage=0;let blocked=false;
   const frontalGuard=enemy.def.behavior==='shield';
   const sourceDirection=incomingDirection?normalize(-incomingDirection.x,-incomingDirection.y):null;
   const facingVector={x:Math.cos(enemy.facing),y:Math.sin(enemy.facing)};
@@ -1168,7 +1210,7 @@ function makeEnemy(spawn, index) {
     orbitDrift: index % 2 ? 1 : -1, spawnIndex: index, shotSide: index % 2 ? 1 : -1,
     healthScale:spawn.healthScale||1,speedScale:(spawn.speedScale||1)*(eliteDef?.speedScale||1),damageScale:(spawn.damageScale||1)*(eliteDef?.damageScale||1),attackCooldownScale:eliteDef?.cooldownScale||1,windupScale:eliteDef?.windupScale||1,
     summonCharges:definition.summonCharges||0,summoned:Boolean(spawn.summoned),summonOwnerId:spawn.summonOwnerId||null,
-    bossPhase: 1, patternIndex: 0, patternHit: false, phaseTriggered: {2:false,3:false}
+    bossPhase: 1, patternIndex: 0, patternHit: false, phaseTriggered: {2:false,3:false},counterTime:0,counterAnnounced:false
   };
 }
 
@@ -1246,7 +1288,7 @@ function startWave(index,modifiers={}) {
   const wave = chapter.waves[index];
   const difficulty=activeDifficulty();
   Object.values(effects).forEach((list)=>list.splice(0));activateRoom(roomForWave(index),{reposition:true,announce:true,waveIndex:index,subtitle:wave.name.toUpperCase()});
-  encounter.wave=index; encounter.waveTime=0;encounter.transitioning=false; encounter.bossActive=false;encounter.nodeType=modifiers.nodeType||'combat';encounter.modifiers={...modifiers};encounter.biomePressureClock=biomePressureInterval(index)*.72;encounter.biomePressureCount=0;corruptionDirector=createCorruptionDirector(index,modifiers.corruption);const corruption=corruptionTier();encounter.rewardScale=(modifiers.rewardScale||1)*difficulty.rewardScale*corruption.reward;enemies=[];state='playing';roomInteractable=null;spawnRoomDestructibles(index,modifiers.brokenProps||[]);spawnRoomMission(wave.mission,modifiers.missionState);refreshCorruptionHud({surge:corruptionDirector.tier>=2});
+  encounter.wave=index; encounter.waveTime=0;encounter.transitioning=false; encounter.bossActive=false;encounter.nodeType=modifiers.nodeType||'combat';encounter.modifiers={...modifiers};encounter.biomePressureClock=biomePressureInterval(index)*.72;encounter.biomePressureCount=0;encounter.warpackClock=(CHAPTER_WARPACKS[chapter.id]?.interval||18)*.78;encounter.warpackCount=0;corruptionDirector=createCorruptionDirector(index,modifiers.corruption);const corruption=corruptionTier();encounter.rewardScale=(modifiers.rewardScale||1)*difficulty.rewardScale*corruption.reward;enemies=[];state='playing';roomInteractable=null;spawnRoomDestructibles(index,modifiers.brokenProps||[]);spawnRoomMission(wave.mission,modifiers.missionState);refreshCorruptionHud({surge:corruptionDirector.tier>=2});
   if(PHYSICAL_ROUTE_NODES.has(encounter.nodeType)){spawnRoomInteractable(encounter.nodeType);if(modifiers.interactableUsed)roomInteractable.used=true;}
   ui.waveLabel.textContent=`CHAPTER ${chapterIndex+1}  WAVE ${index+1} / ${chapter.waves.length}`;
   const eliteNode=encounter.nodeType==='elite'||encounter.nodeType?.includes('Elite');ui.roomState.textContent=eliteNode?`MUTATED  ${wave.name.toUpperCase()}`:wave.name.toUpperCase();ui.roomState.style.color=eliteNode?'#f13b8c':index>=2?'#ff7448':'#ff38b5';
@@ -2278,7 +2320,7 @@ function resolveBossSignature(enemy,profile){
 
 function updateBoss(enemy,dt){
   const bamboo=enemy.def.biome==='bamboo';const crimson=enemy.def.biome==='crimson';const storm=enemy.def.biome==='storm';const neon=enemy.def.biome==='neon';const shadow=enemy.def.biome==='shadow';const bossColor=enemy.def.color;const profile=BOSS_PROFILES[enemy.def.id];const sweepRange=profile.sweepRange;
-  enemy.stateTime-=dt;enemy.contactCooldown=Math.max(0,(enemy.contactCooldown||0)-dt);
+  enemy.stateTime-=dt;enemy.contactCooldown=Math.max(0,(enemy.contactCooldown||0)-dt);enemy.counterTime=Math.max(0,(enemy.counterTime||0)-dt);if(enemy.counterTime<=0)enemy.counterAnnounced=false;
   const healthRatio=enemy.health/enemy.maxHealth;const nextPhase=healthRatio<=.33?3:healthRatio<=.67?2:1;
   if(nextPhase>enemy.bossPhase){enemy.bossPhase=nextPhase;enemy.domainClock=bossDomainInterval(enemy,profile)*.55;enemy.state='bossEnrage';enemy.stateTime=1.35;enemy.patternHit=false;player.ultimateFlash=.12;camera.shake=20;ui.bossPhase.textContent=profile.phaseNames[nextPhase];if(!enemy.phaseTriggered[nextPhase]){enemy.phaseTriggered[nextPhase]=true;summonBossGuard(enemy,nextPhase);}}
   updateBossDomain(enemy,profile,dt);
@@ -2294,12 +2336,12 @@ function updateBoss(enemy,dt){
   if(enemy.state==='bossWindupSlam'){enemy.vx*=Math.exp(-14*dt);enemy.vy*=Math.exp(-14*dt);if(enemy.stateTime<=0){enemy.state=BOSS_PATTERNS.slam.actionState;enemy.stateTime=BOSS_PATTERNS.slam.action;enemy.patternHit=false;}return;}
   if(enemy.state==='bossSlam'){
     if(!enemy.patternHit&&enemy.stateTime<=BOSS_PATTERNS.slam.resolveAt){enemy.patternHit=true;effects.spriteEffects.push({asset:shadow?'shadowRealmVfx':neon?'neonCityVfx':storm?'stormCoastVfx':crimson?'crimsonCombatVfx':'hammerSlamVfx',fixedFrame:shadow?5:neon?5:storm?5:crimson?5:undefined,x:enemy.x,y:enemy.y+18,width:shadow?1050:neon?980:storm?920:crimson?760:bamboo?860:760,height:shadow?930:neon?900:storm?880:crimson?760:bamboo?590:520,life:.8,maxLife:.8,glow:bossColor});effects.rings.push({x:enemy.x,y:enemy.y,radius:40,maxRadius:enemy.def.slamRadius,color:shadow?'#b84dff':neon?'#ff3ab8':storm?'#37dfff':crimson?'#ff5b27':bamboo?'#41f5da':'#ff3b69',life:.65,maxLife:.65});if(dist<enemy.def.slamRadius+player.radius)hurtPlayer(Math.round((profile.slamDamage+enemy.bossPhase*4)*enemy.damageScale),enemy,enemy.def.stunDuration);camera.shake=22;hitStop=.08;playSfx(shadow||neon||storm?'lightning':'stomp',.58,shadow?.58:neon?.78:.68);}
-    if(enemy.stateTime<=0){enemy.state='bossIdle';enemy.stateTime=BOSS_PATTERNS.slam.recovery/enemy.bossPhase;}return;
+    if(enemy.stateTime<=0){openBossCounter(enemy,profile,'slam');enemy.state='bossIdle';enemy.stateTime=BOSS_PATTERNS.slam.recovery/enemy.bossPhase;}return;
   }
   if(enemy.state==='bossChannel'){
     enemy.vx*=Math.exp(-10*dt);enemy.vy*=Math.exp(-10*dt);
     if(!enemy.patternHit&&enemy.stateTime<=BOSS_PATTERNS.channel.resolveAt){enemy.patternHit=true;if(crimson)fireBossLanes(enemy);else fireBossRadial(enemy,profile.radialBase+enemy.bossPhase*4);}
-    if(enemy.stateTime<=0){enemy.state='bossIdle';enemy.stateTime=BOSS_PATTERNS.channel.recovery/enemy.bossPhase;}return;
+    if(enemy.stateTime<=0){openBossCounter(enemy,profile,'channel');enemy.state='bossIdle';enemy.stateTime=BOSS_PATTERNS.channel.recovery/enemy.bossPhase;}return;
   }
   if(enemy.state==='bossWindupCrossfire'){
     enemy.vx*=Math.exp(-13*dt);enemy.vy*=Math.exp(-13*dt);
@@ -2309,7 +2351,7 @@ function updateBoss(enemy,dt){
   if(enemy.state==='bossCrossfire'){
     enemy.vx*=Math.exp(-13*dt);enemy.vy*=Math.exp(-13*dt);
     if(!enemy.patternHit&&enemy.stateTime<=BOSS_PATTERNS.crossfire.resolveAt){enemy.patternHit=true;fireBossCrossfire(enemy,profile);}
-    if(enemy.stateTime<=0){enemy.state='bossIdle';enemy.stateTime=BOSS_PATTERNS.crossfire.recovery/enemy.bossPhase;}
+    if(enemy.stateTime<=0){openBossCounter(enemy,profile,'crossfire');enemy.state='bossIdle';enemy.stateTime=BOSS_PATTERNS.crossfire.recovery/enemy.bossPhase;}
     return;
   }
   if(enemy.state==='bossWindupSignature'){
@@ -2321,11 +2363,16 @@ function updateBoss(enemy,dt){
   if(enemy.state==='bossSignature'){
     enemy.vx*=Math.exp(-13*dt);enemy.vy*=Math.exp(-13*dt);
     if(!enemy.patternHit&&enemy.stateTime<=BOSS_PATTERNS.signature.resolveAt){enemy.patternHit=true;resolveBossSignature(enemy,profile);}
-    if(enemy.stateTime<=0){enemy.state='bossIdle';enemy.stateTime=BOSS_PATTERNS.signature.recovery/enemy.bossPhase;enemy.signaturePrepared=false;enemy.signatureTargets=null;}
+    if(enemy.stateTime<=0){openBossCounter(enemy,profile,'signature');enemy.state='bossIdle';enemy.stateTime=BOSS_PATTERNS.signature.recovery/enemy.bossPhase;enemy.signaturePrepared=false;enemy.signatureTargets=null;}
     return;
   }
   const preferred=dist>420?1:dist<250?-1:0;enemy.vx=lerp(enemy.vx,toPlayer.x*enemy.def.speed*enemy.speedScale*preferred,clamp(dt*2.7,0,1));enemy.vy=lerp(enemy.vy,toPlayer.y*enemy.def.speed*enemy.speedScale*preferred,clamp(dt*2.7,0,1));enemy.x+=enemy.vx*dt;enemy.y+=enemy.vy*dt;keepInArena(enemy);
   if(enemy.stateTime<=0){const schedule=profile.schedules[enemy.bossPhase];const pattern=BOSS_PATTERNS[schedule[enemy.patternIndex++%schedule.length]];const tempo=profile.phaseTempo?.[enemy.bossPhase]||1;enemy.activePattern=pattern.id;enemy.state=pattern.windupState;enemy.patternWindup=pattern.windup*tempo;enemy.stateTime=enemy.patternWindup;enemy.patternHit=false;if(pattern.id==='crossfire'){enemy.patternTargetX=player.x;enemy.patternTargetY=player.y;enemy.patternAngle=Math.atan2(player.y-enemy.y,player.x-enemy.x)+enemy.bossPhase*.17;}if(pattern.id==='signature'){enemy.signaturePrepared=false;enemy.signatureTargets=null;}}
+}
+
+function openBossCounter(enemy,profile,pattern){
+  if(profile.counterPattern!==pattern||enemy.dead)return;enemy.counterTime=profile.counterDuration;enemy.counterAnnounced=true;
+  spawnWord(enemy.x,enemy.y-190,profile.counterName, '#ffe36a');effects.rings.push({x:enemy.x,y:enemy.y,radius:enemy.radius*.55,maxRadius:enemy.radius*1.75,color:'#ffe36a',life:.5,maxLife:.5});playSfx('upgrade',.22,1.18);
 }
 
 function summonBellweaverGuard(enemy){
@@ -2556,6 +2603,9 @@ function keepInArena(entity) {
 }
 
 function burst(x, y, color, count, speed, size) {
+  const active=enemies?.filter?.((enemy)=>!enemy.dead&&enemy.state!=='waiting').length||0,pressure=active>48?.42:active>32?.62:active>20?.8:1;
+  count=Math.max(2,Math.round(count*pressure));
+  if(effects.particles.length>360)effects.particles.splice(0,effects.particles.length-320);
   for (let i = 0; i < count; i++) {
     const angle = Math.random() * Math.PI * 2;
     const velocity = speed * (.25 + Math.random() * .75);
@@ -2734,7 +2784,7 @@ function updateHud() {
   ui.comboCount.textContent = String(player.hitCount);
   ui.comboPanel.classList.toggle('show', comboUiTimer > 0 && player.hitCount >= 2);
   const boss=enemies.find((enemy)=>enemy.def.behavior==='boss'&&!enemy.dead);
-  if(boss){const profile=BOSS_PROFILES[boss.def.id];ui.bossHealthFill.style.width=`${clamp(boss.health/boss.maxHealth*100,0,100)}%`;ui.bossHealthText.textContent=`${Math.max(0,Math.ceil(boss.health))} / ${boss.maxHealth}`;ui.bossPhase.textContent=profile.phaseNames[boss.bossPhase];}
+  if(boss){const profile=BOSS_PROFILES[boss.def.id];ui.bossHealthFill.style.width=`${clamp(boss.health/boss.maxHealth*100,0,100)}%`;ui.bossHealthText.textContent=`${Math.max(0,Math.ceil(boss.health))} / ${boss.maxHealth}`;ui.bossPhase.textContent=boss.counterTime>0?`${profile.counterName}  COUNTER x${profile.counterMultiplier.toFixed(2)}`:profile.phaseNames[boss.bossPhase];ui.bossPhase.style.color=boss.counterTime>0?'#ffe36a':'';}
   refreshSynergyHud();
 }
 
@@ -2754,6 +2804,7 @@ function update(dt, screen) {
       updatePlayer(dt);
       updateEnemies(dt);
       updateCorruptionDirector(dt);
+      updateChapterWarpack(dt);
       updateBiomePressure(dt);
       updateEncounter(dt);
       if (clearDelay >= 0) { clearDelay -= dt; if (clearDelay <= 0){clearDelay=-1;openGuardianReward(encounter.defeatedGuardianId||chapter.boss);} }
@@ -3161,6 +3212,7 @@ function drawBoss(enemy){
   const stateFrames={enter:0,bossIdle:0,bossWindupSweep:1,bossSweep:2,bossWindupSlam:1,bossSlam:3,bossChannel:4,bossWindupCrossfire:4,bossCrossfire:3,bossWindupSignature:4,bossSignature:3,bossEnrage:5};
   const frame=enemy.dead?5:(stateFrames[enemy.state]??0);
   const motion=enemyMotion(enemy);drawContactShadow(enemy.x,enemy.y+26,shadow?106:neon?100:storm?94:crimson?88:bamboo?82:76,shadow?21:neon?20:storm?19:crimson?18:bamboo?17:16,.42*alpha);drawEnemyStatusBack(enemy,shadow?430:neon?405:storm?380:340,shadow?310:neon?292:storm?272:245);
+  if(enemy.counterTime>0){const profile=BOSS_PROFILES[enemy.def.id],pulse=1+Math.sin(time*12)*.08;ctx.save();ctx.translate(enemy.x,enemy.y+18);ctx.scale(1,.52);ctx.globalAlpha=.72;ctx.strokeStyle='#ffe36a';ctx.shadowColor='#ffe36a';ctx.shadowBlur=28;ctx.lineWidth=8;ctx.setLineDash([28,11,6,11]);ctx.lineDashOffset=-performance.now()/28;ctx.beginPath();ctx.arc(0,0,enemy.radius*1.45*pulse,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();ctx.save();ctx.translate(enemy.x,enemy.y-230);ctx.textAlign='center';ctx.font='italic 900 18px Impact';ctx.lineWidth=7;ctx.strokeStyle='#10040d';ctx.strokeText(`COUNTER x${profile.counterMultiplier.toFixed(2)}`,0,0);ctx.fillStyle='#fff2a8';ctx.fillText(`COUNTER x${profile.counterMultiplier.toFixed(2)}`,0,0);ctx.restore();}
   ctx.save();ctx.translate(enemy.x,enemy.y);
   if(enemy.state==='bossWindupSweep'){
     const p=1-clamp(enemy.stateTime/(enemy.patternWindup||BOSS_PATTERNS.sweep.windup),0,1);ctx.rotate(enemy.facing);ctx.fillStyle=`rgba(255,48,88,${.08+p*.14})`;ctx.strokeStyle=`rgba(255,66,101,${.55+p*.4})`;ctx.lineWidth=8;ctx.shadowColor='#ff315f';ctx.shadowBlur=18;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,enemy.def.attackRange+60,-1.74,1.74);ctx.closePath();ctx.fill();ctx.stroke();
@@ -3306,6 +3358,9 @@ function drawEnemyTelegraph(enemy) {
 }
 
 function drawEnemyHealth(enemy) {
+  const activeCount=enemies.filter((candidate)=>!candidate.dead&&candidate.state!=='waiting').length;
+  const important=enemy.eliteId||['shield','summoner','bomber','assassin','heavy'].includes(enemy.def.behavior)||enemy.health<enemy.maxHealth||enemy.flash>0||distance(enemy,player)<330;
+  if(activeCount>26&&!important)return;
   const special=['shield','summoner','bomber'].includes(enemy.def.behavior);const width = enemy.def.behavior === 'heavy'||enemy.def.behavior==='shield' ? 102 : special?80:66; const x = enemy.x - width / 2; const y = enemy.y - (enemy.def.behavior === 'heavy'||enemy.def.behavior==='shield' ? 108 : special?82:62);
   if(enemy.eliteDef){ctx.save();ctx.font='italic 900 10px Impact';ctx.textAlign='center';ctx.fillStyle=enemy.eliteDef.color;ctx.shadowColor='#000';ctx.shadowBlur=5;ctx.fillText(`${enemy.eliteDef.icon} ${enemy.eliteDef.name.toUpperCase()}`,enemy.x,y-9);ctx.restore();}
   ctx.fillStyle = '#080611'; ctx.fillRect(x - 2, y - 2, width + 4, 9);
