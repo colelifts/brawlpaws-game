@@ -197,6 +197,17 @@ test('late waves add visible elite mutations and counter-build upgrades',()=>{
   assert.match(game,/debugSystem==='elites'/);
 });
 
+test('shared combat statuses support player and enemy ownership plus build choices',()=>{
+  for(const id of ['bleed','curse','shield'])assert.match(data,new RegExp(`${id}: \\{ id:'${id}'`));
+  for(const fn of ['applyPlayerStatus','consumeEnemyCurse'])assert.match(game,new RegExp(`function ${fn}\\(`));
+  for(const id of ['razorFang','hollowHex','spiritAegis']){assert.match(game,new RegExp(`id:'${id}'`));assert.match(game,new RegExp(`${id}:0`));}
+  for(const relic of ['crimsonThread','moonMirror','lanternWard'])assert.match(game,new RegExp(`id:'${relic}'`));
+  assert.match(game,/player\.spiritShield=Math\.max/);
+  assert.match(game,/if\(player\.bleedTime>0\)/);
+  assert.match(game,/applyPlayerStatus\('curse',projectile\.curseDuration/);
+  assert.match(game,/debugSystem==='statuses'/);
+});
+
 test('corruption director preserves the slow opening and escalates late-room pressure',()=>{
   for(const id of ['corruption-panel','corruption-tier','corruption-fill','corruption-copy'])assert.match(html,new RegExp(`id="${id}"`));
   for(const tier of ['dormant','stirring','hunting','ravenous','cataclysm','apocalypse'])assert.match(game,new RegExp(`id:'${tier}'`));

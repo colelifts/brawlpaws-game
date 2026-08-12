@@ -45,7 +45,7 @@ The current Visual Combat Prototype V2 provides the first quality gate:
 - Hero choice persists in the profile and is available on both the title screen and at the Hero Shrine; all HUD labels, animation assets, weapon behavior, and contact shadows resolve from the selected hero definition
 - Five reusable elite mutations now escalate deterministically from zero in the opening wave to dense late-game packs: Swift speed/cooldowns, Bulwark shields, Frenzied warning/damage pressure, delayed Volatile death blasts, and Splitter reinforcements
 - Elite mutations have dedicated aura/label/shield presentation, bonus gold and XP, eight counter-build upgrades/relics, a shared damage resolver, and an isolated `?system=elites` validation route
-- Burn, Wet, Shock, and Stun now have shared data definitions and a centralized application path; Bleed, Curse, and fully generalized Shield ownership remain future registry extensions
+- Burn, Wet, Shock, Stun, Bleed, Curse, and Ward now have shared data definitions, explicit player/enemy ownership, centralized application paths, body-readable reactions, checkpoint migration, Codex guidance, and run-build hooks
 - Bellweaver Cat, Powderkeg Toad, and Gatewarden Rhino now form a reusable authored specialist family with dedicated 24-cell directional/action atlases and a separate six-frame ritual, bomb, explosion, and shield-impact VFX sheet
 - Specialist mechanics now add bounded reinforcements, predictive delayed area denial, and front-only regenerating guard counterplay to later waves without changing the intentionally simple opening encounter
 - The title screen now compares the selected hero and starting weapon using data-driven power, toughness, mobility, control, weapon tags, damage, fire rate, projectile count, and critical chance
@@ -111,7 +111,7 @@ Current unlockable loadout:
 
 Next ability work:
 
-- Extend the landed Burn/Wet/Shock/Stun registry with Bleed, Curse, and generalized player/enemy Shield ownership
+- Balance the completed seven-condition registry across later chapter armies, guardians, and co-op snapshots
 - Add per-ability upgrade hooks rather than branching logic inside the player controller
 - Move remaining duration ticks and VFX routing fully behind the shared status registry
 - Extend the landed hero state atlases into multi-frame cast/action/recovery sequences after gameplay timing is locked; the current dedicated cast silhouettes already replace movement-pose reuse for every hero ability.
