@@ -342,7 +342,7 @@ test('active campaigns persist a versioned room-safe checkpoint and can resume',
 
 test('rooms carry first-class rescue, curse-anchor, and ward-defense missions',()=>{
   const waves=Object.values(ENCOUNTERS).flatMap((chapter)=>chapter.waves);
-  assert.equal(waves.length,24);
+  assert.equal(waves.length,30);
   for(const type of ['eliminate','rescue','anchors','defend'])assert.ok(waves.some((wave)=>wave.mission?.type===type),`missing ${type} mission`);
   for(const wave of waves){assert.ok(wave.mission?.title);if(wave.mission.type==='rescue'||wave.mission.type==='anchors')assert.ok(wave.mission.count>=2);if(wave.mission.type==='defend'){assert.ok(wave.mission.duration>=20);assert.ok(wave.mission.health>=200);}}
   for(const fn of ['spawnRoomMission','serializeMissionState','saveMissionCheckpoint','completeRoomMission','failRoomMission','nearestMissionCaptive','useMissionInteraction','damageRoomMissionObjects','updateRoomMission','missionObjectiveText','drawMissionAnchor','drawMissionCaptive','drawMissionWard'])assert.match(game,new RegExp(`function ${fn}\\(`));
@@ -424,26 +424,32 @@ test('every campaign wave advances into its own production-painted combat locati
     jadeChapter:['jadeCourtyard','jadeMoonbridge','jadeRootGarden','jadeBellTerraces','jadeLanternCanals','jadeWardenProcessional'],
     bambooChapter:['bambooHollow','bambooMoonbridge','bambooSporeMarsh','bambooMoonlotusReservoir','bambooSporelightMonastery','bambooMoonstoneCauseway'],
     crimsonChapter:['crimsonDojo','crimsonBellCourt','crimsonWarYard','crimsonCinderRooftops','crimsonDrumFoundry','crimsonWarProcessional']
+    ,stormChapter:['stormTempestHarbor','stormTideglassCauseway','stormDrownedBellSanctum','stormSirenReefMonastery','stormThunderbreakLighthouse','stormSkyfangAscent']
+    ,neonChapter:['neonRainGate','neonCircuitMarket','neonHologramArcade','neonSkyrailShrine','neonDataLotusGardens','neonShogunTower']
   };
   for(const [chapter,rooms] of Object.entries(chapterRooms)){
-    assert.match(data,new RegExp(`id: '${chapter}'[\\s\\S]{0,180}rooms: \\[${rooms.map(room=>`'${room}'`).join(',')}\\]`));
+    assert.match(data,new RegExp(`id:\\s*'${chapter}'[\\s\\S]{0,260}rooms:\\s*\\[${rooms.map(room=>`'${room}'`).join(',')}\\]`));
     for(const room of rooms){
-      assert.match(data,new RegExp(`${room}: \\{[\\s\\S]{0,360}width: ?4800[\\s\\S]{0,80}height: ?2700`));
-      assert.match(data,new RegExp(`${room}: \\{[\\s\\S]{0,1600}combatBounds:`));
+      assert.match(data,new RegExp(`${room}:\\s*\\{[\\s\\S]{0,360}width:\\s*4800[\\s\\S]{0,80}height:\\s*2700`));
+      assert.match(data,new RegExp(`${room}:\\s*\\{[\\s\\S]{0,1600}combatBounds:`));
     }
   }
   assert.match(data,/bossRoom:'bambooMoonfangBurrow'/);
   assert.match(data,/bossRoom:'crimsonOniGate'/);
   assert.match(data,/bossRoom:'jadeGuardianApproach'/);
+  assert.match(data,/bossRoom:'stormEyeOfTempest'/);
+  assert.match(data,/bossRoom:'neonShogunCore'/);
   assert.doesNotMatch(data,/rooms: \[[^\]]*'jadeGuardianApproach'/);
   assert.doesNotMatch(data,/rooms: \[[^\]]*'bambooMoonfangBurrow'/);
   assert.doesNotMatch(data,/rooms: \[[^\]]*'crimsonOniGate'/);
-  for(const asset of ['jade-bell-terraces.png','jade-lantern-canals.png','jade-warden-processional.png','bamboo-moonlotus-reservoir.png','bamboo-sporelight-monastery.png','bamboo-moonstone-causeway.png','crimson-cinder-rooftops.png','crimson-drum-foundry.png','crimson-war-processional.png'])assert.match(data,new RegExp(asset.replace('.','\\.')));
+  assert.doesNotMatch(data,/rooms: \[[^\]]*'stormEyeOfTempest'/);
+  assert.doesNotMatch(data,/rooms: \[[^\]]*'neonShogunCore'/);
+  for(const asset of ['jade-bell-terraces.png','jade-lantern-canals.png','jade-warden-processional.png','bamboo-moonlotus-reservoir.png','bamboo-sporelight-monastery.png','bamboo-moonstone-causeway.png','crimson-cinder-rooftops.png','crimson-drum-foundry.png','crimson-war-processional.png','storm-tempest-harbor-v1.png','storm-skyfang-ascent-v1.png','neon-rain-gate-v1.png','neon-shogun-tower-v1.png'])assert.match(data,new RegExp(asset.replace('.','\\.')));
 });
 
 test('each chapter escalates through a unique biome pressure mechanic',()=>{
   const pressures=Object.values(ENCOUNTERS).map((chapter)=>chapter.pressure);
-  assert.deepEqual(pressures.map((pressure)=>pressure.id),['bellEcho','sporeBloom','emberLane','stormSurge']);
+  assert.deepEqual(pressures.map((pressure)=>pressure.id),['bellEcho','sporeBloom','emberLane','stormSurge','firewallGrid']);
   for(const pressure of pressures){assert.ok(pressure.baseInterval>pressure.minInterval);assert.ok(pressure.warning>=.9);assert.ok(pressure.damage>0);}
   assert.match(game,/function scheduleBiomePressure/);assert.match(game,/function updateBiomePressure/);assert.match(game,/effects\.biomePressures/);
 });

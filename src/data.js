@@ -28,7 +28,7 @@ export const HEROES = {
     ratings: { power:4, toughness:2, mobility:4, control:4 }, difficulty:'Expert',
     damageTakenMultiplier: 1.06, knockbackResistance: 1.08,
     portrait: 'assets/characters/hopscotch-portrait.png', moveAsset: 'hopscotch', fireAsset: 'hopscotchFire', stateAsset: 'hopscotchStates', accent: '#ff4fa5',
-    unlockRequirement:'Complete the four-chapter campaign once.'
+    unlockRequirement:'Complete the five-chapter campaign once.'
   },
   rusty: {
     id:'rusty',name:'Rusty',role:'Trickshot',maxHealth:112,
@@ -156,6 +156,13 @@ export const BOSS_PROFILES = {
     signatureName:'Heaven-Splitter Judgment',signatureRow:0,signatureDamage:54,signatureDescription:'The Kirin brands five escape routes with tide sigils, then calls down a moving wall of judgment. Never stop changing lanes.',
     phaseNames:{1:'STORM GUARDIAN',2:'TEMPEST CROWN',3:'HEAVEN UNBOUND'},
     schedules:{1:['sweep','slam','channel','signature'],2:['signature','crossfire','sweep','channel','slam'],3:['signature','crossfire','channel','sweep','signature','slam','crossfire']}
+  },
+  daikyoOni: {
+    id:'daikyoOni', sweepRange:590, sweepDamage:41, slamDamage:48, radialBase:24, crossfireDamage:55, crossfireWidth:98, crossfireLanes:6,
+    phaseTempo:{1:.88,2:.74,3:.59},domainIntervals:{2:5.8,3:3.75},domainName:'SYSTEM OVERRIDE',
+    signatureName:'Oni Kernel Collapse',signatureRow:0,signatureDamage:63,signatureDescription:'Daikyo brands six circuits around your predicted route, then crashes the entire arena kernel in sequence. Keep a diagonal escape lane open.',
+    phaseNames:{1:'CORE SENTINEL',2:'OVERRIDE PROTOCOL',3:'ONI KERNEL UNBOUND'},
+    schedules:{1:['sweep','channel','slam','signature'],2:['signature','crossfire','sweep','channel','slam','crossfire'],3:['signature','crossfire','channel','sweep','signature','slam','crossfire','channel']}
   }
 };
 
@@ -280,6 +287,26 @@ export const ENEMIES = {
     id:'raijinKirin', name:'Raijin Kirin, Eater of Skies', maxHealth:11200, speed:138,
     radius:142, contactDamage:46, windup:.82, attackRange:435, attackCooldown:1.46, slamRadius:410, stunDuration:1.5,
     color:'#37dfff', scale:4.9, behavior:'boss', biome:'storm'
+  },
+  circuitJackal: {
+    id:'circuitJackal', name:'Circuit Jackal', maxHealth:270, speed:278,
+    radius:31, contactDamage:25, windup:.22, attackRange:315, attackCooldown:.72,
+    color:'#29e9ff', spriteColumn:0, scale:1.12, behavior:'melee', biome:'neon'
+  },
+  pulsewingCrow: {
+    id:'pulsewingCrow', name:'Pulsewing Crow', maxHealth:210, speed:226,
+    radius:30, contactDamage:24, windup:.34, attackRange:650, attackCooldown:.96,
+    color:'#df4cff', spriteColumn:1, scale:1.12, behavior:'ranged', biome:'neon'
+  },
+  chromebackGorilla: {
+    id:'chromebackGorilla', name:'Chromeback Gorilla', maxHealth:760, speed:162,
+    radius:58, contactDamage:42, windup:.66, attackRange:208, attackCooldown:1.62, slamRadius:212, stunDuration:1.48,
+    color:'#b94cff', spriteColumn:2, scale:1.72, behavior:'heavy', biome:'neon'
+  },
+  daikyoOni: {
+    id:'daikyoOni', name:'Daikyo Oni, Shogun of the Core', maxHealth:14800, speed:152,
+    radius:152, contactDamage:54, windup:.72, attackRange:470, attackCooldown:1.28, slamRadius:445, stunDuration:1.58,
+    color:'#ff3ab8', scale:5.15, behavior:'boss', biome:'neon'
   }
 };
 
@@ -330,6 +357,18 @@ export const ENCOUNTERS = {
       {name:'Siren Reef War Choir',roster:['galecrestGull','tidebladeOtter','reefbreakerWalrus','galecrestGull','tidebladeOtter','reefbreakerWalrus'],targetCount:82,spawnRate:.062,healthScale:2.32,speedScale:1.85,damageScale:1.94,mission:{type:'defend',title:'DEFEND THE SIREN BEACON',duration:36,health:560}},
       {name:'Thunderbreak Legion',roster:['reefbreakerWalrus','galecrestGull','tidebladeOtter','galecrestGull','tidebladeOtter'],targetCount:138,spawnRate:.032,healthScale:2.76,speedScale:2.18,damageScale:2.24,mission:{type:'anchors',title:'GROUND THE STORM CHAINS',count:5,health:182}},
       {name:'Skyfang Cataclysm',roster:['reefbreakerWalrus','tidebladeOtter','galecrestGull','tidebladeOtter','reefbreakerWalrus','galecrestGull'],targetCount:186,spawnRate:.019,healthScale:3.22,speedScale:2.52,damageScale:2.55,mission:{type:'defend',title:'HOLD THE EYE OF HEAVEN',duration:44,health:680}}
+    ]
+  },
+  neonChapter: {
+    id:'neonChapter', name:'The City That Dreams in Code', room:'neonRainGate', rooms:['neonRainGate','neonCircuitMarket','neonHologramArcade','neonSkyrailShrine','neonDataLotusGardens','neonShogunTower'], bossRoom:'neonShogunCore', boss:'daikyoOni',
+    pressure:{id:'firewallGrid',name:'FIREWALL OVERRIDE',startWave:0,baseInterval:6.5,minInterval:3.3,warning:.9,activeDuration:.95,width:92,damage:19,color:'#ff39bd'},
+    waves:[
+      {name:'Rain Gate Sweepers',roster:['circuitJackal','pulsewingCrow','circuitJackal','pulsewingCrow'],targetCount:24,spawnRate:.27,healthScale:1.38,speedScale:1.26,damageScale:1.28,mission:{type:'eliminate',title:'BREACH THE RAIN GATE'}},
+      {name:'Circuit Market Blackout',roster:['circuitJackal','pulsewingCrow','chromebackGorilla','circuitJackal','pulsewingCrow'],targetCount:42,spawnRate:.15,healthScale:1.72,speedScale:1.46,damageScale:1.52,mission:{type:'rescue',title:'FREE THE MARKET SPIRITS',count:4}},
+      {name:'Arcade Ghost Protocol',roster:['pulsewingCrow','circuitJackal','chromebackGorilla','pulsewingCrow','circuitJackal'],targetCount:68,spawnRate:.082,healthScale:2.08,speedScale:1.7,damageScale:1.8,mission:{type:'anchors',title:'CRASH THE GHOST SERVERS',count:4,health:172}},
+      {name:'Skyrail Execution Loop',roster:['circuitJackal','pulsewingCrow','chromebackGorilla','circuitJackal','pulsewingCrow','chromebackGorilla'],targetCount:104,spawnRate:.047,healthScale:2.5,speedScale:1.98,damageScale:2.1,mission:{type:'defend',title:'DEFEND THE SKYRAIL SHRINE',duration:39,health:650}},
+      {name:'Data Lotus Purge',roster:['chromebackGorilla','pulsewingCrow','circuitJackal','pulsewingCrow','circuitJackal'],targetCount:164,spawnRate:.025,healthScale:2.98,speedScale:2.32,damageScale:2.42,mission:{type:'anchors',title:'SEVER THE ONI CIRCUITS',count:6,health:208}},
+      {name:'Shogun Tower Override',roster:['chromebackGorilla','circuitJackal','pulsewingCrow','circuitJackal','chromebackGorilla','pulsewingCrow'],targetCount:218,spawnRate:.015,healthScale:3.52,speedScale:2.68,damageScale:2.78,mission:{type:'defend',title:'HOLD THE KERNEL GATE',duration:48,health:790}}
     ]
   }
 };
@@ -491,5 +530,13 @@ export const ROOMS = {
   stormEyeOfTempest:{
     id:'stormEyeOfTempest',name:'Eye of the Tempest',width:4800,height:2700,background:'assets/environment/storm-eye-of-tempest-v1.png',playerSpawn:{x:2400,y:1930},enemySpawns:[],ambient:'tempest',spawnLane:.62,spawnLaneStep:.034,
     combatBounds:{x:2400,y:1500,radiusX:1640,radiusY:820}
+  },
+  neonRainGate:{id:'neonRainGate',name:'Neon Rain Gate',width:4800,height:2700,background:'assets/environment/neon-rain-gate-v1.png',playerSpawn:{x:2400,y:1840},enemySpawns:[],ambient:'neonRain',spawnLane:.62,spawnLaneStep:.04,combatBounds:{x:2400,y:1450,radiusX:1900,radiusY:990}},
+  neonCircuitMarket:{id:'neonCircuitMarket',name:'Circuit Market',width:4800,height:2700,background:'assets/environment/neon-circuit-market-v1.png',playerSpawn:{x:2200,y:1840},enemySpawns:[],ambient:'neonRain',spawnLane:.61,spawnLaneStep:.038,combatBounds:{x:2400,y:1440,radiusX:1840,radiusY:960}},
+  neonHologramArcade:{id:'neonHologramArcade',name:'Hologram Arcade',width:4800,height:2700,background:'assets/environment/neon-hologram-arcade-v1.png',playerSpawn:{x:2400,y:1850},enemySpawns:[],ambient:'hologram',spawnLane:.6,spawnLaneStep:.038,combatBounds:{x:2400,y:1450,radiusX:1810,radiusY:940}},
+  neonSkyrailShrine:{id:'neonSkyrailShrine',name:'Skyrail Shrine',width:4800,height:2700,background:'assets/environment/neon-skyrail-shrine-v1.png',playerSpawn:{x:2380,y:1840},enemySpawns:[],ambient:'skyrail',spawnLane:.6,spawnLaneStep:.036,combatBounds:{x:2400,y:1450,radiusX:1800,radiusY:930}},
+  neonDataLotusGardens:{id:'neonDataLotusGardens',name:'Data Lotus Gardens',width:4800,height:2700,background:'assets/environment/neon-data-lotus-gardens-v1.png',playerSpawn:{x:2420,y:1840},enemySpawns:[],ambient:'hologram',spawnLane:.59,spawnLaneStep:.035,combatBounds:{x:2400,y:1440,radiusX:1810,radiusY:940}},
+  neonShogunTower:{id:'neonShogunTower',name:'Shogun Tower',width:4800,height:2700,background:'assets/environment/neon-shogun-tower-v1.png',playerSpawn:{x:2400,y:1870},enemySpawns:[],ambient:'override',spawnLane:.59,spawnLaneStep:.034,combatBounds:{x:2400,y:1450,radiusX:1830,radiusY:945}},
+  neonShogunCore:{id:'neonShogunCore',name:'Neon Shogun Core',width:4800,height:2700,background:'assets/environment/neon-shogun-core-v1.png',playerSpawn:{x:2400,y:1930},enemySpawns:[],ambient:'override',spawnLane:.61,spawnLaneStep:.032,combatBounds:{x:2400,y:1500,radiusX:1660,radiusY:830}
   }
 };
