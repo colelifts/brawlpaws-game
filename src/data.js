@@ -28,7 +28,7 @@ export const HEROES = {
     ratings: { power:4, toughness:2, mobility:4, control:4 }, difficulty:'Expert',
     damageTakenMultiplier: 1.06, knockbackResistance: 1.08,
     portrait: 'assets/characters/hopscotch-portrait.png', moveAsset: 'hopscotch', fireAsset: 'hopscotchFire', stateAsset: 'hopscotchStates', accent: '#ff4fa5',
-    unlockRequirement:'Complete the three-chapter campaign once.'
+    unlockRequirement:'Complete the four-chapter campaign once.'
   },
   rusty: {
     id:'rusty',name:'Rusty',role:'Trickshot',maxHealth:112,
@@ -149,6 +149,13 @@ export const BOSS_PROFILES = {
     signatureName:'Oni Eruption',signatureRow:2,signatureDamage:42,signatureDescription:'Oni seals bloom beneath your escape routes and erupt one after another. Keep moving through the open seam.',
     phaseNames:{1:'AWAKENED GUARDIAN',2:'INFERNO OATH',3:'SHOGUN UNBOUND'},
     schedules:{1:['sweep','signature','slam','channel'],2:['signature','sweep','channel','crossfire','slam'],3:['signature','crossfire','channel','sweep','signature','slam','channel']}
+  },
+  raijinKirin: {
+    id:'raijinKirin', sweepRange:545, sweepDamage:34, slamDamage:40, radialBase:20, crossfireDamage:46, crossfireWidth:92, crossfireLanes:5,
+    phaseTempo:{1:.92,2:.8,3:.66},domainIntervals:{2:6.4,3:4.25},domainName:'TEMPEST EYE',
+    signatureName:'Heaven-Splitter Judgment',signatureRow:0,signatureDamage:54,signatureDescription:'The Kirin brands five escape routes with tide sigils, then calls down a moving wall of judgment. Never stop changing lanes.',
+    phaseNames:{1:'STORM GUARDIAN',2:'TEMPEST CROWN',3:'HEAVEN UNBOUND'},
+    schedules:{1:['sweep','slam','channel','signature'],2:['signature','crossfire','sweep','channel','slam'],3:['signature','crossfire','channel','sweep','signature','slam','crossfire']}
   }
 };
 
@@ -253,6 +260,26 @@ export const ENEMIES = {
     radius: 130, contactDamage: 38, windup: .92, attackRange: 400,
     attackCooldown: 1.65, slamRadius: 365, stunDuration: 1.35,
     color: '#ff5b27', scale: 4.45, behavior: 'boss', biome: 'crimson'
+  },
+  tidebladeOtter: {
+    id:'tidebladeOtter', name:'Tideblade Otter', maxHealth:210, speed:248,
+    radius:31, contactDamage:21, windup:.27, attackRange:292, attackCooldown:.82,
+    color:'#31e8ff', spriteColumn:0, scale:1.14, behavior:'melee', biome:'storm'
+  },
+  galecrestGull: {
+    id:'galecrestGull', name:'Galecrest Gull', maxHealth:164, speed:208,
+    radius:30, contactDamage:20, windup:.39, attackRange:590, attackCooldown:1.08,
+    color:'#ae75ff', spriteColumn:1, scale:1.12, behavior:'ranged', biome:'storm'
+  },
+  reefbreakerWalrus: {
+    id:'reefbreakerWalrus', name:'Reefbreaker Walrus', maxHealth:590, speed:146,
+    radius:55, contactDamage:36, windup:.74, attackRange:195, attackCooldown:1.82, slamRadius:194, stunDuration:1.42,
+    color:'#56dfff', spriteColumn:2, scale:1.68, behavior:'heavy', biome:'storm'
+  },
+  raijinKirin: {
+    id:'raijinKirin', name:'Raijin Kirin, Eater of Skies', maxHealth:11200, speed:138,
+    radius:142, contactDamage:46, windup:.82, attackRange:435, attackCooldown:1.46, slamRadius:410, stunDuration:1.5,
+    color:'#37dfff', scale:4.9, behavior:'boss', biome:'storm'
   }
 };
 
@@ -291,6 +318,18 @@ export const ENCOUNTERS = {
       { name: 'Shogun Warhost', roster: ['gatewardenRhino','emberAkita','gongwing','emberAkita','emberAkita','gongwing','ironhorn','emberAkita','gongwing','gatewardenRhino','ironhorn','gongwing','emberAkita','emberAkita','gongwing','gatewardenRhino','emberAkita','gongwing','emberAkita','ironhorn','gongwing','emberAkita','emberAkita','gongwing','gatewardenRhino','emberAkita','gongwing','emberAkita','ironhorn','gongwing','emberAkita','emberAkita','gongwing','gatewardenRhino','emberAkita','gongwing','emberAkita','ironhorn','gongwing','emberAkita','gatewardenRhino','gongwing'], spawnRate: .105, healthScale: 2.06, speedScale: 1.55, damageScale: 1.72, mission:{type:'defend',title:'DEFEND THE ANCESTRAL FLAME',duration:30,health:390} },
       { name:'Ashen Clan Avalanche',roster:['gatewardenRhino','emberAkita','gongwing','ironhorn','mistclawLynx','emberAkita','gongwing'],targetCount:112,spawnRate:.041,healthScale:2.44,speedScale:2.02,damageScale:1.98,mission:{type:'anchors',title:'DESTROY THE ONI CHAINS',count:5,health:132} },
       { name:'Oni Gate Cataclysm',roster:['gatewardenRhino','ironhorn','mistclawLynx','gongwing','emberAkita','gatewardenRhino','gongwing','ironhorn'],targetCount:150,spawnRate:.026,healthScale:2.88,speedScale:2.35,damageScale:2.28,mission:{type:'defend',title:'HOLD THE SHOGUN SEAL',duration:40,health:520} }
+    ]
+  },
+  stormChapter: {
+    id:'stormChapter', name:'The Sea That Eats the Sky', room:'stormTempestHarbor', rooms:['stormTempestHarbor','stormTideglassCauseway','stormDrownedBellSanctum','stormSirenReefMonastery','stormThunderbreakLighthouse','stormSkyfangAscent'], bossRoom:'stormEyeOfTempest', boss:'raijinKirin',
+    pressure:{id:'stormSurge',name:'TIDEBREAK SURGE',startWave:0,baseInterval:7.2,minInterval:3.8,warning:.95,activeDuration:1.05,width:105,damage:16,color:'#31e8ff'},
+    waves:[
+      {name:'Tempest Harbor Raiders',roster:['tidebladeOtter','galecrestGull','tidebladeOtter','galecrestGull'],targetCount:20,spawnRate:.31,healthScale:1.28,speedScale:1.2,damageScale:1.2,mission:{type:'eliminate',title:'RETAKE TEMPEST HARBOR'}},
+      {name:'Tideglass Hunting Fleet',roster:['tidebladeOtter','galecrestGull','tidebladeOtter','reefbreakerWalrus','galecrestGull'],targetCount:34,spawnRate:.18,healthScale:1.58,speedScale:1.38,damageScale:1.42,mission:{type:'rescue',title:'FREE THE TIDEKEEPERS',count:4}},
+      {name:'Drowned Bell Armada',roster:['tidebladeOtter','galecrestGull','reefbreakerWalrus','galecrestGull','tidebladeOtter'],targetCount:54,spawnRate:.105,healthScale:1.92,speedScale:1.6,damageScale:1.68,mission:{type:'anchors',title:'BREAK THE DROWNED BELLS',count:4,health:148}},
+      {name:'Siren Reef War Choir',roster:['galecrestGull','tidebladeOtter','reefbreakerWalrus','galecrestGull','tidebladeOtter','reefbreakerWalrus'],targetCount:82,spawnRate:.062,healthScale:2.32,speedScale:1.85,damageScale:1.94,mission:{type:'defend',title:'DEFEND THE SIREN BEACON',duration:36,health:560}},
+      {name:'Thunderbreak Legion',roster:['reefbreakerWalrus','galecrestGull','tidebladeOtter','galecrestGull','tidebladeOtter'],targetCount:138,spawnRate:.032,healthScale:2.76,speedScale:2.18,damageScale:2.24,mission:{type:'anchors',title:'GROUND THE STORM CHAINS',count:5,health:182}},
+      {name:'Skyfang Cataclysm',roster:['reefbreakerWalrus','tidebladeOtter','galecrestGull','tidebladeOtter','reefbreakerWalrus','galecrestGull'],targetCount:186,spawnRate:.019,healthScale:3.22,speedScale:2.52,damageScale:2.55,mission:{type:'defend',title:'HOLD THE EYE OF HEAVEN',duration:44,health:680}}
     ]
   }
 };
@@ -424,5 +463,33 @@ export const ROOMS = {
   ,crimsonWarProcessional: {
     id:'crimsonWarProcessional',name:'Shogun War Processional',width:4800,height:2700,background:'assets/environment/crimson-war-processional.png',playerSpawn:{x:2400,y:1870},enemySpawns:[],ambient:'inferno',spawnLane:.61,spawnLaneStep:.04,
     combatBounds:{x:2400,y:1450,radiusX:1740,radiusY:895}
+  },
+  stormTempestHarbor:{
+    id:'stormTempestHarbor',name:'Tempest Harbor',width:4800,height:2700,background:'assets/environment/storm-tempest-harbor-v1.png',playerSpawn:{x:2400,y:1840},enemySpawns:[],ambient:'storm',spawnLane:.62,spawnLaneStep:.042,
+    combatBounds:{x:2400,y:1440,radiusX:1880,radiusY:990}
+  },
+  stormTideglassCauseway:{
+    id:'stormTideglassCauseway',name:'Tideglass Causeway',width:4800,height:2700,background:'assets/environment/storm-tideglass-causeway-v1.png',playerSpawn:{x:2200,y:1840},enemySpawns:[],ambient:'tide',spawnLane:.63,spawnLaneStep:.04,
+    combatBounds:{x:2400,y:1440,radiusX:1760,radiusY:920}
+  },
+  stormDrownedBellSanctum:{
+    id:'stormDrownedBellSanctum',name:'Drowned Bell Sanctum',width:4800,height:2700,background:'assets/environment/storm-drowned-bell-sanctum-v1.png',playerSpawn:{x:2400,y:1850},enemySpawns:[],ambient:'storm',spawnLane:.61,spawnLaneStep:.04,
+    combatBounds:{x:2400,y:1450,radiusX:1780,radiusY:920}
+  },
+  stormSirenReefMonastery:{
+    id:'stormSirenReefMonastery',name:'Siren Reef Monastery',width:4800,height:2700,background:'assets/environment/storm-siren-reef-monastery-v1.png',playerSpawn:{x:2380,y:1840},enemySpawns:[],ambient:'tide',spawnLane:.6,spawnLaneStep:.038,
+    combatBounds:{x:2400,y:1440,radiusX:1810,radiusY:940}
+  },
+  stormThunderbreakLighthouse:{
+    id:'stormThunderbreakLighthouse',name:'Thunderbreak Lighthouse',width:4800,height:2700,background:'assets/environment/storm-thunderbreak-lighthouse-v1.png',playerSpawn:{x:2430,y:1840},enemySpawns:[],ambient:'lightning',spawnLane:.59,spawnLaneStep:.038,
+    combatBounds:{x:2400,y:1440,radiusX:1800,radiusY:930}
+  },
+  stormSkyfangAscent:{
+    id:'stormSkyfangAscent',name:'Skyfang Ascent',width:4800,height:2700,background:'assets/environment/storm-skyfang-ascent-v1.png',playerSpawn:{x:2400,y:1870},enemySpawns:[],ambient:'tempest',spawnLane:.6,spawnLaneStep:.036,
+    combatBounds:{x:2400,y:1450,radiusX:1820,radiusY:940}
+  },
+  stormEyeOfTempest:{
+    id:'stormEyeOfTempest',name:'Eye of the Tempest',width:4800,height:2700,background:'assets/environment/storm-eye-of-tempest-v1.png',playerSpawn:{x:2400,y:1930},enemySpawns:[],ambient:'tempest',spawnLane:.62,spawnLaneStep:.034,
+    combatBounds:{x:2400,y:1500,radiusX:1640,radiusY:820}
   }
 };

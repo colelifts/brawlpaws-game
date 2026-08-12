@@ -113,7 +113,7 @@ Next ability work:
 
 - XP thresholds, level progression, and combat pause during selection are playable
 - Three-card level-up presentation, weighted Common/Rare/Epic rarity, keyboard/mouse selection, one free reroll, escalating gold rerolls, and a recovery skip are playable. Every offer now labels its role/rank, states the concise effect, compares the live current and resulting stat, and previews any immediately unlocked synergy.
-- All three chapters now carry four checkpoint-safe narrative beats—opening, post-seal-two revelation, post-seal-four escalation, and guardian confrontation—with visible seal progress and a concise next objective
+- All four chapters now carry four checkpoint-safe narrative beats—opening, post-seal-two revelation, post-seal-four escalation, and guardian confrontation—with visible seal progress and a concise next objective
 - 45 meaningful upgrade definitions now cover five hero weapon capstones, four ability evolutions, weapon evolution, four ability unlocks, hero-specific mastery, damage, speed, health, per-ability ranks, shield breaking, elite and guardian hunting, critical mastery, piercing, Conductive chaining, economy, and bonus projectiles
 - Twelve functional relics: Lucky Coin, Spirit Mask, Thunder Seal, Blood Vial, Dragon Scale, Rainbow Feather, Ward Bell, Oni Contract, Moon Pearl, Phoenix Plume, River Mirror, and Guardian Fang
 - Four automatic recipe synergies are playable and visible in the HUD: Steam Burst, Storm Current, Guardian Tempest, and Twin Cinders
@@ -137,11 +137,11 @@ Initial upgrade set:
 
 **Exit gate:** at least three noticeably different viable builds can emerge from one short run; choices are more interesting than tiny percentage-only increases.
 
-## Phase 5 — Rooms, routes, and rewards (three-chapter multi-room foundation complete)
+## Phase 5 — Rooms, routes, and rewards (four-chapter multi-room foundation complete)
 
 - Handcrafted room-template data separated into floor, collision, walls, props, decorations, foreground, lights, gates, spawns, and interactables
-- Twenty-one production-painted combat rooms are playable across the three chapters: every one of the eighteen pre-boss waves has its own location and all three giant guardians have dedicated courts
-- Six escalating combat seals per chapter now create eighteen pre-boss encounters, scaling from four opening scouts to 72/112/150-enemy chapter finales before difficulty multipliers. A staged chapter-, wave-, difficulty-, route-, and co-op-scaled active budget grows from an eight-enemy tutorial ceiling to 54 Ferocious, 61 solo-Nightmare, or 72 high-pressure Chapter III fighters. Golden-angle arrival distribution and continuous reserves preserve the full army without an instant unreadable pileup.
+- Twenty-eight production-painted combat rooms are playable across four chapters: every one of the twenty-four pre-boss waves has its own location and all four giant guardians have dedicated courts
+- Six escalating combat seals per chapter now create twenty-four pre-boss encounters, scaling from four opening scouts to 72/112/150/186-enemy chapter finales before difficulty multipliers. A staged chapter-, wave-, difficulty-, route-, and co-op-scaled active budget grows from an eight-enemy tutorial ceiling into high-pressure late-chapter armies. Golden-angle arrival distribution and continuous reserves preserve the full army without an instant unreadable pileup.
 - All eighteen combat seals now have authored objectives: named elimination packs, destructible curse anchors, spatial spirit rescues, and timed wards with real health. Objectives own HUD progress, arena actors, completion gates, rewards, checkpoint state, and ward-break failure consequences. Ward missions use a brief grace window, an eight-attacker pressure budget, and a duration-scaled maximum DPS so they demand active defense without mathematically failing before the player can react.
 - Route-selected Sacred Springs, Spirit Vaults, and Hero Shrines now exist as physical room objectives, while breakable pots and crates provide optional gold and experience
 - Minimum eight Jade Grove templates: courtyard, bamboo bridge, ruined shrine, root garden, lantern crossroads, crystal terrace, flooded gate, guardian approach
@@ -208,7 +208,7 @@ Only after the complete Jade Grove run is fun and stable:
 - Heroes after completed Bamboo, Hopscotch, and Rusty: Zap and Nomi
 - Weapons: Katana, Bo Staff, Shuriken, Blaster, Paint Roller, Gauntlets, Spear, Twin Daggers
 - Enemy archetypes: summoner, bomb hopper, authored shield bearer, and destination-marked assassin are playable with dedicated assets and behaviors; five elite modifiers apply across the full roster
-- Biomes: Crimson Dojo, Storm Coast, Neon City, Shadow Realm
+- Biomes after completed Crimson Dojo and Storm Coast: Neon City and Shadow Realm
 - Additional bosses, relics, abilities, synergies, events, missions, cosmetics, difficulties, and challenge modes
 
 Each new hero requires complete directional movement, primary attacks, ability casts, hit/death/victory states, portrait/loadout art, VFX, audio, and gameplay tuning before release.
@@ -242,4 +242,4 @@ Systems communicate through gameplay events such as `attackStarted`, `hitResolve
 
 ## Immediate next milestone
 
-Build the remaining room variations toward the 10-15-room-per-run target, deepen the four hero-specific upgrade trees, add further earned weapon evolutions, and tune the full three-chapter difficulty curve from the low-power opening through Ascension without weakening the current animation, telegraph, and combat-feedback bar.
+Build the remaining room variations toward the 10-15-room-per-run target, deepen the hero-specific upgrade trees, add further earned weapon evolutions, and tune the full four-chapter difficulty curve from the low-power opening through Ascension without weakening the current animation, telegraph, and combat-feedback bar. Storm Coast is now complete; Neon City and Shadow Realm are the next biome milestones.

@@ -53,7 +53,7 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - Jade Brawler enemies with pursuit, separation, telegraphed lunges, health, knockback, and death
 - Hit-stop, damage numbers, impact rings, sparks, comic attack words, directional whole-body enemy reactions, speed-scaled run cycles, recorded combat SFX with anti-stacking mix limits, and an independently adjustable soft looping score (licensed sources are listed in `assets/audio/CREDITS.md`)
 - Ability hits drive target-specific burn recoil, wet squash, and shock jitter/tint reactions instead of placing the whole effect over the enemy body
-- Grounded fade-and-rise enemy entrances, reduced normal-enemy scale, and locomotion bob/lean cycles for every enemy family and all three guardians
+- Grounded fade-and-rise enemy entrances, reduced normal-enemy scale, and locomotion bob/lean cycles for every enemy family and all four guardians
 - Compact illustrated upgrade cards with a dedicated nine-emblem atlas and one-line outcome summaries
 - Responsive BrawlPaws HUD, title screen, room-clear screen, and death/restart loop
 - Data definitions for the hero, weapon, enemy, and room
@@ -70,16 +70,16 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - Depth-sorted Jade Grove prop atlas, prop collision, foreground occlusion, light pools, ambient petals, cracks, spirit gates, and haze
 - Neon blaster trails, impact stars, elemental ability VFX, ink death bursts, enemy projectiles, and magnetizing XP shards
 - Four unlockable active abilities with locked-slot HUD states, directional targeting, damage, healing, damage reduction, burn damage, and distinct VFX
-- Eighteen escalating pre-boss combats across the campaign: Chapter I grows from 4 slow scouts to 72 enemies, Chapter II reaches 112, and Chapter III reaches a 150-enemy cataclysm before Pyreclaw
+- Twenty-four escalating pre-boss combats across four chapters: Chapter I grows from 4 slow scouts to 72 enemies, Chapter II reaches 112, Chapter III reaches 150, and Storm Coast culminates in a 186-enemy Skyfang cataclysm
 - Every pre-boss room now carries an authored mission: eliminate a named warband, shoot and shatter curse anchors, reach and free captive spirits, or defend a damageable ward until its seal stabilizes. Mission progress is visible in the HUD, gates room completion, grants gold/XP, fails the run when a ward breaks, and persists in room-safe checkpoints.
 - Physical Sacred Springs, Spirit Vaults, and Hero Shrines selected from the route screen must be reached and activated inside combat rooms; destructible pots and crates provide optional gold and XP
 - Real level progression with rising XP thresholds, combat-pausing three-card choices, 45 upgrade definitions, repeatable ranks, Dual-Wield, hero-specific branches, piercing, critical-draw, conductive chaining, guardian-hunter, mobility, economy, five earned weapon capstones, and four behavior-changing ability evolutions
-- Every chapter adds a distinct escalating arena threat: Jade Bell Echoes launch radial spirit volleys, Bamboo Spore Blooms create persistent slowing damage zones, and Crimson Ember Corridors cut temporary fire lanes through the battlefield.
+- Every chapter adds a distinct escalating arena threat: Jade Bell Echoes launch radial spirit volleys, Bamboo Spore Blooms create persistent slowing damage zones, Crimson Ember Corridors cut temporary fire lanes, and Storm Coast Tidebreak Surges sweep authored walls of water across the battlefield.
 - Faster enemy pursuit, shorter windups, and stronger pressure balanced against reduced player speed and starting damage
 - Six escalating Jade Grove waves: 4 teaching scouts, then 10, 18, 30, 48, and a 72-enemy siege; Bamboo and Crimson finales reach 112 and 150 enemies before difficulty, corruption, and co-op multipliers
 - Large armies use a difficulty-, chapter-, wave-, and party-scaled active combat budget. The opening lesson remains capped at eight simultaneous enemies, while the Chapter III finale can sustain 54 on Ferocious, 61 on solo Nightmare, and 72 in high-rank/co-op pressure. The budget ramps during each room, distributes arrivals around the arena, and keeps the rest of the authored army in visible perimeter reserves instead of forming an unreadable instant pileup.
 - Ward-defense missions have a short opening grace period, limited simultaneous ward attackers, and a survival-scaled damage ceiling. Ignoring the ward still loses the room, while active defense has a fair reaction window.
-- Each chapter now has four checkpoint-safe story beats: the opening, revelations after seals two and four, and the guardian confrontation. Every scene carries seal progress plus a one-line next objective so the three-chapter plot remains legible between route choices.
+- Each chapter has four checkpoint-safe story beats: the opening, revelations after seals two and four, and the guardian confrontation. Every scene carries seal progress plus a one-line next objective so the four-chapter plot remains legible between route choices.
 - Dedicated Jadeguard Tanuki boss artwork, a 2,600-HP boss HUD, three phases, staff sweep, stunning ground slam, radial jade projectiles, phase summons, enrage, and chapter-clear story payoff
 - A branching Choose Your Path screen between waves with Combat, Elite, Heal, Shop, Treasure, and Shrine nodes
 - Enemy gold rewards, mutation-scaled elite routes, twelve run relics, and a functional Moon Market with persistent purchases
@@ -92,7 +92,9 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - A giant 7,600-HP Pyreclaw Shogun Tora boss with flaming sweeps, gong impacts, fire lanes, summons, and enrage
 - Guardian phases now accelerate through profile-specific tempos and add distinct recurring arena domains: Jadeguard predicts Bellstorm detonations, Moonfang grows slowing Moonbloom territory, and Pyreclaw cuts the court with alternating Oni-fire corridors. These layer with each guardian's authored patterns without replacing their readable windups.
 - Every guardian death now opens a three-choice guardian chest instead of immediately skipping ahead. Jadeguard and Moonfang blessings create major offense, defense, economy, status, and mobility pivots for the next chapter; the unclaimed choice persists as a safe checkpoint.
-- Pyreclaw’s defeat ends with three final vows—Mercy, Power, or Freedom—each granting a different permanent shard payout and a fully authored hero-specific epilogue before the result screen.
+- Chapter 4: Storm Coast, with six unique maritime arenas, Tideblade Otter, Galecrest Gull, and Reefbreaker Walrus armies, moving Tidebreak Surges, and a dedicated Eye of the Tempest guardian court.
+- A giant 11,200-HP Raijin Kirin guardian with authored locomotion, sweep, slam, channel, crossfire, phase summons, Tempest Eye domains, and Heaven-Splitter Judgment.
+- Pyreclaw now grants a carry-forward Oni Oath; Raijin Kirin’s defeat ends with three final vows—Mercy, Power, or Freedom—each granting a permanent shard payout and fully authored epilogue.
 - Spirited, Ferocious, and Nightmare difficulty selection with real health, speed, damage, and reward scaling
 - Ten post-clear Ascension ranks that compound enemy health, pursuit speed, damage, pack size, spawn cadence, and shard rewards after every successful clear
 - Persistent spirit shards, campaign clears, best-difficulty records, highest level, and capped legacy health/gold bonuses
@@ -121,12 +123,12 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - Authored Story Event and Secret route nodes with branching costs, relics, weapon evolutions, ability-power rewards, curses, and harder high-reward follow-up waves
 - Reusable boss-pattern and boss-profile data now owns windup/action/recovery timing, damage identity, phase labels, and per-phase schedules for Jadeguard, Moonfang, and Pyreclaw
 - A persistent Spirit Archive Codex records enemies and guardians when first encountered, with data-driven hero/weapon stats, status interactions, enemy counterplay, and each guardian's actual phase patterns
-- All three guardians now gain Sealing Crossfire in later phases: a profile-scaled set of intersecting floor lanes that locks to the player's position, clearly warns, then converges with a stunning impact
+- All four guardians gain Sealing Crossfire in later phases: a profile-scaled set of intersecting floor lanes that locks to the player's position, clearly warns, then converges with a stunning impact
 
 For direct boss QA, open `http://127.0.0.1:4174/?boss=1`; normal play always requires clearing the full chapter first.
 Route QA checkpoints are available at `?route=1`, `?route=2`, and `?route=3`; they are not used during normal play.
 Chapter 2 QA is available at `?chapter=2`, with `?chapter=2&boss=1` for Moonfang; these QA routes provide a reinforced test loadout and do not affect normal balance.
-Chapter 3 QA is available at `?chapter=3`, with `?chapter=3&boss=1` for Pyreclaw. Add `&difficulty=nightmare` to validate maximum pressure.
+Chapter 4 QA is available at `?chapter=4`, with `?chapter=4&boss=1` for Raijin Kirin. Add `&difficulty=nightmare` to validate maximum pressure.
 Hub station QA is available at `?hub=heroShrine` or `?hub=portal`; normal play enters the village at its central plaza.
 Systems QA is available at `?system=levelup`, `?system=story&beat=interlude2`, `?system=story&beat=interlude4`, `?system=contracts`, `?system=contracts&ready=1`, `?system=event`, `?system=secret`, `?system=synergy`, `?system=elites`, `?system=specialists`, `?system=capstone`, `?system=evolutions`, `?system=pressure`, `?system=room6`, `?system=signature`, and `?system=codex`.
 Mission QA is available at `?system=mission&mission=anchors`, `?system=mission&mission=rescue`, and `?system=mission&mission=defend`; add `&chapter=2` or `&chapter=3` to validate biome-specific mission schedules and palettes.

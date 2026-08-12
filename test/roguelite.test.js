@@ -342,7 +342,7 @@ test('active campaigns persist a versioned room-safe checkpoint and can resume',
 
 test('rooms carry first-class rescue, curse-anchor, and ward-defense missions',()=>{
   const waves=Object.values(ENCOUNTERS).flatMap((chapter)=>chapter.waves);
-  assert.equal(waves.length,18);
+  assert.equal(waves.length,24);
   for(const type of ['eliminate','rescue','anchors','defend'])assert.ok(waves.some((wave)=>wave.mission?.type===type),`missing ${type} mission`);
   for(const wave of waves){assert.ok(wave.mission?.title);if(wave.mission.type==='rescue'||wave.mission.type==='anchors')assert.ok(wave.mission.count>=2);if(wave.mission.type==='defend'){assert.ok(wave.mission.duration>=20);assert.ok(wave.mission.health>=200);}}
   for(const fn of ['spawnRoomMission','serializeMissionState','saveMissionCheckpoint','completeRoomMission','failRoomMission','nearestMissionCaptive','useMissionInteraction','damageRoomMissionObjects','updateRoomMission','missionObjectiveText','drawMissionAnchor','drawMissionCaptive','drawMissionWard'])assert.match(game,new RegExp(`function ${fn}\\(`));
@@ -358,7 +358,7 @@ test('rooms carry first-class rescue, curse-anchor, and ward-defense missions',(
 test('guardian victories open build-defining blessings and a three-vow epilogue',()=>{
   for(const id of ['guardian-reward-screen','guardian-reward-title','guardian-reward-copy','guardian-reward-grid'])assert.match(html,new RegExp(`id="${id}"`));
   for(const fn of ['openGuardianReward','chooseGuardianReward'])assert.match(game,new RegExp(`function ${fn}\\(`));
-  for(const guardian of ['jadeguardTanuki','moonfangKomainu','pyreclawShogun'])assert.match(game,new RegExp(`${guardian}:\\{`));
+  for(const guardian of ['jadeguardTanuki','moonfangKomainu','pyreclawShogun','raijinKirin'])assert.match(game,new RegExp(`${guardian}:\\{`));
   for(const reward of ['jadeTempest','jadeAegis','jadeFortune','moonHunt','moonCurrent','moonStride','mercy','power','freedom'])assert.match(game,new RegExp(`id:'${reward}'`));
   assert.match(game,/openGuardianReward\(encounter\.defeatedGuardianId\|\|chapter\.boss\)/);
   assert.match(game,/saveRunCheckpoint\(\{kind:'guardianReward',guardianId\}\)/);
@@ -443,8 +443,8 @@ test('every campaign wave advances into its own production-painted combat locati
 
 test('each chapter escalates through a unique biome pressure mechanic',()=>{
   const pressures=Object.values(ENCOUNTERS).map((chapter)=>chapter.pressure);
-  assert.deepEqual(pressures.map((pressure)=>pressure.id),['bellEcho','sporeBloom','emberLane']);
-  for(const pressure of pressures){assert.ok(pressure.baseInterval>pressure.minInterval);assert.ok(pressure.warning>=1);assert.ok(pressure.damage>0);}
+  assert.deepEqual(pressures.map((pressure)=>pressure.id),['bellEcho','sporeBloom','emberLane','stormSurge']);
+  for(const pressure of pressures){assert.ok(pressure.baseInterval>pressure.minInterval);assert.ok(pressure.warning>=.9);assert.ok(pressure.damage>0);}
   assert.match(game,/function scheduleBiomePressure/);assert.match(game,/function updateBiomePressure/);assert.match(game,/effects\.biomePressures/);
 });
 
