@@ -208,6 +208,15 @@ test('shared combat statuses support player and enemy ownership plus build choic
   assert.match(game,/debugSystem==='statuses'/);
 });
 
+test('the startup loader cannot strand Chrome behind nonessential late-game art',()=>{
+  assert.match(game,/const STARTUP_LOADING_LIMIT_MS=3200/);
+  assert.match(game,/deferredAssetSources\.push\(\[key,source\]\)/);
+  assert.match(game,/function loadRoomArena\(roomDefinition\)/);
+  assert.match(game,/image\.addEventListener\('error',\(\)=>settleStartupAsset\(key\)/);
+  assert.match(game,/window\.setTimeout\(releaseLoadingScreen,STARTUP_LOADING_LIMIT_MS\)/);
+  assert.doesNotMatch(game,/assetsLoaded === Object\.keys\(assetSources\)\.length/);
+});
+
 test('corruption director preserves the slow opening and escalates late-room pressure',()=>{
   for(const id of ['corruption-panel','corruption-tier','corruption-fill','corruption-copy'])assert.match(html,new RegExp(`id="${id}"`));
   for(const tier of ['dormant','stirring','hunting','ravenous','cataclysm','apocalypse'])assert.match(game,new RegExp(`id:'${tier}'`));

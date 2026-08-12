@@ -154,18 +154,25 @@ const assetSources = {
   specialEnemyVfx: 'assets/vfx/special-enemy-vfx.png',
   guardianSignatureVfx: 'assets/vfx/guardian-signatures.png'
 };
-let assetsLoaded = 0;
+const STARTUP_LOADING_LIMIT_MS=3200;
+const startupAssetKeys=new Set(['arena','kitsune','kitsuneFire','kitsuneStates','enemies','props','archerMove','archerAttack','raccoonAttack','boarAttack','blasterShotVfx','blasterImpactVfx']);
+const settledStartupAssets=new Set(),deferredAssetSources=[];
+let loadingReleased=false;
+function startDeferredAssetLoading(){let index=0;const loadBatch=()=>{for(let count=0;count<4&&index<deferredAssetSources.length;count++,index++){const [key,source]=deferredAssetSources[index];assets[key].fetchPriority='low';assets[key].decoding='async';assets[key].src=source;}if(index<deferredAssetSources.length)window.setTimeout(loadBatch,90);};window.setTimeout(loadBatch,180);}
+function releaseLoadingScreen(){if(loadingReleased)return;loadingReleased=true;loading.classList.add('ready');startDeferredAssetLoading();}
+function settleStartupAsset(key){if(!startupAssetKeys.has(key)||settledStartupAssets.has(key))return;settledStartupAssets.add(key);if(settledStartupAssets.size>=startupAssetKeys.size)releaseLoadingScreen();}
 for (const [key, source] of Object.entries(assetSources)) {
-  assets[key].src = source;
-  assets[key].addEventListener('load', () => {
-    assetsLoaded++;
-    if (assetsLoaded === Object.keys(assetSources).length) loading.classList.add('ready');
-  });
+  const image=assets[key];
+  if(!startupAssetKeys.has(key)){deferredAssetSources.push([key,source]);continue;}
+  image.fetchPriority='high';
+  image.addEventListener('load',()=>settleStartupAsset(key),{once:true});
+  image.addEventListener('error',()=>settleStartupAsset(key),{once:true});
+  image.src=source;
+  if(image.complete)queueMicrotask(()=>settleStartupAsset(key));
 }
+window.setTimeout(releaseLoadingScreen,STARTUP_LOADING_LIMIT_MS);
 const arenaCache=new Map([[room.id,assets.arena]]);
-for(const roomDefinition of Object.values(ROOMS)){
-  if(arenaCache.has(roomDefinition.id))continue;const image=new Image();image.src=roomDefinition.background;arenaCache.set(roomDefinition.id,image);
-}
+function loadRoomArena(roomDefinition){if(arenaCache.has(roomDefinition.id))return arenaCache.get(roomDefinition.id);const image=new Image();image.decoding='async';image.fetchPriority='high';image.src=roomDefinition.background;arenaCache.set(roomDefinition.id,image);return image;}
 
 const ui = {
   healthFill: document.querySelector('#health-fill'), healthText: document.querySelector('#health-text'),
@@ -679,7 +686,7 @@ const ENEMY_CODEX_NOTES = {
 };
 
 const BEHAVIOR_LABELS={basic:'SWARMER',melee:'DUELIST',ranged:'MARKSMAN',heavy:'BRUISER',summoner:'SUMMONER',bomber:'BOMBER',assassin:'ASSASSIN',shield:'WARDEN',conductor:'CONDUCTOR',hacker:'CONTROLLER',curser:'ORACLE',boss:'GUARDIAN'};
-const STATUS_ART={burn:'assets/vfx/burn-status.png',wet:'assets/vfx/water-impact.png',shock:'assets/vfx/shock-paws-impact.png',stun:'assets/vfx/hammer-slam.png',bleed:'assets/vfx/claw-slash.png',curse:'assets/vfx/shadow-realm-vfx.png',shield:'assets/vfx/special-enemy-vfx.png'};
+const STATUS_ART={burn:'assets/vfx/burn-status.png',wet:'assets/vfx/water-impact.png',shock:'assets/vfx/shock-paws-impact.png',stun:'assets/vfx/hammer-slam.png',bleed:'assets/vfx/claw-slash.png',curse:'assets/vfx/shadow-realm-vfx-v1.png',shield:'assets/vfx/special-enemy-vfx.png'};
 const SPECIALIST_ART={bellweaverCat:'bellweaver-cat',powderkegToad:'powderkeg-toad',gatewardenRhino:'gatewarden-rhino',mistclawLynx:'mistclaw-lynx',tidechantHeron:'tidechant-heron-v1',kernelHackerTanuki:'kernel-hacker-tanuki-v1',moonveilSeer:'moonveil-seer-v1'};
 const BOSS_ART={jadeguardTanuki:'jadeguard-tanuki-v2',moonfangKomainu:'moonfang-komainu',pyreclawShogun:'pyreclaw-shogun',raijinKirin:'raijin-kirin-v1',daikyoOni:'daikyo-oni-v1',tsukikoEmpress:'tsukiko-empress-v1'};
 
@@ -1018,7 +1025,7 @@ function nearestHubStation(){
 }
 
 function activateRoom(roomId,{reposition=true,announce=false,waveIndex=0,subtitle=''}={}){
-  const nextRoom=ROOMS[roomId];if(!nextRoom)return;room=nextRoom;assets.arena=arenaCache.get(room.id)||assets.arena;
+  const nextRoom=ROOMS[roomId];if(!nextRoom)return;room=nextRoom;assets.arena=loadRoomArena(room);
   if(reposition&&player){player.x=room.playerSpawn.x;player.y=room.playerSpawn.y;player.vx=0;player.vy=0;player.facing=-Math.PI/2;player.invulnerable=Math.max(player.invulnerable,1.1);camera.x=player.x;camera.y=player.y;camera.shake=0;}
   ui.biomeTitle.textContent=room.name.toUpperCase();ui.routeBiome.textContent=`${room.name.toUpperCase()}  BRANCHING ROUTE`;canvas.setAttribute('aria-label',`${room.name} combat arena`);
   if(announce)showRoomTransition(waveIndex,subtitle);

@@ -95,6 +95,7 @@ Every milestone is reviewed against the supplied gameplay, loadout, hub, hero-ro
 - Contact shadows reduced to soft ellipses directly under the feet
 - Muzzle flashes, trails, impact stars, elemental colors, comic words, XP shards, and enemy death bursts
 - Recorded Mixkit audio layers now cover weapons, dash, light/heavy impacts, enemy strikes, elemental abilities, healing, upgrades, boss slams, and soft background music; independent music/SFX controls and anti-stacking mix limits keep large armies clean
+- Browser startup uses a critical-art priority gate, cached-image and load-error handling, deferred later-chapter sheets, and a 3.2-second maximum overlay so Chrome reaches play without waiting on the entire campaign asset library
 - All six playable heroes now own production-painted eight-pose state atlases: distinct Undertow, Foxfire, Wild Heart, and Shock Paws casts plus authored hit recoil, stun, defeat, and victory silhouettes. These frames are routed from live combat state and preserve the existing eight-direction primary-fire sheets.
 
 **Exit gate:** screenshots and live motion plausibly belong to the same game as the concept art. No attack can look like a static sprite sliding into a target.

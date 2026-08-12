@@ -54,6 +54,7 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - Directional dash with i-frames, afterimages, streak particles, and cooldown UI
 - Jade Brawler enemies with pursuit, separation, telegraphed lunges, health, knockback, and death
 - Hit-stop, damage numbers, impact rings, sparks, comic attack words, directional whole-body enemy reactions, speed-scaled run cycles, recorded combat SFX with anti-stacking mix limits, and an independently adjustable soft looping score (licensed sources are listed in `assets/audio/CREDITS.md`)
+- Chrome startup now prioritizes the opening hero, arena, enemy, and weapon art, then streams later-chapter sheets after the overlay clears; cached-image/error handling and a 3.2-second ceiling prevent one delayed asset from stranding the game
 - Ability hits drive target-specific burn recoil, wet squash, and shock jitter/tint reactions instead of placing the whole effect over the enemy body
 - Grounded fade-and-rise enemy entrances, reduced normal-enemy scale, and authored locomotion cycles for every enemy family and all six guardians
 - Compact illustrated upgrade cards with a dedicated nine-emblem atlas and one-line outcome summaries
