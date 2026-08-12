@@ -296,6 +296,7 @@ test('title and Hero Shrine support persistent hero selection',()=>{
   assert.match(game,/damageTakenMultiplier:heroDef\.damageTakenMultiplier/);
   assert.match(game,/knockbackResistance:heroDef\.knockbackResistance/);
   assert.match(game,/unlockedAbilities: new Set\(\)/);
+  assert.doesNotMatch(game,/weapon\.critChance/);
 });
 
 test('Nomi is an earned returning-glaive hero with a homing capstone',()=>{
@@ -585,7 +586,7 @@ test('every playable hero owns authored ability and reaction poses',()=>{
 test('level three forces an authored arsenal awakening with distinct combat contracts',()=>{
   for(const weapon of ['frostbiteNeedle','oniMortar','galeWarFan'])assert.match(data,new RegExp(`${weapon}: \\{[\\s\\S]{0,520}projectileType:`));
   for(const upgrade of ['equipFrostbiteNeedle','equipOniMortar','equipGaleWarFan','permafrost','shatterpoint','oniPayload','blastChamber','razorCurrent','typhoonReach'])assert.match(game,new RegExp(`id:'${upgrade}'`));
-  assert.match(game,/const arsenal=pool\.filter\(\(upgrade\)=>upgrade\.type==='ARSENAL AWAKENING'\);if\(arsenal\.length\)\{currentUpgradeChoices=arsenal;return;\}/);
+  assert.match(game,/const arsenal=pool\.filter\(\(upgrade\)=>upgrade\.type==='ARSENAL AWAKENING'\);if\(arsenal\.length&&bound\?\.tier!==3\)\{currentUpgradeChoices=arsenal;return;\}/);
   assert.match(game,/currentUpgradeChoices\.every\(\(upgrade\)=>upgrade\.type==='ARSENAL AWAKENING'\)/);
   assert.match(styles,/arsenal-weapons-v1\.png/);
 });
@@ -612,6 +613,22 @@ test('level seven forces an authored legend arsenal with persistent collection t
   assert.match(game,/forge-collection-card/);
   assert.match(styles,/\.forge-collection-card \.forge-weapon-art/);
   assert.match(styles,/arsenal-tier2-v1\.png/);
+});
+
+test('discovered Arsenal blueprints bind per hero without bypassing the low-power opening',()=>{
+  for(const weapon of ['frostbiteNeedle','oniMortar','galeWarFan','embercoilRepeater','tempestChakram','moonpiercerRailbow'])assert.match(game,new RegExp(`id:'${weapon}'[\\s\\S]{0,180}tier:`));
+  assert.match(game,/boundArsenal:\{\}/);
+  assert.match(game,/function boundArsenalForHero\(\)/);
+  assert.match(game,/function bindArsenalBlueprint\(id\)/);
+  assert.match(game,/function renderArsenalContract\(\)/);
+  assert.match(game,/player\.level>=bound\.tier/);
+  assert.match(game,/FORGE CONTRACT FULFILLED!/);
+  assert.match(game,/weapon=WEAPONS\[heroDef\.weapon\]/);
+  assert.match(game,/unlockedAbilities: new Set\(\)/);
+  assert.match(game,/debugSystem==='boundArsenal'/);
+  assert.match(game,/debugSystem==='arsenalLoadout'/);
+  assert.match(styles,/\.arsenal-contract-grid/);
+  assert.match(styles,/\.forge-collection-card\.selected/);
 });
 
 test('chapters attack with distinct readable warpack formations',()=>{

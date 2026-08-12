@@ -187,6 +187,7 @@ const ui = {
   weaponName:document.querySelector('#weapon-name'),dashName:document.querySelector('#dash-name'),
   startHeroMark:document.querySelector('#start-hero-mark'),startHeroName:document.querySelector('#start-hero-name'),startHeroCopy:document.querySelector('#start-hero-copy'),
   comparisonRatings:document.querySelector('#comparison-ratings'),comparisonWeapon:document.querySelector('#comparison-weapon'),comparisonWeaponTags:document.querySelector('#comparison-weapon-tags'),comparisonWeaponCopy:document.querySelector('#comparison-weapon-copy'),comparisonWeaponStats:document.querySelector('#comparison-weapon-stats'),
+  arsenalContractTitle:document.querySelector('#arsenal-contract-title'),arsenalContractCopy:document.querySelector('#arsenal-contract-copy'),arsenalContractGrid:document.querySelector('#arsenal-contract-grid'),
   xpFill: document.querySelector('#xp-fill'), xpText: document.querySelector('#xp-text'),
   levelBadge: document.querySelector('#level-badge'),
   goldToken: document.querySelector('#gold-token'), routeProgress: document.querySelector('#route-progress'),
@@ -225,7 +226,7 @@ const RUN_KEY='brawlpaws-run-v1';
 const RUN_VERSION=1;
 const DEFAULT_SETTINGS={screenShake:1,flashIntensity:1,damageNumbers:true,ambientMotion:true,minimap:true,masterVolume:.8,musicVolume:.55,sfxVolume:.85,abilityVolume:.85,uiVolume:.7};
 const DEFAULT_CONTRACT_PROGRESS={spiritCull:0,eliteBreakers:0,foxfireHunt:0,sealRunner:0,guardianOath:0};
-const DEFAULT_PROFILE={spiritShards:0,campaignClears:0,runsStarted:0,bestDifficulty:'',lastDifficulty:'ferocious',selectedHero:'kitsune',highestLevel:1,vitalityRank:0,forgeRank:0,attunementRank:0,purseRank:0,ascensionRank:1,ascensionClears:0,unlockedHeroes:['kitsune','bamboo'],collectedWeapons:[],discoveredEnemies:['groveMinion'],discoveredGuardians:[],contractProgress:DEFAULT_CONTRACT_PROGRESS,claimedContracts:[],settings:DEFAULT_SETTINGS};
+const DEFAULT_PROFILE={spiritShards:0,campaignClears:0,runsStarted:0,bestDifficulty:'',lastDifficulty:'ferocious',selectedHero:'kitsune',highestLevel:1,vitalityRank:0,forgeRank:0,attunementRank:0,purseRank:0,ascensionRank:1,ascensionClears:0,unlockedHeroes:['kitsune','bamboo'],collectedWeapons:[],boundArsenal:{},discoveredEnemies:['groveMinion'],discoveredGuardians:[],contractProgress:DEFAULT_CONTRACT_PROGRESS,claimedContracts:[],settings:DEFAULT_SETTINGS};
 function loadProfile(){
   try{
     const loaded={...DEFAULT_PROFILE,...JSON.parse(localStorage.getItem(PROFILE_KEY)||'{}')};
@@ -239,6 +240,7 @@ function loadProfile(){
     loaded.discoveredEnemies=Array.isArray(loaded.discoveredEnemies)?loaded.discoveredEnemies:['groveMinion'];
     loaded.discoveredGuardians=Array.isArray(loaded.discoveredGuardians)?loaded.discoveredGuardians:[];
     loaded.collectedWeapons=Array.isArray(loaded.collectedWeapons)?loaded.collectedWeapons:[];
+    loaded.boundArsenal=loaded.boundArsenal&&typeof loaded.boundArsenal==='object'?loaded.boundArsenal:{};
     loaded.unlockedHeroes=Array.isArray(loaded.unlockedHeroes)?loaded.unlockedHeroes:['kitsune','bamboo'];
     loaded.contractProgress={...DEFAULT_CONTRACT_PROGRESS,...loaded.contractProgress};loaded.claimedContracts=Array.isArray(loaded.claimedContracts)?loaded.claimedContracts:[];
     if(loaded.campaignClears>0&&!loaded.unlockedHeroes.includes('hopscotch'))loaded.unlockedHeroes.push('hopscotch');
@@ -247,7 +249,7 @@ function loadProfile(){
     loaded.ascensionRank=clamp(Math.round(Number(loaded.ascensionRank)||1),1,10);loaded.ascensionClears=Math.max(0,Math.round(Number(loaded.ascensionClears)||0));
     if(loaded.ascensionClears>0&&!loaded.unlockedHeroes.includes('rusty'))loaded.unlockedHeroes.push('rusty');
     return loaded;
-  }catch{return {...DEFAULT_PROFILE,settings:{...DEFAULT_SETTINGS},unlockedHeroes:[...DEFAULT_PROFILE.unlockedHeroes],collectedWeapons:[],discoveredEnemies:[...DEFAULT_PROFILE.discoveredEnemies],discoveredGuardians:[],contractProgress:{...DEFAULT_CONTRACT_PROGRESS},claimedContracts:[]};}
+  }catch{return {...DEFAULT_PROFILE,settings:{...DEFAULT_SETTINGS},unlockedHeroes:[...DEFAULT_PROFILE.unlockedHeroes],collectedWeapons:[],boundArsenal:{},discoveredEnemies:[...DEFAULT_PROFILE.discoveredEnemies],discoveredGuardians:[],contractProgress:{...DEFAULT_CONTRACT_PROGRESS},claimedContracts:[]};}
 }
 function saveProfile(){try{localStorage.setItem(PROFILE_KEY,JSON.stringify(profile));}catch{/* Storage can be unavailable in private contexts. */}}
 let profile=loadProfile();
@@ -350,10 +352,11 @@ function applyHeroUi(){
   ui.comparisonWeapon.textContent=weapon.name.toUpperCase();ui.comparisonWeaponTags.textContent=weapon.tags.join(' / ');ui.comparisonWeaponCopy.textContent=weapon.summary;
   ui.comparisonWeaponStats.innerHTML=`<span><small>DAMAGE</small><b>${weapon.damage}</b></span><span><small>FIRE RATE</small><b>${(1/weapon.fireRate).toFixed(1)}/S</b></span><span><small>SHOTS</small><b>${(weapon.shots||1)*(weapon.baseVolleys||1)}</b></span><span><small>CRIT</small><b>${Math.round(weapon.criticalChance*100)}%</b></span>`;
   for(const button of document.querySelectorAll('[data-hero]'))button.classList.toggle('selected',button.dataset.hero===selectedHeroId);
+  renderArsenalContract();
 }
 
 function equipWeapon(id,{announce=false}={}){
-  const next=WEAPONS[id];if(!next)return false;weapon=next;if(player){player.weaponId=id;player.arsenalAwakened=id!==heroDef.weapon;player.legendArsenalAwakened=['embercoilRepeater','tempestChakram','moonpiercerRailbow'].includes(id);player.attack=null;player.shotCooldown=0;if(player.legendArsenalAwakened&&!profile.collectedWeapons.includes(id)){profile.collectedWeapons.push(id);saveProfile();}}
+  const next=WEAPONS[id];if(!next)return false;weapon=next;if(player){player.weaponId=id;player.arsenalAwakened=id!==heroDef.weapon;player.legendArsenalAwakened=['embercoilRepeater','tempestChakram','moonpiercerRailbow'].includes(id);player.attack=null;player.shotCooldown=0;if(ARSENAL_BLUEPRINTS.some((entry)=>entry.id===id)&&!profile.collectedWeapons.includes(id)){profile.collectedWeapons.push(id);saveProfile();renderArsenalContract();}}
   shell.dataset.weapon=id;ui.weaponName.textContent=next.name.toUpperCase();
   if(announce){spawnWord(player.x,player.y-102,`${next.name.toUpperCase()} AWAKENED!`,next.color);effects.rings.push({x:player.x,y:player.y,radius:18,maxRadius:175,color:next.color,life:.72,maxLife:.72});}
   return true;
@@ -1023,6 +1026,17 @@ const LEGEND_ARSENAL_COLLECTION=[
   {id:'tempestChakram',name:'TEMPEST CHAKRAM',tag:'OUTBOUND / RETURN / CONTROL',color:'#5deeff',position:'50% 0%',description:'A broad storm blade that cuts a lane outward, turns, and carves through it again.'},
   {id:'moonpiercerRailbow',name:'MOONPIERCER RAILBOW',tag:'CHARGE / PIERCE / EXECUTE',color:'#b55cff',position:'100% 0%',description:'A deliberate moon-charge that executes every enemy aligned in its firing lane.'}
 ];
+const ARSENAL_BLUEPRINTS=[
+  {id:'frostbiteNeedle',upgradeId:'equipFrostbiteNeedle',tier:3,name:'FROSTBITE NEEDLE',tag:'FREEZE',color:'#67edff',asset:'assets/vfx/arsenal-weapons-v1.png',position:'0% 0%'},
+  {id:'oniMortar',upgradeId:'equipOniMortar',tier:3,name:'ONI MORTAR',tag:'AREA',color:'#ff862c',asset:'assets/vfx/arsenal-weapons-v1.png',position:'50% 0%'},
+  {id:'galeWarFan',upgradeId:'equipGaleWarFan',tier:3,name:'GALE WAR FAN',tag:'RETURN',color:'#bffcff',asset:'assets/vfx/arsenal-weapons-v1.png',position:'100% 0%'},
+  {id:'embercoilRepeater',upgradeId:'equipEmbercoilRepeater',tier:7,name:'EMBERCOIL REPEATER',tag:'BURN',color:'#ff5b27',asset:'assets/vfx/arsenal-tier2-v1.png',position:'0% 0%'},
+  {id:'tempestChakram',upgradeId:'equipTempestChakram',tier:7,name:'TEMPEST CHAKRAM',tag:'CONTROL',color:'#5deeff',asset:'assets/vfx/arsenal-tier2-v1.png',position:'50% 0%'},
+  {id:'moonpiercerRailbow',upgradeId:'equipMoonpiercerRailbow',tier:7,name:'MOONPIERCER RAILBOW',tag:'EXECUTE',color:'#b55cff',asset:'assets/vfx/arsenal-tier2-v1.png',position:'100% 0%'}
+];
+function boundArsenalForHero(){const id=profile.boundArsenal?.[selectedHeroId];return ARSENAL_BLUEPRINTS.some((entry)=>entry.id===id)&&profile.collectedWeapons.includes(id)?id:'';}
+function bindArsenalBlueprint(id){if(state!=='preview'&&!['hub','hubMenu'].includes(state))return false;if(id&&!profile.collectedWeapons.includes(id))return false;if(id&&!ARSENAL_BLUEPRINTS.some((entry)=>entry.id===id))return false;profile.boundArsenal={...profile.boundArsenal,[selectedHeroId]:id};saveProfile();renderArsenalContract();if(state==='hubMenu'&&activeHubStation?.id==='forge')renderHubUpgrade(HUB_UPGRADES.forge);return true;}
+function renderArsenalContract(){if(!ui.arsenalContractGrid)return;const bound=boundArsenalForHero();const known=ARSENAL_BLUEPRINTS.filter((entry)=>profile.collectedWeapons.includes(entry.id));ui.arsenalContractTitle.textContent=bound?`${WEAPONS[bound].name.toUpperCase()} · LEVEL ${ARSENAL_BLUEPRINTS.find((entry)=>entry.id===bound).tier}`:'FATE DRAFT';ui.arsenalContractCopy.textContent=bound?'Your run still begins with the hero weapon. This blueprint is guaranteed only at its earned awakening level.':known.length?'Bind one discovered weapon, or keep the random three-card Arsenal draft.':'Discover Arsenal weapons at levels 3 and 7 to bind future awakening contracts.';ui.arsenalContractGrid.innerHTML=`<button type="button" class="arsenal-contract-card ${bound?'':'selected'}" data-bind-arsenal=""><span class="contract-fate">?</span><b>FATE DRAFT</b><small>RANDOM CHOICE</small></button>${ARSENAL_BLUEPRINTS.map((entry)=>{const discovered=profile.collectedWeapons.includes(entry.id),selected=bound===entry.id;return `<button type="button" class="arsenal-contract-card ${selected?'selected':''} ${discovered?'known':'locked'}" style="--contract:${entry.color};--contract-art:url('${entry.asset}');--contract-position:${entry.position}" data-bind-arsenal="${entry.id}" ${discovered?'':'disabled'}><span class="contract-weapon-art" aria-hidden="true"></span><b>${discovered?entry.name:'???'}</b><small>${discovered?`LV ${entry.tier} · ${entry.tag}`:`DISCOVER AT LV ${entry.tier}`}</small></button>`;}).join('')}`;for(const button of ui.arsenalContractGrid.querySelectorAll('[data-bind-arsenal]'))button.addEventListener('click',()=>bindArsenalBlueprint(button.dataset.bindArsenal));}
 const CAMPAIGN_CONTRACTS=[
   {id:'spiritCull',name:'Thin the Curse',tag:'HUNTER CONTRACT',color:'#42eaff',target:120,reward:55,description:'Defeat 120 hostile spirits across any number of runs.',bonus:'START EACH RUN WITH +15 GOLD'},
   {id:'eliteBreakers',name:'Break the Mutated',tag:'ELITE CONTRACT',color:'#ff4f91',target:18,reward:70,description:'Defeat 18 Swift, Bulwark, Frenzied, Volatile, or Splitter enemies.',bonus:'PERMANENT +8% ELITE DAMAGE'},
@@ -1107,8 +1121,9 @@ function renderHubUpgrade(upgrade){
   const rank=profile[upgrade.id]||0;const maxed=rank>=upgrade.max;const cost=maxed?0:upgrade.cost(rank);const affordable=profile.spiritShards>=cost;
   hubUpgradeGrid.innerHTML=`<button class="hub-upgrade-card" style="--hub:${upgrade.color}" data-hub-buy ${maxed||!affordable?'disabled':''}><strong>${upgrade.name}</strong><em>RANK ${rank} / ${upgrade.max}</em><p>${upgrade.description}</p><b>${maxed?'MAXIMUM RANK':`  ${cost}`}</b></button><div class="hub-upgrade-card" style="--hub:#78658a"><strong>NEXT RUN</strong><em>PERMANENT LEGACY</em><p>These bonuses do not unlock active abilities. Undertow Well, Foxfire Volley, Wild Heart, and Shock Paws must still be earned at levels 2, 4, 6, and 8.</p><b>  ${profile.spiritShards} AVAILABLE</b></div>`;
   if(upgrade.id==='forgeRank'){
-    const collected=new Set(profile.collectedWeapons);ui.hubMenuCopy.textContent=`Improve starting weapon power and study Legend Arsenal weapons discovered during runs. Collection ${collected.size} / ${LEGEND_ARSENAL_COLLECTION.length}.`;
-    hubUpgradeGrid.insertAdjacentHTML('beforeend',LEGEND_ARSENAL_COLLECTION.map((entry,index)=>{const known=collected.has(entry.id);return `<div class="hub-upgrade-card forge-collection-card ${known?'known':'locked'}" style="--hub:${entry.color};--forge-position:${entry.position}"><span class="forge-weapon-art" aria-hidden="true"></span><strong>${known?entry.name:'??? UNDISCOVERED'}</strong><em>LEGEND ARSENAL ${index+1} / ${LEGEND_ARSENAL_COLLECTION.length}</em><p>${known?entry.description:'Reach level 7 after Arsenal Awakening, then choose this weapon during a run to record it here.'}</p><b>${known?'COLLECTED':'DISCOVER DURING A RUN'}</b></div>`;}).join(''));
+    const collected=new Set(profile.collectedWeapons),bound=boundArsenalForHero();ui.hubMenuCopy.textContent=`Study six run-discovered blueprints and bind one awakening contract for ${heroDef.name}. Your run still begins with ${WEAPONS[heroDef.weapon].name}. Collection ${collected.size} / ${ARSENAL_BLUEPRINTS.length}.`;
+    hubUpgradeGrid.insertAdjacentHTML('beforeend',ARSENAL_BLUEPRINTS.map((entry,index)=>{const known=collected.has(entry.id),selected=bound===entry.id,weaponDefinition=WEAPONS[entry.id];return `<button class="hub-upgrade-card forge-collection-card ${known?'known':'locked'} ${selected?'selected':''}" style="--hub:${entry.color};--forge-position:${entry.position};--forge-art:url('${entry.asset}')" data-forge-bind="${entry.id}" ${known?'':'disabled'}><span class="forge-weapon-art" aria-hidden="true"></span><strong>${known?entry.name:'??? UNDISCOVERED'}</strong><em>LEVEL ${entry.tier}  ${entry.tag}  ·  ${index+1} / ${ARSENAL_BLUEPRINTS.length}</em><p>${known?weaponDefinition.summary:`Reach level ${entry.tier} and choose this weapon during a run to record its blueprint.`}</p><b>${selected?'BOUND TO THIS BRAWLPAW':known?'BIND AWAKENING CONTRACT':'DISCOVER DURING A RUN'}</b></button>`;}).join(''));
+    for(const button of hubUpgradeGrid.querySelectorAll('[data-forge-bind]'))button.addEventListener('click',()=>bindArsenalBlueprint(button.dataset.forgeBind));
   }
   if(upgrade.id==='vitalityRank'){
     hubUpgradeGrid.insertAdjacentHTML('beforeend',Object.values(HEROES).map((hero)=>{const unlocked=profile.unlockedHeroes.includes(hero.id)||hero.id===debugHero;const lockCallout=hero.id==='rusty'?'CLEAR ASCENSION TO UNLOCK':hero.id==='zap'?'CLEAR 2 CAMPAIGNS TO UNLOCK':hero.id==='nomi'?'DEFEAT TSUKIKO TO UNLOCK':'DEFEAT PYRECLAW TO UNLOCK';return `<button class="hub-upgrade-card hub-hero-card ${hero.id===selectedHeroId?'selected':''}" style="--hub:${hero.accent}" data-hub-hero="${hero.id}" ${unlocked?'':'disabled'}><strong>${unlocked?hero.name.toUpperCase():'??? LOCKED'}</strong><em>${hero.role.toUpperCase()}  ${hero.passiveName.toUpperCase()}</em><p>${unlocked?`${WEAPONS[hero.weapon].name}. ${hero.summary}`:(hero.unlockRequirement||'Complete the campaign to unlock.')}</p><b>${unlocked?(hero.id===selectedHeroId?'ACTIVE BRAWLPAW':'SWITCH HERO'):lockCallout}</b></button>`;}).join(''));
@@ -1694,6 +1709,8 @@ function gainXp(amount) {
 }
 
 function openLevelUp() {
+  const boundId=boundArsenalForHero(),bound=ARSENAL_BLUEPRINTS.find((entry)=>entry.id===boundId);
+  if(bound&&player.level>=bound.tier&&((bound.tier===3&&!player.arsenalAwakened)||(bound.tier===7&&player.arsenalAwakened&&!player.legendArsenalAwakened))){equipWeapon(bound.id,{announce:true});spawnWord(player.x,player.y-142,'FORGE CONTRACT FULFILLED!',bound.color);}
   const available = UPGRADES.filter((upgrade) => upgrade.available());
   if (!available.length) {if(encounter.startWaveAfterUpgrade!==null){const nextWave=encounter.startWaveAfterUpgrade;encounter.startWaveAfterUpgrade=null;startWave(nextWave);}return;}
   pendingLevelUps = Math.max(0, pendingLevelUps - 1);
@@ -1727,10 +1744,10 @@ function upgradeComparison(upgrade){
     dualWield:()=> '1 VOLLEY  →  2 VOLLEYS',spiritRounds:()=>`${percent(player.damageMultiplier)}  →  ${percent(player.damageMultiplier*1.22)}`,quickPaws:()=>`${percent(1/player.fireRateMultiplier)}  →  ${percent(1/(player.fireRateMultiplier*.85))}`,
     vitality:()=>`${player.maxHealth} HP  →  ${player.maxHealth+20} HP`,undertow:()=>ability('undertowWell',1.18),hungryFlame:()=>ability('foxfireVolley',1.25),heartBloom:()=>`+${player.heartBonus} HEAL  →  +${player.heartBonus+15} HEAL`,stormHeart:()=>`${percent(player.abilityPower.shockPaws)}  →  ${percent(player.abilityPower.shockPaws*1.2)}`,
     wardbreaker:()=>`${percent(player.shieldDamageMultiplier)}  →  ${percent(player.shieldDamageMultiplier*1.35)}`,spiritHunter:()=>`${percent(player.eliteDamageMultiplier)}  →  ${percent(player.eliteDamageMultiplier*1.18)}`,spiritCatalyst:()=>`${percent(player.statusDurationMultiplier)} STATUS  →  ${percent(player.statusDurationMultiplier*1.2)}`,
-    pressureChamber:()=>`+${player.bonusProjectiles} SHOTS  →  +${player.bonusProjectiles+1}`,headhunter:()=>`+${player.eliteKillHeal} ELITE HEAL  →  +${player.eliteKillHeal+6}`,keenEye:()=>`${percent(weapon.critChance+player.critBonus)}  →  ${percent(weapon.critChance+player.critBonus+.05)}`,
-    moonPiercer:()=>`+${player.bonusPierces} PIERCE  →  +${player.bonusPierces+1}`,perfectDraw:()=>`${percent(weapon.critChance+player.critBonus)}  →  ${percent(weapon.critChance+player.critBonus+.08)}`,glassFang:()=>`${percent(player.damageMultiplier)}  →  ${percent(player.damageMultiplier*1.28)}`,
+    pressureChamber:()=>`+${player.bonusProjectiles} SHOTS  →  +${player.bonusProjectiles+1}`,headhunter:()=>`+${player.eliteKillHeal} ELITE HEAL  →  +${player.eliteKillHeal+6}`,keenEye:()=>`${percent(weapon.criticalChance+player.critBonus)}  →  ${percent(weapon.criticalChance+player.critBonus+.05)}`,
+    moonPiercer:()=>`+${player.bonusPierces} PIERCE  →  +${player.bonusPierces+1}`,perfectDraw:()=>`${percent(weapon.criticalChance+player.critBonus)}  →  ${percent(weapon.criticalChance+player.critBonus+.08)}`,glassFang:()=>`${percent(player.damageMultiplier)}  →  ${percent(player.damageMultiplier*1.28)}`,
     spiritMomentum:()=>`${percent(player.speedMultiplier)} SPEED  →  ${percent(player.speedMultiplier*1.1)}`,guardianHunter:()=>`${percent(player.guardianDamageMultiplier)}  →  ${percent(player.guardianDamageMultiplier*1.22)}`,deepReserves:()=>`${player.gold} GOLD  →  ${player.gold+35} GOLD`,
-    bankShot:()=>`+${player.bonusRicochets} BANKS  →  +${player.bonusRicochets+1}`,loadedDice:()=>`${percent(weapon.critChance+player.critBonus)}  →  ${percent(weapon.critChance+player.critBonus+.07)}`,quickdraw:()=>`${percent(1/player.fireRateMultiplier)}  →  ${percent(1/(player.fireRateMultiplier*.87))}`,
+    bankShot:()=>`+${player.bonusRicochets} BANKS  →  +${player.bonusRicochets+1}`,loadedDice:()=>`${percent(weapon.criticalChance+player.critBonus)}  →  ${percent(weapon.criticalChance+player.critBonus+.07)}`,quickdraw:()=>`${percent(1/player.fireRateMultiplier)}  →  ${percent(1/(player.fireRateMultiplier*.87))}`,
     spiritCylinder:()=>`${percent(player.damageMultiplier)} POWER  →  ${percent(player.damageMultiplier*1.09)}`,phaseRounds:()=>`+${player.bonusPierces} PIERCE  →  +${player.bonusPierces+1}`,foxstepMastery:()=>`${percent(player.speedMultiplier)} SPEED  →  ${percent(player.speedMultiplier*1.08)}`,
     ironBelly:()=>`${percent(player.braceDamageMultiplier)} BRACED  →  ${percent(Math.max(.52,player.braceDamageMultiplier-.07))}`,scatterBore:()=>`+${player.bonusProjectiles} PELLETS  →  +${player.bonusProjectiles+1}`,guardianHide:()=>`${player.maxHealth} HP  →  ${player.maxHealth+28} HP`,
     capacitorBank:()=>`${percent(player.arcChainPower)} CHAIN  →  ${percent(player.arcChainPower*1.18)} CHAIN`,chainLogic:()=>`${2+player.arcChainBonus} TARGETS  →  ${3+player.arcChainBonus} TARGETS`,rapidCycle:()=>`${percent(1/player.fireRateMultiplier)} RATE  →  ${percent(1/(player.fireRateMultiplier*.87))} RATE`,
@@ -1767,8 +1784,10 @@ function weightedUpgradeIndex(pool){
 
 function rollUpgradeChoices(available=UPGRADES.filter((upgrade)=>upgrade.available())){
   const pool=[...available];currentUpgradeChoices=[];
-  const arsenal=pool.filter((upgrade)=>upgrade.type==='ARSENAL AWAKENING');if(arsenal.length){currentUpgradeChoices=arsenal;return;}
-  const legendArsenal=pool.filter((upgrade)=>upgrade.type==='LEGEND ARSENAL');if(legendArsenal.length){currentUpgradeChoices=legendArsenal;return;}
+  const bound=ARSENAL_BLUEPRINTS.find((entry)=>entry.id===boundArsenalForHero());
+  const arsenal=pool.filter((upgrade)=>upgrade.type==='ARSENAL AWAKENING');if(arsenal.length&&bound?.tier!==3){currentUpgradeChoices=arsenal;return;}
+  const legendArsenal=pool.filter((upgrade)=>upgrade.type==='LEGEND ARSENAL');if(legendArsenal.length&&bound?.tier!==7){currentUpgradeChoices=legendArsenal;return;}
+  for(let index=pool.length-1;index>=0;index--)if(['ARSENAL AWAKENING','LEGEND ARSENAL'].includes(pool[index].type))pool.splice(index,1);
   const paths=pool.filter((upgrade)=>upgrade.type==='LEVEL 5 FIGHTING STYLE');if(paths.length){currentUpgradeChoices=paths;return;}
   const mastery=pool.filter((upgrade)=>upgrade.type==='LEVEL 10 PATH MASTERY');if(mastery.length){currentUpgradeChoices=mastery;return;}
   const earnedUnlock=pool.find((upgrade)=>upgrade.id==='unlockShock')||pool.find((upgrade)=>upgrade.id==='unlockHeart')||pool.find((upgrade)=>upgrade.id==='unlockFoxfire')||pool.find((upgrade)=>upgrade.id==='unlockUndertow');
@@ -1870,7 +1889,8 @@ function begin() {
   if(debugSystem==='arsenal'){player.level=3;pendingLevelUps=1;encounter.startWaveAfterUpgrade=0;openLevelUp();return;}
   if(debugSystem==='legendArsenal'){player.level=7;player.arsenalAwakened=true;pendingLevelUps=1;encounter.startWaveAfterUpgrade=0;openLevelUp();return;}
   if(debugSystem==='legendCombat'){player.level=8;player.maxHealth=700;player.health=700;player.damageMultiplier=1.55;player.arsenalAwakened=true;equipWeapon(['embercoilRepeater','tempestChakram','moonpiercerRailbow'].includes(debugParams.get('weapon'))?debugParams.get('weapon'):'embercoilRepeater');startWave(3);return;}
-  if(debugSystem==='forgeCollection'){profile.collectedWeapons=LEGEND_ARSENAL_COLLECTION.map((entry)=>entry.id);enterHub();openHubStation(HUB_STATIONS.find((station)=>station.id==='forge'));return;}
+  if(debugSystem==='boundArsenal'){const requested=ARSENAL_BLUEPRINTS.find((entry)=>entry.id===debugParams.get('weapon'))||ARSENAL_BLUEPRINTS[0];profile.collectedWeapons=[...new Set([...profile.collectedWeapons,requested.id])];profile.boundArsenal={...profile.boundArsenal,[selectedHeroId]:requested.id};player.level=requested.tier;if(requested.tier===7){equipWeapon('frostbiteNeedle');player.buildPath='gunner';}pendingLevelUps=1;encounter.startWaveAfterUpgrade=0;openLevelUp();return;}
+  if(debugSystem==='forgeCollection'){profile.collectedWeapons=ARSENAL_BLUEPRINTS.map((entry)=>entry.id);profile.boundArsenal={...profile.boundArsenal,[selectedHeroId]:debugParams.get('weapon')||'frostbiteNeedle'};enterHub();openHubStation(HUB_STATIONS.find((station)=>station.id==='forge'));return;}
   if(debugSystem==='contracts'){if(debugParams.has('restore')){profile.spiritShards=764;profile.contractProgress={...DEFAULT_CONTRACT_PROGRESS};profile.claimedContracts=[];saveProfile();}if(debugParams.has('ready'))for(const contract of CAMPAIGN_CONTRACTS)profile.contractProgress[contract.id]=contract.target;enterHub();openHubStation(HUB_STATIONS.find((station)=>station.id==='missionBoard'));return;}
   if(debugSystem==='story'){const storyBeat=['intro','interlude2','interlude4','boss'].includes(debugParams.get('beat'))?debugParams.get('beat'):'interlude2';showStory(storyBeat);return;}
   if(debugSystem==='dojo'){enterDojo();return;}
@@ -3771,6 +3791,7 @@ for(const button of document.querySelectorAll('[data-difficulty]'))button.addEve
 for(const button of document.querySelectorAll('[data-hero]'))button.addEventListener('click',()=>selectHero(button.dataset.hero));
 window.addEventListener('keydown', (event) => { if (event.key.toLowerCase() === 'r' && (state === 'won' || state === 'lost')) begin(); });
 
+if(debugSystem==='arsenalLoadout'){profile.collectedWeapons=ARSENAL_BLUEPRINTS.map((entry)=>entry.id);profile.boundArsenal={...profile.boundArsenal,[selectedHeroId]:debugParams.get('weapon')||'frostbiteNeedle'};}
 applyHeroUi();
 resetGame();
 refreshProfileUi();

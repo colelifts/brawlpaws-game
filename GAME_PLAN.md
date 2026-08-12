@@ -258,4 +258,6 @@ Implemented pressure milestone: a measured chapter/wave curve now increases the 
 
 Implemented audio milestone: all six realms now select their own licensed combat music, guardian encounters switch to realm-tuned heavy variants, and the persistent master/music/SFX/ability/UI mix remains fully adjustable.
 
+Implemented Arsenal blueprint milestone: all six authored Arsenal weapons are permanently discovered through their actual run drafts, displayed as production-art contracts in the Spirit Forge and Portal loadout, persisted per hero, and guaranteed only at level 3 or level 7. Binding never changes the level-1 hero weapon or ability locks, so earned choice expands replayability without weakening the intended low-power opening.
+
 Expand the remaining weapon roster, deepen hero-specific upgrade trees, add further earned evolutions, and tune the full six-chapter difficulty curve from the low-power opening through Tsukiko and Ascension without weakening the current animation, telegraph, and combat-feedback bar. Nomi and her Moonreturn Glaive are complete; the next content milestone is broader arsenal choice and deeper mastery progression.
