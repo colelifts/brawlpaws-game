@@ -177,6 +177,7 @@ test('each hero earns a late-run weapon capstone with distinct projectile behavi
   for(const name of ['PHASE NOVA','SIEGE LOTUS','MOON CONSTELLATION','DEADEYE CIRCUIT'])assert.match(game,new RegExp(name));
   assert.match(game,/debugSystem==='capstone'/);
   assert.match(game,/debugSystem==='room6'/);
+  assert.match(game,/debugSystem==='opening'/);
 });
 
 test('elemental recipes unlock visible combat-changing synergies',()=>{
@@ -533,11 +534,16 @@ test('every unlocked ability earns a behavior-changing late-run evolution',()=>{
 
 test('late armies and guardians escalate pressure without changing the tutorial opening',()=>{
   assert.equal(encounterActiveLimit({waveIndex:0,chapterIndex:0,difficultyId:'ferocious'}),8);
-  assert.ok(encounterActiveLimit({waveIndex:5,chapterIndex:2,difficultyId:'ferocious'})>=54);
-  assert.ok(encounterActiveLimit({waveIndex:5,chapterIndex:2,difficultyId:'nightmare'})>=60);
+  assert.equal(encounterActiveLimit({waveIndex:5,chapterIndex:2,difficultyId:'ferocious'}),24);
+  assert.equal(encounterActiveLimit({waveIndex:5,chapterIndex:2,difficultyId:'nightmare'}),24);
   assert.match(game,/const spawnDuration=Math\.max\(\.42,1\.35-index\*\.15-chapterIndex\*\.08\)/);
   assert.match(game,/const angle=i\*2\.3999632297\+index\*\.73/);
-  assert.match(game,/return Math\.min\(ceiling,staged\)/);
+  assert.match(game,/campaignPressureCurve\(\{chapterIndex,waveIndex:Math\.max\(0,encounter\.wave\)/);
+  assert.match(game,/window\.__BRAWLPAWS_PRESSURE__/);
+  assert.match(game,/const cellSize=190,neighborOffsets=/);
+  assert.match(game,/const pursuitLane=Math\.max\(90,Math\.min\(enemy\.orbitRadius,260\)\)/);
+  assert.match(game,/effects\.words\.length>=4\|\|combatWordCooldowns\.has\(text\)/);
+  assert.match(game,/return Math\.min\(ceiling,pressure\.activeRamp\)/);
   assert.match(game,/Math\.min\(2\.35,1\+\(rawSpeedScale-1\)\*\.58\)/);
   assert.match(game,/abilityEvolutions\|\|\{\}\)\.filter\(Boolean\)\.length\*\.16/);
   for(const guardian of Object.values(BOSS_PROFILES)){assert.ok(guardian.phaseTempo[3]<guardian.phaseTempo[2]);assert.ok(guardian.domainIntervals[3]<guardian.domainIntervals[2]);assert.ok(guardian.domainName);}

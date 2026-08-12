@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { clamp, normalize, segmentCircleHit, shortestAngle, withinArc, encounterActiveLimit, cappedWardPressure } from '../src/math.js';
+import { clamp, normalize, segmentCircleHit, shortestAngle, withinArc, encounterActiveLimit, campaignPressureCurve, cappedWardPressure } from '../src/math.js';
 import { HEROES, WEAPONS, ABILITIES, STATUS_EFFECTS, ELITE_MODIFIERS, BOSS_PATTERNS, BOSS_PROFILES, ENEMIES, ENCOUNTERS, ROOMS, DIFFICULTIES } from '../src/data.js';
 
 test('math helpers support movement and spatial hit tests', () => {
@@ -17,11 +17,19 @@ test('army reserves cap simultaneous threats while preserving difficulty and co-
   assert.equal(encounterActiveLimit({waveIndex:0,chapterIndex:0}),8);
   const lateSolo=encounterActiveLimit({waveIndex:5,chapterIndex:2,difficultyId:'nightmare'});
   const lateCoop=encounterActiveLimit({waveIndex:5,chapterIndex:2,difficultyId:'nightmare',partySize:4});
-  assert.equal(lateSolo,61);
-  assert.equal(lateCoop,72);
+  assert.equal(lateSolo,24);
+  assert.equal(lateCoop,24);
   assert.ok(lateSolo>encounterActiveLimit({waveIndex:1,chapterIndex:0,difficultyId:'spirited'}));
   assert.equal(cappedWardPressure(999,520,40),520/(40*.62));
   assert.equal(cappedWardPressure(8,520,40),8);
+});
+
+test('campaign pressure grows from readable scouts into a relentless late army',()=>{
+  const opening=campaignPressureCurve({chapterIndex:0,waveIndex:0,elapsed:0,difficultyId:'ferocious'});
+  const finale=campaignPressureCurve({chapterIndex:5,waveIndex:5,elapsed:12,difficultyId:'ferocious'});
+  assert.equal(opening.reserveRate,1);assert.equal(opening.pursuit,1);assert.equal(opening.recovery,1);
+  assert.ok(finale.activeRamp>=80);assert.ok(finale.reserveRate>=2);assert.ok(finale.pursuit>=1.55);assert.ok(finale.attackTempo>=1.4);assert.ok(finale.recovery<=.66);
+  assert.equal(encounterActiveLimit({chapterIndex:5,waveIndex:5,difficultyId:'nightmare'}),24);
 });
 
 test('Phase 1 definitions are internally valid', () => {

@@ -1,4 +1,4 @@
-import { clamp, lerp, normalize, distance, approachAngle, encounterActiveLimit, cappedWardPressure } from './math.js';
+import { clamp, lerp, normalize, distance, approachAngle, encounterActiveLimit, campaignPressureCurve, cappedWardPressure } from './math.js?v=20260812-pressure7';
 import { HEROES, WEAPONS, ABILITIES, STATUS_EFFECTS, ELITE_MODIFIERS, BOSS_PATTERNS, BOSS_PROFILES, ENEMIES, ENCOUNTERS, ROOMS, DIFFICULTIES } from './data.js';
 
 const canvas = document.querySelector('#game');
@@ -373,6 +373,7 @@ function selectDifficulty(id){
 const input = { keys: new Set(), pressed: new Set(), pointer: { x: 0, y: 0, active: false }, attack: false, attackHeld: false };
 const camera = { x: room.playerSpawn.x, y: room.playerSpawn.y, zoom: 1, shake: 0, kick: 0 };
 const effects = { particles: [], afterimages: [], numbers: [], words: [], rings: [], shards: [], projectiles: [], playerShots: [], vortices: [], shockStorms: [], flameBolts: [], fireTrails: [], blooms: [], spriteEffects: [], shockLinks: [], stars: [], enemyHazards: [], guardianSignatures: [], biomePressures: [] };
+const combatWordCooldowns=new Map();
 const props = [
   { col: 0, row: 0, x: 690, y: 530, scale: .62, radius: 44, light: '#ff9b2c' },
   { col: 1, row: 0, x: 1810, y: 560, scale: .56, radius: 42, light: '#2de9ff' },
@@ -494,7 +495,7 @@ function coopPressure(){const extra=Math.max(0,coopPartySize()-1);return {health
 function activeEnemyLimit(){
   if(!encounter||encounter.bossActive||state==='dojo')return Number.POSITIVE_INFINITY;
   const ceiling=encounterActiveLimit({waveIndex:encounter.wave,chapterIndex,difficultyId:selectedDifficulty,partySize:coopPartySize(),elite:encounter.nodeType==='elite'||encounter.nodeType?.includes('Elite')});
-  const waveIndex=Math.max(0,encounter.wave);const staged=Math.round(8+chapterIndex*3+waveIndex*1.5+(encounter.waveTime||0)*(1.5+waveIndex*.45));return Math.min(ceiling,staged);
+  const pressure=campaignPressureCurve({chapterIndex,waveIndex:Math.max(0,encounter.wave),elapsed:encounter.waveTime||0,difficultyId:selectedDifficulty});return Math.min(ceiling,pressure.activeRamp);
 }
 function refreshCoopUi(message=''){
   const online=coop.connected;coopPanel?.classList.toggle('online',online);if(coopStatus)coopStatus.textContent=online?`${coopIsHost()?'HOST':'ALLY'} · ${coop.code} · ${coopPartySize()}/4`:'SOLO · OFFLINE READY';
@@ -1883,7 +1884,8 @@ function begin() {
   if(debugSystem==='specialists'){startSpecialistShowcase();return;}
   if(debugSystem==='statuses'){startStatusShowcase();return;}
   if(debugSystem==='capstone'){player.level=10;player.maxHealth=1200;player.health=1200;player.damageMultiplier=2.4;player.weaponEvolution=selectedHeroId==='kitsune'?'phaseNova':selectedHeroId==='bamboo'?'siegeLotus':selectedHeroId==='hopscotch'?'moonConstellation':selectedHeroId==='rusty'?'deadeyeCircuit':selectedHeroId==='nomi'?'skyfeatherConstellation':'thunderheadArray';player.bonusPierces=selectedHeroId==='hopscotch'?2:player.bonusPierces;player.bonusRicochets=selectedHeroId==='rusty'?2:player.bonusRicochets;player.arcChainBonus=selectedHeroId==='zap'?3:player.arcChainBonus;refreshSynergyHud();startWave(4);return;}
-  if(debugSystem==='room6'){player.level=10;player.maxHealth=1400;player.health=1400;startWave(5);return;}
+  if(debugSystem==='opening'){startWave(0);return;}
+  if(debugSystem==='room6'){player.level=10;player.maxHealth=50000;player.health=50000;startWave(5);return;}
   if(debugSystem==='pressure'){player.maxHealth=chapter.id==='shadowChapter'?12000:900;player.health=player.maxHealth;player.unlockedAbilities.add('undertowWell');startWave(Math.min(4,chapter.waves.length-1));encounter.biomePressureClock=.35;return;}
   if(debugSystem==='evolutions'){player.level=12;player.maxHealth=1200;player.health=1200;player.damageMultiplier=1.35;for(const id of Object.keys(ABILITIES))player.unlockedAbilities.add(id);for(const id of Object.keys(player.abilityEvolutions))player.abilityEvolutions[id]=true;player.stormBonus=1;refreshSynergyHud();startWave(Math.min(4,chapter.waves.length-1));return;}
   if(debugSystem==='mission'){const type=['anchors','rescue','defend'].includes(debugMission)?debugMission:'anchors';const missionWave=chapter.waves.findIndex((wave)=>wave.mission?.type===type);player.maxHealth=900;player.health=900;player.damageMultiplier=type==='anchors'?4:1.6;startWave(Math.max(0,missionWave));if(roomMission?.actors?.[0]){roomMission.actors[0].x=player.x+125;roomMission.actors[0].y=player.y;}if(roomMission?.ward){roomMission.ward.x=player.x+90;roomMission.ward.y=player.y+40;}return;}
@@ -2553,6 +2555,7 @@ function throwPowderkegBomb(enemy){
 
 function updateEnemies(dt) {
   if(!encounter.bossActive)encounter.waveTime=(encounter.waveTime||0)+dt;
+  const campaignPressure=campaignPressureCurve({chapterIndex,waveIndex:Math.max(0,encounter.wave),elapsed:encounter.waveTime||0,difficultyId:selectedDifficulty});
   const alive = enemies.filter((enemy) => !enemy.dead);
   const activeCombatants=alive.filter((enemy)=>enemy.state!=='waiting');
   let activationSlots=Math.max(0,activeEnemyLimit()-activeCombatants.length);
@@ -2562,10 +2565,10 @@ function updateEnemies(dt) {
     enemy.abilityReactTime=Math.max(0,(enemy.abilityReactTime||0)-dt);
     enemy.elementalRuptureCooldown=Math.max(0,(enemy.elementalRuptureCooldown||0)-dt);
     enemy.hitReactTime=Math.max(0,(enemy.hitReactTime||0)-dt);
-    enemy.cooldown = Math.max(0, enemy.cooldown - dt);
+    enemy.cooldown = Math.max(0, enemy.cooldown - dt*campaignPressure.attackTempo);
     enemy.bob += dt * 5;
     if (enemy.state === 'waiting') {
-      enemy.stateTime -= dt;
+      enemy.stateTime -= dt*campaignPressure.reserveRate;
       if (enemy.stateTime <= 0 && activationSlots > 0) {
         enemy.state = 'enter'; enemy.stateTime = enemy.spawnDuration||1.35;
         activationSlots--;activeCombatants.push(enemy);
@@ -2669,6 +2672,7 @@ function updateEnemies(dt) {
       if(enemy.stateTime<=0){enemy.state='recover';enemy.stateTime=.38;enemy.cooldown=definition.attackCooldown*enemy.attackCooldownScale;}
     } else if (enemy.state === 'recover') {
       enemy.vx *= Math.exp(-10 * dt); enemy.vy *= Math.exp(-10 * dt);
+      enemy.stateTime-=dt*(1/campaignPressure.recovery-1);
       if (enemy.stateTime <= 0) enemy.state = 'chase';
     } else {
       const canAttack = ['ranged','summoner','bomber','assassin','conductor','hacker','curser'].includes(definition.behavior) ? dist < definition.attackRange : dist <= definition.attackRange + player.radius;
@@ -2677,15 +2681,18 @@ function updateEnemies(dt) {
         if(definition.behavior==='assassin'){const through=normalize(player.x-enemy.x,player.y-enemy.y);enemy.blinkX=player.x+through.x*definition.blinkOffset;enemy.blinkY=player.y+through.y*definition.blinkOffset;}
       } else {
         enemy.orbitAngle += enemy.orbitDrift * dt * (['ranged','summoner','bomber','assassin','conductor','hacker','curser'].includes(definition.behavior) ? .18 : .11);
-        const hunting=enemy.huntTime>0;
-        const orbitTarget = hunting ? {x:player.x,y:player.y} : {
+        const rallyDistance=Math.max(620,enemy.orbitRadius*1.55),rallying=chapterIndex>0&&dist>rallyDistance;
+        const hunting=enemy.huntTime>0||rallying;
+        const pursuitLane=Math.max(90,Math.min(enemy.orbitRadius,260));
+        const orbitTarget = hunting ? {x:player.x+Math.cos(enemy.orbitAngle)*pursuitLane,y:player.y+Math.sin(enemy.orbitAngle)*pursuitLane*.72} : {
           x: player.x + Math.cos(enemy.orbitAngle) * enemy.orbitRadius,
           y: player.y + Math.sin(enemy.orbitAngle) * enemy.orbitRadius * .72
         };
         const toOrbit = normalize(orbitTarget.x - enemy.x, orbitTarget.y - enemy.y);
         const orbitDistance = distance(enemy, orbitTarget);
         const statusSpeed = (enemy.wetTime > 0 ? 1 - ABILITIES.undertowWell.slow : 1)*(1-(enemy.chillStacks||0)*.12);
-        const speed = definition.speed * enemy.speedScale * statusSpeed * (hunting?1.18:1) * clamp(orbitDistance / 65, .38, 1.15);
+        const pursuitBoost=rallying?campaignPressure.pursuit:hunting?1.18:1;
+        const speed = definition.speed * enemy.speedScale * statusSpeed * pursuitBoost * clamp(orbitDistance / 65, .38, 1.15);
         enemy.vx = lerp(enemy.vx, toOrbit.x * speed, clamp(dt * 5.5, 0, 1));
         enemy.vy = lerp(enemy.vy, toOrbit.y * speed, clamp(dt * 5.5, 0, 1));
       }
@@ -2699,6 +2706,7 @@ function updateEnemies(dt) {
   updateRoomMission(dt);
   const activeCount = alive.filter((enemy) => enemy.state !== 'waiting').length;
   const incomingCount = alive.length - activeCount;
+  if(debugSystem){window.__BRAWLPAWS_PRESSURE__={chapter:chapterIndex+1,wave:encounter.wave+1,active:activeCount,incoming:incomingCount,ceiling:activeEnemyLimit(),...campaignPressure};Object.assign(document.documentElement.dataset,{pressureChapter:String(chapterIndex+1),pressureWave:String(encounter.wave+1),pressureActive:String(activeCount),pressureIncoming:String(incomingCount),pressureCeiling:String(activeEnemyLimit()),pressurePursuit:campaignPressure.pursuit.toFixed(2),pressureTempo:campaignPressure.attackTempo.toFixed(2),pressureReserve:campaignPressure.reserveRate.toFixed(2)});}
   const volatileDanger=effects.enemyHazards.some((hazard)=>!hazard.triggered);
   const nearbyInteractable=nearestRoomInteractable();
   if(state==='playing'&&alive.length>0&&nearbyInteractable&&!encounter.bossActive)ui.objective.textContent=`PRESS E  ${nearbyInteractable.item.prompt}`;
@@ -2712,12 +2720,20 @@ function updateEnemies(dt) {
 
 function resolveEnemyCrowding(activeCombatants,dt){
   const bodies=activeCombatants.filter((enemy)=>!enemy.dead&&enemy.state!=='waiting'&&enemy.def.behavior!=='boss');
-  for(let pass=0;pass<2;pass++)for(let i=0;i<bodies.length;i++)for(let j=i+1;j<bodies.length;j++){
-    const a=bodies[i],b=bodies[j],dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);const angle=d>.01?Math.atan2(dy,dx):(a.id*2.3999632297+b.id*.73);const nx=Math.cos(angle),ny=Math.sin(angle);
-    const heavyA=a.def.behavior==='heavy'||a.def.behavior==='shield',heavyB=b.def.behavior==='heavy'||b.def.behavior==='shield';const minimum=(a.radius+b.radius+24)*(heavyA||heavyB?1.2:1.08);if(d>=minimum)continue;
-    const committedA=['windup','strike','slam'].includes(a.state),committedB=['windup','strike','slam'].includes(b.state);const overlap=minimum-Math.max(d,.01),settle=clamp(dt*18,.16,.62),weightA=heavyA?2.7:1,weightB=heavyB?2.7:1,total=weightA+weightB;
-    const moveA=overlap*settle*(weightB/total)*(committedA?.18:1),moveB=overlap*settle*(weightA/total)*(committedB?.18:1);a.x-=nx*moveA;a.y-=ny*moveA;b.x+=nx*moveB;b.y+=ny*moveB;
-    const closing=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;if(closing<0){const cancel=-closing*.42;a.vx-=nx*cancel*(weightB/total);a.vy-=ny*cancel*(weightB/total);b.vx+=nx*cancel*(weightA/total);b.vy+=ny*cancel*(weightA/total);}
+  const cellSize=190,neighborOffsets=[[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]];
+  for(let pass=0;pass<2;pass++){
+    const grid=new Map();
+    for(let i=0;i<bodies.length;i++){const body=bodies[i],cx=Math.floor(body.x/cellSize),cy=Math.floor(body.y/cellSize),key=`${cx},${cy}`;if(!grid.has(key))grid.set(key,[]);grid.get(key).push(i);}
+    for(let i=0;i<bodies.length;i++){
+      const a=bodies[i],cx=Math.floor(a.x/cellSize),cy=Math.floor(a.y/cellSize);
+      for(const [ox,oy] of neighborOffsets)for(const j of grid.get(`${cx+ox},${cy+oy}`)||[]){if(j<=i)continue;
+        const b=bodies[j],dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);const angle=d>.01?Math.atan2(dy,dx):(a.id*2.3999632297+b.id*.73);const nx=Math.cos(angle),ny=Math.sin(angle);
+        const heavyA=a.def.behavior==='heavy'||a.def.behavior==='shield',heavyB=b.def.behavior==='heavy'||b.def.behavior==='shield';const minimum=(a.radius+b.radius+24)*(heavyA||heavyB?1.2:1.08);if(d>=minimum)continue;
+        const committedA=['windup','strike','slam'].includes(a.state),committedB=['windup','strike','slam'].includes(b.state);const overlap=minimum-Math.max(d,.01),settle=clamp(dt*18,.16,.62),weightA=heavyA?2.7:1,weightB=heavyB?2.7:1,total=weightA+weightB;
+        const moveA=overlap*settle*(weightB/total)*(committedA?.18:1),moveB=overlap*settle*(weightA/total)*(committedB?.18:1);a.x-=nx*moveA;a.y-=ny*moveA;b.x+=nx*moveB;b.y+=ny*moveB;
+        const closing=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;if(closing<0){const cancel=-closing*.42;a.vx-=nx*cancel*(weightB/total);a.vy-=ny*cancel*(weightB/total);b.vx+=nx*cancel*(weightA/total);b.vy+=ny*cancel*(weightA/total);}
+      }
+    }
   }
   for(const enemy of bodies)keepInArena(enemy);
 }
@@ -2790,6 +2806,9 @@ function burst(x, y, color, count, speed, size) {
 }
 
 function spawnWord(x, y, text, color) {
+  const now=performance.now();for(const [label,expires] of combatWordCooldowns)if(expires<=now)combatWordCooldowns.delete(label);
+  if(effects.words.length>=4||combatWordCooldowns.has(text))return;
+  combatWordCooldowns.set(text,now+420);
   effects.words.push({ x, y, text, color, life: .62, maxLife: .62, rotation: -.18 + (Math.random() - .5) * .18 });
 }
 
@@ -3687,7 +3706,7 @@ function frame(now) {
   if(liveWorld){update(dt,screen);draw(screen);lastDrawTime=now;}
   else if(ambientPreview&&now-lastDrawTime>=50){update(Math.min(dt,.05),screen);draw(screen);lastDrawTime=now;}
   else if(!lastDrawTime||now-lastDrawTime>=1000){update(0,screen);draw(screen);lastDrawTime=now;}
-  const frameMs=now-lastFrameMetric;lastFrameMetric=now;if(liveWorld&&frameMs<100){frameDurations.push(frameMs);if(frameDurations.length>180)frameDurations.shift();const sorted=[...frameDurations].sort((a,b)=>a-b),average=frameDurations.reduce((sum,value)=>sum+value,0)/frameDurations.length;window.__BRAWLPAWS_PERF__={fps:Math.round(1000/average),p95Ms:Number((sorted[Math.floor(sorted.length*.95)]||0).toFixed(1)),renderDpr:screen.dpr,samples:frameDurations.length,effects:Object.values(effects).reduce((sum,list)=>sum+(Array.isArray(list)?list.length:0),0)};}
+  const frameMs=now-lastFrameMetric;lastFrameMetric=now;if(liveWorld&&frameMs<100){frameDurations.push(frameMs);if(frameDurations.length>180)frameDurations.shift();const sorted=[...frameDurations].sort((a,b)=>a-b),average=frameDurations.reduce((sum,value)=>sum+value,0)/frameDurations.length;window.__BRAWLPAWS_PERF__={fps:Math.round(1000/average),p95Ms:Number((sorted[Math.floor(sorted.length*.95)]||0).toFixed(1)),renderDpr:screen.dpr,samples:frameDurations.length,effects:Object.values(effects).reduce((sum,list)=>sum+(Array.isArray(list)?list.length:0),0)};if(debugSystem)Object.assign(document.documentElement.dataset,{perfFps:String(window.__BRAWLPAWS_PERF__.fps),perfP95:String(window.__BRAWLPAWS_PERF__.p95Ms),perfEffects:String(window.__BRAWLPAWS_PERF__.effects)});}
   requestAnimationFrame(frame);
 }
 

@@ -17,8 +17,21 @@ export const withinArc = (origin, facing, target, range, arc) => {
 export function encounterActiveLimit({ waveIndex = 0, chapterIndex = 0, difficultyId = 'ferocious', partySize = 1, elite = false } = {}) {
   const difficultyBonus = difficultyId === 'ascension' ? 11 : difficultyId === 'nightmare' ? 7 : difficultyId === 'spirited' ? -2 : 0;
   const partyBonus = Math.max(0, partySize - 1) * 6;
-  const waveRamp = waveIndex * 4 + Math.max(0, waveIndex - 1) ** 2;
-  return clamp(Math.round(8 + waveRamp + chapterIndex * 5 + difficultyBonus + partyBonus + (elite ? 3 : 0)), 6, 72);
+  const waveRamp = waveIndex * 5 + Math.max(0, waveIndex - 1) ** 2;
+  return clamp(Math.round(8 + waveRamp + chapterIndex * 3 + difficultyBonus + partyBonus + (elite ? 3 : 0)), 6, 24);
+}
+export function campaignPressureCurve({ chapterIndex = 0, waveIndex = 0, elapsed = 0, difficultyId = 'ferocious' } = {}) {
+  const chapter=clamp(Math.round(chapterIndex),0,5),wave=clamp(Math.round(waveIndex),0,5),time=Math.max(0,elapsed);
+  const difficulty=difficultyId==='ascension'?1.18:difficultyId==='nightmare'?1.1:difficultyId==='spirited'?.9:1;
+  const progress=chapter*6+wave;
+  return {
+    progress,
+    activeRamp:Math.max(4,Math.round((8+chapter*4+wave*2+time*(1.5+wave*.55+chapter*.25))*difficulty)),
+    reserveRate:1+(chapter*.14+wave*.09)*difficulty,
+    pursuit:1+(chapter*.075+wave*.045)*difficulty,
+    attackTempo:1+(chapter*.055+wave*.035)*difficulty,
+    recovery:clamp(1-(chapter*.045+wave*.025)*difficulty,.58,1)
+  };
 }
 export function cappedWardPressure(rawDamagePerSecond, maxHealth, duration) {
   const survivalWindow = Math.max(18, duration * .62);
