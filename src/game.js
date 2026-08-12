@@ -57,7 +57,7 @@ const debugHero = debugParams.get('hero');
 const debugMission = debugParams.get('mission');
 
 const assets = {
-  arena: new Image(), kitsune: new Image(), kitsuneFire: new Image(), bamboo: new Image(), bambooFire: new Image(), hopscotch: new Image(), hopscotchFire: new Image(), rusty: new Image(), rustyFire: new Image(), enemies: new Image(), props: new Image(),
+  arena: new Image(), kitsune: new Image(), kitsuneFire: new Image(), kitsuneStates: new Image(), bamboo: new Image(), bambooFire: new Image(), bambooStates: new Image(), hopscotch: new Image(), hopscotchFire: new Image(), hopscotchStates: new Image(), rusty: new Image(), rustyFire: new Image(), rustyStates: new Image(), enemies: new Image(), props: new Image(),
   archerMove: new Image(), archerAttack: new Image(), raccoonAttack: new Image(), boarAttack: new Image(),
   undertowVfx: new Image(), foxfireVfx: new Image(), wildHeartVfx: new Image(),
   blasterShotVfx: new Image(), blasterImpactVfx: new Image(), spiritArrowVfx: new Image(), spiritArrowImpactVfx: new Image(), hopscotchArrow: new Image(), trickshotVfx: new Image(),
@@ -71,12 +71,16 @@ const assetSources = {
   arena: room.background,
   kitsune: 'assets/characters/kitsune-gunner.png',
   kitsuneFire: 'assets/characters/kitsune-fire.png',
+  kitsuneStates: 'assets/characters/kitsune-states-v1.png',
   bamboo: 'assets/characters/bamboo-cannon.png',
   bambooFire: 'assets/characters/bamboo-fire.png',
+  bambooStates: 'assets/characters/bamboo-states-v1.png',
   hopscotch: 'assets/characters/hopscotch-archer-alpha.png',
   hopscotchFire: 'assets/characters/hopscotch-fire-alpha.png',
+  hopscotchStates: 'assets/characters/hopscotch-states-v1.png',
   rusty: 'assets/characters/rusty-trickshot-alpha.png',
   rustyFire: 'assets/characters/rusty-fire-alpha.png',
+  rustyStates: 'assets/characters/rusty-states-v1.png',
   enemies: 'assets/characters/enemy-roster-animated.png',
   props: 'assets/environment/jade-props.png',
   archerMove: 'assets/characters/archer-movement.png',
@@ -1002,7 +1006,7 @@ function resetGame() {
     heartBonus: 0, stormBonus: 0,guardianBlessings:[],endingVow:null,victoryShardBonus:0,
     gold:legacyGold,goldMultiplier:1,relics:[],shopPurchases:new Set(),killHeal:0,damageTakenMultiplier:heroDef.damageTakenMultiplier,speedMultiplier:1,dashCooldownMultiplier:1,
     knockbackResistance:heroDef.knockbackResistance,knockbackMultiplier:1,braceTime:0,braceDelay:.72,braceDamageMultiplier:.8,braced:false,shieldDamageMultiplier:1,eliteDamageMultiplier:contractClaimed('eliteBreakers')?1.08:1,guardianDamageMultiplier:contractClaimed('guardianOath')?1.08:1,eliteGoldMultiplier:1,eliteKillHeal:0,statusDurationMultiplier:1,bonusProjectiles:0,bonusPierces:0,bonusRicochets:0,ricochetDamageRetention:.78,critBonus:0,critDamageMultiplier:1,weaponEvolution:null,
-    wildHeartTime: 0, ultimateFlash: 0, castTime: 0,
+    wildHeartTime: 0, ultimateFlash: 0, castTime: 0, castAbility: null,
     hitCount: 0, maxCombo: 0, comboDrop: 0, dashes: 0, hurtTime: 0, stunTime: 0,
     level: 1, xp: 0, xpToNext: 48
   };
@@ -1756,7 +1760,7 @@ function aimDirection() {
 function useAbility(id) {
   const definition=ABILITIES[id];
   if (!definition || !player.unlockedAbilities.has(id) || player.abilityCooldowns[id] > 0 || player.hurtTime > .08 || player.stunTime > 0 || player.dashTime > 0 || !['playing','dojo'].includes(state)) return;
-  const direction=aimDirection(); player.facing=Math.atan2(direction.y,direction.x); player.abilityCooldowns[id]=definition.cooldown;
+  const direction=aimDirection(); player.facing=Math.atan2(direction.y,direction.x); player.abilityCooldowns[id]=definition.cooldown;player.castAbility=id;
   if (id === 'undertowWell') {
     player.castTime=.34;
     const power=player.abilityPower.undertowWell;
@@ -1807,7 +1811,7 @@ function updatePlayer(dt) {
   player.dashCooldown = Math.max(0, player.dashCooldown - dt*recoveryRate);
   player.shotCooldown = Math.max(0, player.shotCooldown - dt);
   player.ultimateFlash = Math.max(0, player.ultimateFlash - dt);
-  player.castTime=Math.max(0,player.castTime-dt);const wildHeartWasActive=player.wildHeartTime>0;player.wildHeartTime=Math.max(0,player.wildHeartTime-dt);if(wildHeartWasActive&&player.wildHeartTime<=0&&player.abilityEvolutions.wildHeart)triggerGuardianBloom();
+  player.castTime=Math.max(0,player.castTime-dt);if(player.castTime<=0)player.castAbility=null;const wildHeartWasActive=player.wildHeartTime>0;player.wildHeartTime=Math.max(0,player.wildHeartTime-dt);if(wildHeartWasActive&&player.wildHeartTime<=0&&player.abilityEvolutions.wildHeart)triggerGuardianBloom();
   for(const id of Object.keys(player.abilityCooldowns)) player.abilityCooldowns[id]=Math.max(0,player.abilityCooldowns[id]-dt*recoveryRate);
   player.comboDrop = Math.max(0, player.comboDrop - dt);
   if (player.comboDrop <= 0) player.hitCount = 0;
@@ -2852,19 +2856,22 @@ function drawSpiritGates() {
 }
 
 function drawHero(entity, alpha = 1, afterimage = false) {
-  const moveSheet=assets[heroDef.moveAsset];const fireSheet=assets[heroDef.fireAsset];
+  const moveSheet=assets[heroDef.moveAsset];const fireSheet=assets[heroDef.fireAsset];const stateSheet=assets[heroDef.stateAsset];
   if(!moveSheet?.complete||!moveSheet.naturalWidth)return;
   const moving = Math.hypot(entity.vx || 0, entity.vy || 0);
   const time = performance.now() / 1000;
-  const stateName = afterimage ? 'dash' : entity.health <= 0 ? 'death' : entity.hurtTime > 0 ? 'hit' : entity.dashTime > 0 ? 'dash' : entity.attack ? 'attack1' : entity.castTime > 0 ? 'cast' : moving > 45 ? 'run' : 'idle';
+  const stateName = afterimage ? 'dash' : state==='won' ? 'victory' : entity.health <= 0 || state==='lost' ? 'death' : entity.stunTime > 0 ? 'stun' : entity.hurtTime > 0 ? 'hit' : entity.dashTime > 0 ? 'dash' : entity.attack ? 'attack1' : entity.castTime > 0 ? 'cast' : moving > 45 ? 'run' : 'idle';
   const animation = SPRITE_ANIMATIONS[stateName] || SPRITE_ANIMATIONS.idle;
   const rawDirection=directionIndex(entity.facing);const direction=heroDef.directionMap?.[rawDirection]??rawDirection;
   const firing=!afterimage&&stateName.startsWith('attack')&&fireSheet?.complete&&fireSheet.naturalWidth;
-  const sheet=firing?fireSheet:moveSheet;
-  const sw = sheet.naturalWidth / 4; const sh = sheet.naturalHeight / 4;
+  const specialFrames={undertowWell:0,foxfireVolley:1,wildHeart:2,shockPaws:3,hit:4,stun:5,death:6,victory:7};
+  const specialFrame=stateName==='cast'?specialFrames[entity.castAbility]:(specialFrames[stateName]??-1);
+  const authoredState=!afterimage&&specialFrame>=0&&stateSheet?.complete&&stateSheet.naturalWidth;
+  const sheet=authoredState?stateSheet:firing?fireSheet:moveSheet;
+  const sw = sheet.naturalWidth / 4; const sh = sheet.naturalHeight / (authoredState?2:4);
   const useRunFrame = !firing && (stateName === 'dash' || (stateName === 'run' && Math.floor(time * 10) % 2 === 1));
   const fireStage = firing && entity.attack?.time > (weapon.releaseDelay||.045) ? 2 : 0;
-  const sx = (direction % 4) * sw; const sy = (Math.floor(direction / 4) + (firing ? fireStage : useRunFrame ? 2 : 0)) * sh;
+  const sx = authoredState?(specialFrame%4)*sw:(direction % 4) * sw; const sy = authoredState?Math.floor(specialFrame/4)*sh:(Math.floor(direction / 4) + (firing ? fireStage : useRunFrame ? 2 : 0)) * sh;
   const runBob = stateName === 'run' ? Math.sin(time * animation.fps * Math.PI*(entity.sprinting?1.5:1)) * (entity.sprinting?5:3) : 0;
   const speedLean = clamp(moving / heroDef.speed, 0, 1) * .06;
   let scaleX = 1, scaleY = 1, rotation = 0;
@@ -2875,8 +2882,8 @@ function drawHero(entity, alpha = 1, afterimage = false) {
     scaleX = 1 + Math.sin(p * Math.PI) * .1; scaleY = 1 - Math.sin(p * Math.PI) * .06;
     rotation = -Math.cos(entity.facing) * Math.sin(p * Math.PI) * .06;
   }
-  if (stateName === 'hit') rotation = Math.sin(time * 45) * .08;
-  const bamboo=selectedHeroId==='bamboo';const hopscotch=selectedHeroId==='hopscotch';const rusty=selectedHeroId==='rusty';const h=bamboo?(firing?142:136):hopscotch?(firing?126:122):rusty?(firing?124:120):(firing?112:108);const w=h*(sw/sh);
+  if (!authoredState&&stateName === 'hit') rotation = Math.sin(time * 45) * .08;
+  const bamboo=selectedHeroId==='bamboo';const hopscotch=selectedHeroId==='hopscotch';const rusty=selectedHeroId==='rusty';const baseH=bamboo?(firing?142:136):hopscotch?(firing?126:122):rusty?(firing?124:120):(firing?112:108);const h=authoredState?(bamboo?154:hopscotch?142:rusty?140:136):baseH;const w=h*(sw/sh);
   drawContactShadow(entity.x,entity.y+(bamboo?15:hopscotch||rusty?13:12),entity.dashTime>0?(bamboo?16:hopscotch||rusty?12:13):(bamboo?24:hopscotch?18:rusty?19:19),entity.dashTime>0?(bamboo?4.4:3.5):(bamboo?6.4:hopscotch?5:rusty?5.2:5.5),.34*alpha);
   if (!afterimage && entity.wildHeartTime > 0) {
     const pulse = .2 + Math.sin(time * 7) * .035;
@@ -2887,12 +2894,12 @@ function drawHero(entity, alpha = 1, afterimage = false) {
     }
   }
   ctx.save(); ctx.globalAlpha = alpha; ctx.translate(entity.x, entity.y);
-  ctx.translate(0, runBob); ctx.rotate(rotation); ctx.scale(scaleX, scaleY);
+  ctx.translate(0, runBob); ctx.rotate(rotation); ctx.scale((authoredState&&Math.cos(entity.facing)<0?-1:1)*scaleX, scaleY);
   ctx.shadowColor=afterimage?'#8f3dff':entity.dashTime>0?heroDef.accent:(bamboo?'#63ef79':hopscotch?'#ff4fa5':rusty?'#ff9b32':'#ff4d76');ctx.shadowBlur=afterimage?24:entity.dashTime>0?16:4;
   ctx.filter = afterimage ? 'hue-rotate(68deg) saturate(1.8) brightness(1.4)' : entity.flash > 0 ? 'brightness(2.4) saturate(.4)' : 'none';
   ctx.drawImage(sheet, sx, sy, sw, sh, -w/2, -h*.82, w, h);
   ctx.restore(); ctx.filter = 'none'; ctx.globalAlpha = 1;
-  if (!afterimage && entity.stunTime > 0) {
+  if (!afterimage && entity.stunTime > 0 && !authoredState) {
     ctx.save(); ctx.translate(entity.x, entity.y - 82); ctx.rotate(time * 3.6); ctx.shadowColor='#ffd33d'; ctx.shadowBlur=16;
     for(let i=0;i<3;i++){ctx.save();ctx.rotate(i*Math.PI*2/3);ctx.translate(27,0);ctx.rotate(-time*5);ctx.fillStyle=i%2?'#fff3a0':'#ffd33d';ctx.beginPath();for(let p=0;p<10;p++){const radius=p%2?4:10;const a=p/10*Math.PI*2-Math.PI/2;p?ctx.lineTo(Math.cos(a)*radius,Math.sin(a)*radius):ctx.moveTo(Math.cos(a)*radius,Math.sin(a)*radius);}ctx.closePath();ctx.fill();ctx.restore();}ctx.restore();
   }

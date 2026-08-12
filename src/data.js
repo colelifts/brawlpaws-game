@@ -7,7 +7,7 @@ export const HEROES = {
     summary: 'A precision gunner who wins through speed, range, and rapid critical pressure.',
     ratings: { power:3, toughness:2, mobility:5, control:3 }, difficulty:'Technical',
     damageTakenMultiplier: 1, knockbackResistance: 1,
-    portrait: 'assets/characters/kitsune-portrait.png', moveAsset: 'kitsune', fireAsset: 'kitsuneFire', accent: '#45eaff'
+    portrait: 'assets/characters/kitsune-portrait.png', moveAsset: 'kitsune', fireAsset: 'kitsuneFire', stateAsset: 'kitsuneStates', accent: '#45eaff'
   },
   bamboo: {
     id: 'bamboo', name: 'Bamboo', role: 'Tank', maxHealth: 185,
@@ -17,7 +17,7 @@ export const HEROES = {
     summary: 'A cannon tank who absorbs punishment and controls packs with heavy spread fire.',
     ratings: { power:4, toughness:5, mobility:2, control:4 }, difficulty:'Steady',
     damageTakenMultiplier: .82, knockbackResistance: .52,
-    portrait: 'assets/characters/bamboo-portrait.png', moveAsset: 'bamboo', fireAsset: 'bambooFire', accent: '#6af27a'
+    portrait: 'assets/characters/bamboo-portrait.png', moveAsset: 'bamboo', fireAsset: 'bambooFire', stateAsset: 'bambooStates', accent: '#6af27a'
   },
   hopscotch: {
     id: 'hopscotch', name: 'Hopscotch', role: 'Archer', maxHealth: 105,
@@ -27,7 +27,7 @@ export const HEROES = {
     summary: 'A precision archer who commits to a visible bow draw, then releases piercing spirit arrows through lined-up enemies.',
     ratings: { power:4, toughness:2, mobility:4, control:4 }, difficulty:'Expert',
     damageTakenMultiplier: 1.06, knockbackResistance: 1.08,
-    portrait: 'assets/characters/hopscotch-portrait.png', moveAsset: 'hopscotch', fireAsset: 'hopscotchFire', accent: '#ff4fa5',
+    portrait: 'assets/characters/hopscotch-portrait.png', moveAsset: 'hopscotch', fireAsset: 'hopscotchFire', stateAsset: 'hopscotchStates', accent: '#ff4fa5',
     unlockRequirement:'Complete the three-chapter campaign once.'
   },
   rusty: {
@@ -38,7 +38,7 @@ export const HEROES = {
     summary:'A dual-revolver rogue whose precision rounds rebound into a second enemy and reward clever target lines.',
     ratings:{power:4,toughness:2,mobility:4,control:3},difficulty:'Advanced',
     damageTakenMultiplier:1.03,knockbackResistance:.96,
-    portrait:'assets/characters/rusty-portrait.png',moveAsset:'rusty',fireAsset:'rustyFire',accent:'#ff9b32',
+    portrait:'assets/characters/rusty-portrait.png',moveAsset:'rusty',fireAsset:'rustyFire',stateAsset:'rustyStates',accent:'#ff9b32',
     directionMap:[2,1,0,7,6,5,4,3],unlockRequirement:'Clear one Ascension campaign.'
   }
 };

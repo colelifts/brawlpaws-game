@@ -486,3 +486,16 @@ test('crowds preserve readable bodies and sprint creates real escape space',()=>
   assert.match(game,/sprintBoost=player\.sprinting\?1\.58:1/);
   assert.match(game,/player\.sprinting\?-27:28/);
 });
+
+test('every playable hero owns authored ability and reaction poses',()=>{
+  for(const hero of ['kitsune','bamboo','hopscotch','rusty']){
+    assert.match(data,new RegExp(`${hero}[\\s\\S]{0,780}stateAsset: ?'${hero}States'`));
+    assert.match(game,new RegExp(`${hero}States: 'assets/characters/${hero}-states-v1\\.png'`));
+  }
+  assert.match(game,/const specialFrames=\{undertowWell:0,foxfireVolley:1,wildHeart:2,shockPaws:3,hit:4,stun:5,death:6,victory:7\}/);
+  assert.match(game,/player\.castAbility=id/);
+  assert.match(game,/if\(player\.castTime<=0\)player\.castAbility=null/);
+  assert.match(game,/entity\.stunTime > 0 \? 'stun'/);
+  assert.match(game,/state==='won' \? 'victory'/);
+  assert.match(game,/sheet\.naturalHeight \/ \(authoredState\?2:4\)/);
+});

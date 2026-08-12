@@ -84,7 +84,7 @@ Every milestone is reviewed against the supplied gameplay, loadout, hub, hero-ro
 - Contact shadows reduced to soft ellipses directly under the feet
 - Muzzle flashes, trails, impact stars, elemental colors, comic words, XP shards, and enemy death bursts
 - Recorded Mixkit audio layers now cover weapons, dash, light/heavy impacts, enemy strikes, elemental abilities, healing, upgrades, boss slams, and soft background music; independent music/SFX controls and anti-stacking mix limits keep large armies clean
-- Add missing Kitsune hurt, stun, death, victory, and ability-specific animation sheets when final art is available
+- All four playable heroes now own production-painted eight-pose state atlases: distinct Undertow, Foxfire, Wild Heart, and Shock Paws casts plus authored hit recoil, stun, defeat, and victory silhouettes. These frames are routed from live combat state and preserve the existing eight-direction primary-fire sheets.
 
 **Exit gate:** screenshots and live motion plausibly belong to the same game as the concept art. No attack can look like a static sprite sliding into a target.
 
@@ -103,7 +103,7 @@ Next ability work:
 - Extend the landed Burn/Wet/Shock/Stun registry with Bleed, Curse, and generalized player/enemy Shield ownership
 - Add per-ability upgrade hooks rather than branching logic inside the player controller
 - Move remaining duration ticks and VFX routing fully behind the shared status registry
-- Produce dedicated cast/action/recovery animation sheets and sound layers for every hero ability
+- Extend the landed hero state atlases into multi-frame cast/action/recovery sequences after gameplay timing is locked; the current dedicated cast silhouettes already replace movement-pose reuse for every hero ability.
 - Continue balancing evolution availability and damage against chapter corruption, guardian health, and high-rank Ascension armies
 
 **Exit gate:** abilities are mechanically distinct, readable at game scale, aim correctly in eight directions, and display clear cooldown states.
