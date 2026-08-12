@@ -79,7 +79,7 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - Six escalating Jade Grove waves: 4 teaching scouts, then 10, 18, 30, 48, and a 72-enemy siege; Bamboo and Crimson finales reach 112 and 150 enemies before difficulty, corruption, and co-op multipliers
 - Large armies use a difficulty-, chapter-, wave-, and party-scaled active combat budget. The opening lesson remains capped at eight simultaneous enemies, while the Chapter III finale can sustain 54 on Ferocious, 61 on solo Nightmare, and 72 in high-rank/co-op pressure. The budget ramps during each room, distributes arrivals around the arena, and keeps the rest of the authored army in visible perimeter reserves instead of forming an unreadable instant pileup.
 - Ward-defense missions have a short opening grace period, limited simultaneous ward attackers, and a survival-scaled damage ceiling. Ignoring the ward still loses the room, while active defense has a fair reaction window.
-- Chapter story scenes before the first wave and before the guardian confrontation
+- Each chapter now has four checkpoint-safe story beats: the opening, revelations after seals two and four, and the guardian confrontation. Every scene carries seal progress plus a one-line next objective so the three-chapter plot remains legible between route choices.
 - Dedicated Jadeguard Tanuki boss artwork, a 2,600-HP boss HUD, three phases, staff sweep, stunning ground slam, radial jade projectiles, phase summons, enrage, and chapter-clear story payoff
 - A branching Choose Your Path screen between waves with Combat, Elite, Heal, Shop, Treasure, and Shrine nodes
 - Enemy gold rewards, mutation-scaled elite routes, twelve run relics, and a functional Moon Market with persistent purchases
@@ -114,7 +114,7 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - Mistclaws fade while marking their exact destination, blink past the player, and commit to a high-speed twin-dagger strike; they first appear late in Bamboo Hollow and join the Crimson warhost
 - Four five-rank permanent upgrade tracks for starting health, gun damage, ability power, and run gold; active abilities still begin locked every run
 - Hub campaign records, control training, spatial interaction prompts, and a portal-driven campaign start
-- Weighted Common, Rare, and Epic level-up offers with a guaranteed early ability option, one free reroll, escalating paid rerolls, and a recovery-focused skip choice
+- Weighted Common, Rare, and Epic level-up offers with a guaranteed early ability option, one free reroll, escalating paid rerolls, and a recovery-focused skip choice. Cards now prioritize offer class, rank, concise effect, and a live current-to-new stat comparison; relevant new synergies are called out directly on the choice.
 - Four combat-changing build recipes: Steam Burst, Storm Current, Guardian Tempest, and Twin Cinders, with persistent HUD badges
 - Authored Story Event and Secret route nodes with branching costs, relics, weapon evolutions, ability-power rewards, curses, and harder high-reward follow-up waves
 - Reusable boss-pattern and boss-profile data now owns windup/action/recovery timing, damage identity, phase labels, and per-phase schedules for Jadeguard, Moonfang, and Pyreclaw
@@ -126,7 +126,7 @@ Route QA checkpoints are available at `?route=1`, `?route=2`, and `?route=3`; th
 Chapter 2 QA is available at `?chapter=2`, with `?chapter=2&boss=1` for Moonfang; these QA routes provide a reinforced test loadout and do not affect normal balance.
 Chapter 3 QA is available at `?chapter=3`, with `?chapter=3&boss=1` for Pyreclaw. Add `&difficulty=nightmare` to validate maximum pressure.
 Hub station QA is available at `?hub=heroShrine` or `?hub=portal`; normal play enters the village at its central plaza.
-Systems QA is available at `?system=levelup`, `?system=event`, `?system=secret`, `?system=synergy`, `?system=elites`, `?system=specialists`, `?system=capstone`, `?system=evolutions`, `?system=pressure`, `?system=room6`, `?system=signature`, and `?system=codex`.
+Systems QA is available at `?system=levelup`, `?system=story&beat=interlude2`, `?system=story&beat=interlude4`, `?system=event`, `?system=secret`, `?system=synergy`, `?system=elites`, `?system=specialists`, `?system=capstone`, `?system=evolutions`, `?system=pressure`, `?system=room6`, `?system=signature`, and `?system=codex`.
 Mission QA is available at `?system=mission&mission=anchors`, `?system=mission&mission=rescue`, and `?system=mission&mission=defend`; add `&chapter=2` or `&chapter=3` to validate biome-specific mission schedules and palettes.
 Guardian reward QA is available at `?system=guardianReward`; combine it with `&chapter=2` for Moonfang or `&chapter=3` for Pyreclaw’s final-vow and epilogue sequence.
 Sealing Crossfire can be inspected immediately at `?system=crossfire`; combine it with `&chapter=2` or `&chapter=3` for each guardian's profile-scaled version.

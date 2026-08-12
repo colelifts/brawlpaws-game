@@ -143,7 +143,7 @@ const ui = {
   shopGold: document.querySelector('#shop-gold'),
   waveLabel: document.querySelector('#wave-label'), bossPanel: document.querySelector('#boss-panel'),
   bossHealthFill: document.querySelector('#boss-health-fill'), bossHealthText: document.querySelector('#boss-health-text'), bossPhase: document.querySelector('#boss-phase'),
-  storyKicker: document.querySelector('#story-kicker'), storyTitle: document.querySelector('#story-title'), storyCopy: document.querySelector('#story-copy'), storyQuote: document.querySelector('#story-quote'), storyButton: document.querySelector('#story-button'),
+  storyKicker: document.querySelector('#story-kicker'), storyTitle: document.querySelector('#story-title'), storyCopy: document.querySelector('#story-copy'), storyQuote: document.querySelector('#story-quote'), storyProgress:document.querySelector('#story-progress'),storyObjective:document.querySelector('#story-objective'),storyButton: document.querySelector('#story-button'),
   biomeTitle: document.querySelector('#biome-title'), routeBiome: document.querySelector('#route-biome'), bossName: document.querySelector('#boss-name'),
   abilityCards: {
     undertowWell: { card: document.querySelector('#undertow-card'), fill: document.querySelector('#undertow-cooldown') },
@@ -155,7 +155,7 @@ const ui = {
   resultTime: document.querySelector('#result-time'), resultCombo: document.querySelector('#result-combo'),
   resultDashes: document.querySelector('#result-dashes'), resultReward: document.querySelector('#result-reward'),
   profileSummary: document.querySelector('#profile-summary'),
-  synergyStrip:document.querySelector('#synergy-strip'), rerollButton:document.querySelector('#reroll-upgrades'),
+  synergyStrip:document.querySelector('#synergy-strip'), levelupSubtitle:document.querySelector('#levelup-subtitle'),rerollButton:document.querySelector('#reroll-upgrades'),
   rerollCost:document.querySelector('#reroll-cost'), skipUpgrade:document.querySelector('#skip-upgrade'),
   eventKicker:document.querySelector('#event-kicker'), eventTitle:document.querySelector('#event-title'),
   eventCopy:document.querySelector('#event-copy'), eventQuote:document.querySelector('#event-quote'),
@@ -510,7 +510,7 @@ function resumeSavedRun(){
   else if(point.kind==='guardianReward')openGuardianReward(point.guardianId);
   else if(point.kind==='route')openRoute(point.nextWave);
   else if(point.kind==='wave')startWave(point.wave,point.modifiers||{});
-  else showStory(['boss','epilogue'].includes(point.beat)?point.beat:'intro');
+  else showStory(['intro','interlude2','interlude4','boss','epilogue'].includes(point.beat)?point.beat:'intro');
   updateHud();
 }
 
@@ -1037,8 +1037,20 @@ function makeEnemy(spawn, index) {
   };
 }
 
+const CHAPTER_STORY_BEATS={
+  jadeChapter:{accent:'#8cff39',intro:['CHAPTER I  THE SILENT BELLS','THE GROVE IS LISTENING','The guardian bells have gone silent. Corrupted spirits are gathering beneath the moonlit shrine, growing faster and stronger with every broken seal.','Break the curse before the Jadeguard wakes.','BEGIN THE CHAPTER','ENTER JADE GROVE'],interlude2:['CHAPTER I  TWO SEALS BROKEN','THE BELLS ANSWER BACK','The freed spirits whisper the same warning: the curse is not invading the grove. It is being pulled toward the buried guardian by a bell that no living paw can hear.','Follow the false ringing. Find the hand beneath it.','CHOOSE THE THIRD PATH','HUNT THE HIDDEN BELL'],interlude4:['CHAPTER I  THE JADE LIE','THE GUARDIAN WAS FRAMED','A shattered curse anchor bears Jadeguard’s own seal turned backward. Someone chained the ancient Tanuki inside his duty, then taught every corrupted spirit to wear the scent of an intruder.','If Jadeguard sees {hero} first, the curse wins.','BREAK THE FINAL SEALS','REACH JADEGUARD FIRST'],boss:['CHAPTER I  THE GUARDIAN WAKES','THE MOUNTAIN MOVES','The last corrupted spirit falls. Beneath the shrine, jade fire erupts, and the ancient Tanuki mistakes {hero} for the curse that poisoned his grove.','No trespasser leaves my sacred ground alive.','FACE THE JADEGUARD','FREE JADEGUARD TANUKI']},
+  bambooChapter:{accent:'#41f5da',intro:['CHAPTER II  BREATH BENEATH THE REEDS','THE HOLLOW BREATHES','Jadeguard opens the moon gate, but the path exhales a poisoned mist. Reedblade hunters and spore archers gather around something enormous moving below the roots.','The curse ran downstream. Follow it before the Hollow closes.','ENTER BAMBOO HOLLOW','TRACE THE POISONED CURRENT'],interlude2:['CHAPTER II  THE HUNGER BELOW','THE ROOTS HAVE TEETH','Rescued hollow spirits reveal that Moonfang has been fighting the curse from underground. Every victory tears more poison from the reeds—and drives it deeper into the guardian’s starving heart.','He is not hunting us. He is hunting what we carry.','DESCEND THROUGH THE REEDS','FOLLOW MOONFANG’S TRAIL'],interlude4:['CHAPTER II  THE MOON CHAIN','THE HOLLOW STOPS BREATHING','At the Moonstone Causeway, the curse tightens around Moonfang’s sacred collar. The guardian can no longer tell prey from ally, and the whole forest bends toward his first strike.','Stand your ground, {hero}. Make him remember his oath.','ENTER THE MOONSTONE ROAD','SURVIVE THE MOON HUNT'],boss:['CHAPTER II  THE MOONFANG AWAKENS','TEETH BENEATH THE MOON','The Hollow stops breathing. Every bamboo stalk bends toward the moon gate as its ancient lion-dog guardian tears free of the corrupted roots.','Your fire freed the grove. Now prove it can survive the moon.','FACE MOONFANG','FREE MOONFANG KOMAINU']},
+  crimsonChapter:{accent:'#ff5b27',intro:['CHAPTER III  THE GATE OF ASH','THE DOJO DEMANDS A TRIAL','Beyond Bamboo Hollow stands a monastery that trains spirits for war. The corruption has turned every duel into an execution and sealed the final road behind an ancient oni gate.','Ring all four bells. Survive what answers.','ENTER THE CRIMSON DOJO','RING THE ASHEN BELLS'],interlude2:['CHAPTER III  THE BURNING OATH','THE SHOGUN CHOSE THE CURSE','The first war bells reveal the truth: Pyreclaw bound the corruption to his own heart to stop it reaching Spirit Lantern Village. Every spirit slain weakens the prison—and strengthens the prisoner.','The gate held because its guardian agreed to burn.','CROSS THE CINDER ROOFS','FIND PYRECLAW’S OATH'],interlude4:['CHAPTER III  NO ROAD BACK','THE ONI GATE OPENS','The final bell answers with Pyreclaw’s voice. He will not abandon the gate, even if his living fire consumes every warrior who comes to free him. The last two seals are a declaration of war.','Come armed, {hero}. Mercy will not survive this throne.','MARCH ON THE ONI GATE','BREAK THE SHOGUN’S CHAINS'],boss:['CHAPTER III  THE SHOGUN’S OATH','THE LAST BELL BURNS','The oni gate splits open. Pyreclaw Shogun Tora has chained the curse to his own heart, and every bell in the dojo answers with a wave of living fire.','If the curse must pass this gate, it will pass through me.','CHALLENGE PYRECLAW','FREE PYRECLAW SHOGUN TORA']}
+};
+
+function renderCampaignStory(beat){
+  if(beat==='epilogue')return false;const story=CHAPTER_STORY_BEATS[chapter.id],definition=story?.[beat]||story?.intro;if(!definition)return false;const resolve=(copy)=>copy.replaceAll('{hero}',heroDef.name),seals=beat==='boss'?6:beat==='interlude4'?4:beat==='interlude2'?2:0;
+  storyScreen.style.setProperty('--story-accent',story.accent);ui.storyKicker.textContent=resolve(definition[0]);ui.storyTitle.textContent=resolve(definition[1]);ui.storyCopy.textContent=resolve(definition[2]);ui.storyQuote.textContent=resolve(definition[3]);ui.storyProgress.textContent=`SEALS BROKEN  ${seals} / ${chapter.waves.length}`;ui.storyObjective.textContent=`NEXT  ${resolve(definition[5])}`;ui.storyButton.innerHTML=`${resolve(definition[4])} <span>›</span>`;return true;
+}
+
 function showStory(beat) {
   encounter.storyBeat = beat; state = 'story'; storyScreen.classList.add('active');
+  if(renderCampaignStory(beat)){saveRunCheckpoint({kind:'story',beat});return;}
   const bamboo = chapter.id === 'bambooChapter';
   const crimson = chapter.id === 'crimsonChapter';
   if(beat==='epilogue'){
@@ -1046,7 +1058,7 @@ function showStory(beat) {
       mercy:{kicker:'EPILOGUE  THE BELLS RETURN',title:'THE GUARDIANS BOW',copy:`${heroDef.name} returns the stolen flame to the three guardians. Jade Grove rings, Bamboo Hollow breathes, and the Crimson bells call warriors home instead of summoning them to die.`,quote:'Strength is not what you take. It is what survives your victory.',button:'RETURN TO SPIRIT LANTERN VILLAGE'},
       power:{kicker:'EPILOGUE  THE NEW GATEKEEPER',title:'THE FLAME CHOOSES YOU',copy:`${heroDef.name} binds Pyreclaw’s oni fire to a new oath. The spirit road is safe, but every creature beyond the gate now knows the name of its fiercest keeper.`,quote:'Let the next curse learn fear before it crosses my gate.',button:'ASCEND FROM THE ONI THRONE'},
       freedom:{kicker:'EPILOGUE  NO MORE CHAINS',title:'THE ROAD HAS NO MASTER',copy:`${heroDef.name} shatters the last ancient seal. The guardians remain by choice, the spirit roads open beneath a thousand lanterns, and every BrawlPaw may choose where the next path leads.`,quote:'A guardian who cannot leave is only another prisoner.',button:'RUN WITH THE FREE SPIRITS'}
-    };const ending=endings[player.endingVow]||endings.mercy;ui.storyKicker.textContent=ending.kicker;ui.storyTitle.textContent=ending.title;ui.storyCopy.textContent=ending.copy;ui.storyQuote.textContent=ending.quote;ui.storyButton.innerHTML=`${ending.button} <span></span>`;
+    };const ending=endings[player.endingVow]||endings.mercy;storyScreen.style.setProperty('--story-accent','#d95cff');ui.storyKicker.textContent=ending.kicker;ui.storyTitle.textContent=ending.title;ui.storyCopy.textContent=ending.copy;ui.storyQuote.textContent=ending.quote;ui.storyProgress.textContent='3 / 3 GUARDIANS FREED';ui.storyObjective.textContent='THE SPIRIT ROAD REMEMBERS YOUR VOW';ui.storyButton.innerHTML=`${ending.button} <span>›</span>`;
   } else if (beat === 'boss' && crimson) {
     ui.storyKicker.textContent = 'CHAPTER III  THE SHOGUN"S OATH';
     ui.storyTitle.textContent = 'THE LAST BELL BURNS';
@@ -1089,7 +1101,7 @@ function showStory(beat) {
 
 function continueStory() {
   storyScreen.classList.remove('active');
-  if(encounter.storyBeat==='epilogue')endGame(true);else if (encounter.storyBeat === 'boss') spawnBoss(); else startWave(0);
+  if(encounter.storyBeat==='epilogue')endGame(true);else if(encounter.storyBeat==='boss')spawnBoss();else if(encounter.storyBeat==='interlude2')openRoute(2);else if(encounter.storyBeat==='interlude4')openRoute(4);else startWave(0);
 }
 
 function startWave(index,modifiers={}) {
@@ -1177,7 +1189,9 @@ function updateEncounter(dt) {
   encounter.transitionTime-=dt;
   if(encounter.transitionTime>0)return;
   encounter.transitioning=false;
-  if(encounter.wave+1<chapter.waves.length) openRoute(encounter.wave+1);
+  if(encounter.wave===1)showStory('interlude2');
+  else if(encounter.wave===3)showStory('interlude4');
+  else if(encounter.wave+1<chapter.waves.length) openRoute(encounter.wave+1);
   else showStory('boss');
 }
 
@@ -1401,6 +1415,42 @@ function openLevelUp() {
 
 function rarityForUpgrade(upgrade){return UPGRADE_RARITIES[upgrade.id]||'common';}
 
+function upgradeOfferClass(upgrade){
+  if(upgrade.id.startsWith('unlock'))return 'NEW ABILITY';
+  if(['abyssalMaw','nineTailInferno','guardianBloom','heavensVerdict'].includes(upgrade.id))return 'ABILITY EVOLUTION';
+  if(['phaseNova','siegeLotus','moonConstellation','deadeyeCircuit'].includes(upgrade.id))return 'WEAPON CAPSTONE';
+  if(upgrade.id==='dualWield')return 'NEW WEAPON MODE';
+  const rank=player.upgradeRanks[upgrade.id];return Number.isFinite(rank)?`RANK ${rank+1}`:'BUILD PIVOT';
+}
+
+function upgradeComparison(upgrade){
+  const percent=(value)=>`${Math.round(value*100)}%`,ability=(id,multiplier)=>`${percent(player.abilityPower[id])}  →  ${percent(player.abilityPower[id]*multiplier)}`;
+  const comparisons={
+    unlockUndertow:()=> 'LOCKED  →  READY ON E',unlockFoxfire:()=> 'LOCKED  →  READY ON C',unlockHeart:()=> 'LOCKED  →  READY ON F',unlockShock:()=> 'LOCKED  →  READY ON Q',
+    dualWield:()=> '1 VOLLEY  →  2 VOLLEYS',spiritRounds:()=>`${percent(player.damageMultiplier)}  →  ${percent(player.damageMultiplier*1.22)}`,quickPaws:()=>`${percent(1/player.fireRateMultiplier)}  →  ${percent(1/(player.fireRateMultiplier*.85))}`,
+    vitality:()=>`${player.maxHealth} HP  →  ${player.maxHealth+20} HP`,undertow:()=>ability('undertowWell',1.18),hungryFlame:()=>ability('foxfireVolley',1.25),heartBloom:()=>`+${player.heartBonus} HEAL  →  +${player.heartBonus+15} HEAL`,stormHeart:()=>`${percent(player.abilityPower.shockPaws)}  →  ${percent(player.abilityPower.shockPaws*1.2)}`,
+    wardbreaker:()=>`${percent(player.shieldDamageMultiplier)}  →  ${percent(player.shieldDamageMultiplier*1.35)}`,spiritHunter:()=>`${percent(player.eliteDamageMultiplier)}  →  ${percent(player.eliteDamageMultiplier*1.18)}`,spiritCatalyst:()=>`${percent(player.statusDurationMultiplier)} STATUS  →  ${percent(player.statusDurationMultiplier*1.2)}`,
+    pressureChamber:()=>`+${player.bonusProjectiles} SHOTS  →  +${player.bonusProjectiles+1}`,headhunter:()=>`+${player.eliteKillHeal} ELITE HEAL  →  +${player.eliteKillHeal+6}`,keenEye:()=>`${percent(weapon.critChance+player.critBonus)}  →  ${percent(weapon.critChance+player.critBonus+.05)}`,
+    moonPiercer:()=>`+${player.bonusPierces} PIERCE  →  +${player.bonusPierces+1}`,perfectDraw:()=>`${percent(weapon.critChance+player.critBonus)}  →  ${percent(weapon.critChance+player.critBonus+.08)}`,glassFang:()=>`${percent(player.damageMultiplier)}  →  ${percent(player.damageMultiplier*1.28)}`,
+    spiritMomentum:()=>`${percent(player.speedMultiplier)} SPEED  →  ${percent(player.speedMultiplier*1.1)}`,guardianHunter:()=>`${percent(player.guardianDamageMultiplier)}  →  ${percent(player.guardianDamageMultiplier*1.22)}`,deepReserves:()=>`${player.gold} GOLD  →  ${player.gold+35} GOLD`,
+    bankShot:()=>`+${player.bonusRicochets} BANKS  →  +${player.bonusRicochets+1}`,loadedDice:()=>`${percent(weapon.critChance+player.critBonus)}  →  ${percent(weapon.critChance+player.critBonus+.07)}`,quickdraw:()=>`${percent(1/player.fireRateMultiplier)}  →  ${percent(1/(player.fireRateMultiplier*.87))}`,
+    spiritCylinder:()=>`${percent(player.damageMultiplier)} POWER  →  ${percent(player.damageMultiplier*1.09)}`,phaseRounds:()=>`+${player.bonusPierces} PIERCE  →  +${player.bonusPierces+1}`,foxstepMastery:()=>`${percent(player.speedMultiplier)} SPEED  →  ${percent(player.speedMultiplier*1.08)}`,
+    ironBelly:()=>`${percent(player.braceDamageMultiplier)} BRACED  →  ${percent(Math.max(.52,player.braceDamageMultiplier-.07))}`,scatterBore:()=>`+${player.bonusProjectiles} PELLETS  →  +${player.bonusProjectiles+1}`,guardianHide:()=>`${player.maxHealth} HP  →  ${player.maxHealth+28} HP`
+  };
+  if(comparisons[upgrade.id])return comparisons[upgrade.id]();
+  if(['phaseNova','siegeLotus','moonConstellation','deadeyeCircuit'].includes(upgrade.id))return `BASE WEAPON  →  ${upgrade.name.toUpperCase()}`;
+  if(['abyssalMaw','nineTailInferno','guardianBloom','heavensVerdict'].includes(upgrade.id))return `BASE TECHNIQUE  →  ${upgrade.name.toUpperCase()}`;
+  return upgrade.detail.toUpperCase();
+}
+
+function upgradeSynergyPreview(upgrade){
+  if(upgrade.id==='unlockFoxfire'&&player.unlockedAbilities.has('undertowWell'))return 'UNLOCKS  STEAM BURST';
+  if(upgrade.id==='unlockShock'&&player.unlockedAbilities.has('undertowWell'))return 'UNLOCKS  STORM CURRENT';
+  if(upgrade.id==='unlockShock'&&player.unlockedAbilities.has('wildHeart'))return 'UNLOCKS  GUARDIAN TEMPEST';
+  if(upgrade.id==='dualWield'&&player.unlockedAbilities.has('foxfireVolley'))return 'UNLOCKS  TWIN CINDERS';
+  return '';
+}
+
 function weightedUpgradeIndex(pool){
   const weights=pool.map((upgrade)=>{const rarity=rarityForUpgrade(upgrade);const base=RARITY_STYLES[rarity].weight;if(rarity==='rare')return base+player.level*1.8;if(rarity==='epic')return base+Math.max(0,player.level-2)*1.6;return Math.max(24,base-player.level*1.4);});
   let roll=Math.random()*weights.reduce((sum,value)=>sum+value,0);for(let i=0;i<weights.length;i++){roll-=weights[i];if(roll<=0)return i;}return weights.length-1;
@@ -1414,15 +1464,17 @@ function rollUpgradeChoices(available=UPGRADES.filter((upgrade)=>upgrade.availab
 }
 
 function renderUpgradeChoices(){
+  const awakened=player.unlockedAbilities.size;ui.levelupSubtitle.textContent=`LEVEL ${player.level} BUILD  ·  ${awakened} / ${Object.keys(ABILITIES).length} ABILITIES AWAKENED`;
   upgradeGrid.innerHTML = currentUpgradeChoices.map((upgrade, index) => `
     <button class="upgrade-card" title="${upgrade.description}" aria-label="${upgrade.name}. ${upgrade.detail}" data-rarity="${rarityForUpgrade(upgrade)}" style="--card-color:${upgrade.color};--rarity:${RARITY_STYLES[rarityForUpgrade(upgrade)].color}" data-upgrade-index="${index}">
-      <span class="choice-number">${index + 1} / CHOOSE</span>
+      <span class="upgrade-card-top"><b class="choice-number">${index + 1}</b><i class="upgrade-rarity">${RARITY_STYLES[rarityForUpgrade(upgrade)].name}</i></span>
       <span class="upgrade-icon" data-icon="${upgradeIconFrame(upgrade)}"></span>
       <strong>${upgrade.name}</strong>
-      <span class="upgrade-rarity">${RARITY_STYLES[rarityForUpgrade(upgrade)].name}</span>
       <span class="upgrade-type">${upgrade.type}</span>
-      <span class="upgrade-description">${upgrade.description}</span>
+      <span class="upgrade-offer-class">${upgradeOfferClass(upgrade)}</span>
       <span class="upgrade-detail">${upgrade.detail}</span>
+      <span class="upgrade-comparison">${upgradeComparison(upgrade)}</span>
+      ${upgradeSynergyPreview(upgrade)?`<span class="upgrade-synergy">${upgradeSynergyPreview(upgrade)}</span>`:''}
     </button>`).join('');
   for (const button of upgradeGrid.querySelectorAll('.upgrade-card')) {
     button.addEventListener('click', () => chooseUpgrade(Number(button.dataset.upgradeIndex)));
@@ -1497,6 +1549,7 @@ function begin() {
     resolveSynergies();updateHud();
   }
   if(debugSystem==='levelup'){player.level=2;pendingLevelUps=1;encounter.startWaveAfterUpgrade=0;openLevelUp();return;}
+  if(debugSystem==='story'){const storyBeat=['intro','interlude2','interlude4','boss'].includes(debugParams.get('beat'))?debugParams.get('beat'):'interlude2';showStory(storyBeat);return;}
   if(debugSystem==='dojo'){enterDojo();return;}
   if(debugSystem==='crossfire'){
     player.maxHealth=600;player.health=600;spawnBoss();const boss=enemies[0];const profile=BOSS_PROFILES[boss.def.id];boss.bossPhase=3;boss.health=boss.maxHealth*.3;boss.state='bossWindupCrossfire';boss.stateTime=BOSS_PATTERNS.crossfire.windup;boss.activePattern='crossfire';boss.patternTargetX=player.x;boss.patternTargetY=player.y;boss.patternAngle=Math.atan2(player.y-boss.y,player.x-boss.x)+.51;ui.bossPhase.textContent=profile.phaseNames[3];return;

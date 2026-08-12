@@ -7,6 +7,7 @@ import { encounterActiveLimit } from '../src/math.js';
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const game=readFileSync(new URL('../src/game.js',import.meta.url),'utf8');
 const data=readFileSync(new URL('../src/data.js',import.meta.url),'utf8');
+const styles=readFileSync(new URL('../styles.css',import.meta.url),'utf8');
 
 test('the run includes route and shop interaction surfaces',()=>{
   for(const id of ['route-screen','route-grid','shop-screen','shop-grid','gold-token'])assert.match(html,new RegExp(`id="${id}"`));
@@ -39,6 +40,23 @@ test('level ups support weighted rarity, rerolls, and a recovery skip',()=>{
   assert.match(game,/player\.health=Math\.min\(player\.maxHealth,player\.health\+18\)/);
   assert.match(game,/const earnedUnlock=pool\.find/);
   for(const id of ['unlockUndertow','unlockFoxfire','unlockHeart','unlockShock'])assert.match(game,new RegExp(`upgrade\.id==='${id}'`));
+});
+
+test('upgrade offers show exact build changes instead of hidden prose',()=>{
+  for(const helper of ['upgradeOfferClass','upgradeComparison','upgradeSynergyPreview'])assert.match(game,new RegExp(`function ${helper}\\(`));
+  assert.match(game,/class="upgrade-comparison"/);
+  assert.match(game,/class="upgrade-offer-class"/);
+  assert.match(game,/ABILITIES\.length|Object\.keys\(ABILITIES\)\.length/);
+  assert.doesNotMatch(styles,/\.upgrade-card \.upgrade-description\s*\{\s*display\s*:\s*none/);
+});
+
+test('each chapter has checkpoint-safe mid-run story continuity',()=>{
+  for(const chapterId of ['jadeChapter','bambooChapter','crimsonChapter'])assert.match(game,new RegExp(`${chapterId}:\\{accent:[\\s\\S]{0,4000}interlude2:[\\s\\S]{0,4000}interlude4:`));
+  assert.match(game,/encounter\.wave===1\)showStory\('interlude2'\)/);
+  assert.match(game,/encounter\.wave===3\)showStory\('interlude4'\)/);
+  assert.match(game,/interlude2'\)openRoute\(2\)/);
+  assert.match(game,/interlude4'\)openRoute\(4\)/);
+  for(const id of ['story-progress','story-objective'])assert.match(html,new RegExp(`id="${id}"`));
 });
 
 test('earned ability ladder replaces Tidal Slash with a readable Undertow trap',()=>{
