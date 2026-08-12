@@ -18,3 +18,10 @@ All files in this folder come from [Mixkit](https://mixkit.co/). Mixkit's free s
 - `upgrade-awaken.mp3` — “Fantasy game success notification”, Mixkit SFX #270.
 
 License reference: https://mixkit.co/license/
+
+## Adaptive soundtrack additions (CC0 / public domain)
+
+- `music-menu-upbeat.mp3` — “Hella Bumps” by The Cynic Project / pixelsphere.org, CC0, OpenGameArt: https://opengameart.org/content/hella-bumps-menu-music
+- `music-combat-orchestral.mp3` — “Battle Theme” by Wolfgang_, CC0, OpenGameArt: https://opengameart.org/content/battle-theme-0
+- `music-combat-rush.ogg` — “Fast fight / battle music” by Ville Nousiainen / Xythe / mutkanto, CC0, OpenGameArt: https://opengameart.org/content/fast-fight-battle-music
+- `music-boss-oh.mp3` — “Oh! boss!” by haruta, CC0, OpenGameArt: https://opengameart.org/content/oh-boss

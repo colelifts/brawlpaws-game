@@ -47,17 +47,17 @@ test('upgrade offers show exact build changes instead of hidden prose',()=>{
   assert.match(game,/class="upgrade-comparison"/);
   assert.match(game,/class="upgrade-type">\$\{upgradeOfferClass\(upgrade\)\}/);
   assert.doesNotMatch(game,/class="upgrade-detail"/);
-  assert.match(game,/class="upgrade-comparison">\$\{upgrade\.detail\.toUpperCase\(\)\}/);
+  assert.match(game,/class="upgrade-comparison">\$\{upgradeComparison\(upgrade\)\}/);
   assert.match(game,/ABILITIES\.length|Object\.keys\(ABILITIES\)\.length/);
   assert.doesNotMatch(styles,/\.upgrade-card \.upgrade-description\s*\{\s*display\s*:\s*none/);
-  assert.match(styles,/upgrade-icons-v2\.png/);
+  assert.match(styles,/choice-atlas-v1\.png/);
   assert.match(styles,/background-size:400% 400%/);
   for(const family of ['spiritMomentum','deepReserves','moonPiercer','bankShot','scatterBore'])assert.match(game,new RegExp(`['"]${family}['"]`));
 });
 
 test('combat presentation uses licensed recordings and whole-body hit reactions',()=>{
   for(const asset of ['dash-whoosh.mp3','impact-heavy.mp3','impact-strike.mp3','ability-heal.mp3','upgrade-awaken.mp3'])assert.match(game,new RegExp(asset.replace('.','\\.')));
-  for(const setting of ['musicVolume','sfxVolume'])assert.match(html,new RegExp(`data-setting="${setting}"`));
+  for(const setting of ['masterVolume','musicVolume','sfxVolume','abilityVolume','uiVolume'])assert.match(html,new RegExp(`data-audio-setting="${setting}"`));
   for(const helper of ['playSfx','registerEnemyHitReaction','enemyMotion'])assert.match(game,new RegExp(`function ${helper}\\(`));
   assert.match(game,/registerEnemyHitReaction\(enemy,direction,'ability',damage\)/);
   assert.match(game,/registerEnemyHitReaction\(enemy,direction,critical\?'critical':'projectile',damage\)/);
@@ -66,6 +66,19 @@ test('combat presentation uses licensed recordings and whole-body hit reactions'
   assert.match(game,/playSfx\('stomp'/);
   assert.match(game,/const lastSfxAt=new Map\(\)/);
   assert.doesNotMatch(game,/createOscillator|function playTone/);
+});
+
+test('Chrome performance, adaptive audio, and readable choice art are production-wired',()=>{
+  assert.match(game,/Math\.min\(window\.devicePixelRatio \|\| 1, 1\.25\)/);
+  assert.match(game,/window\.__BRAWLPAWS_PERF__/);
+  assert.match(game,/drawEffects\(false\)[\s\S]+const renderables[\s\S]+drawEffects\(true\)/);
+  assert.match(game,/const MUSIC_TRACKS=/);
+  for(const track of ['music-menu-upbeat.mp3','music-combat-orchestral.mp3','music-combat-rush.ogg','music-boss-oh.mp3'])assert.match(game,new RegExp(track.replace('.','\\.')));
+  for(const helper of ['musicTrackForState','switchMusic','updateAudioDirector','routeArtFrame','shopArtFrame','choiceArtFrame'])assert.match(game,new RegExp(`function ${helper}\\(`));
+  assert.match(game,/class="choice-art node-icon"/);
+  assert.match(game,/class="choice-art event-icon"/);
+  assert.match(game,/class="choice-art guardian-icon"/);
+  assert.match(game,/class="choice-art item-icon"/);
 });
 
 test('each chapter has checkpoint-safe mid-run story continuity',()=>{

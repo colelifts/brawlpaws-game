@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#080817" />
+  <link rel="icon" href="data:," />
   <title>BrawlPaws — Six-Chapter Roguelite Campaign</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -205,17 +206,25 @@
               <button data-setting="minimap" data-value="true">ON</button><button data-setting="minimap" data-value="false">OFF</button>
             </div>
           </article>
-          <article class="setting-row">
-            <div><strong>MUSIC VOLUME</strong><p>Controls the soft ambient score independently from combat sounds.</p></div>
-            <div class="setting-options" data-setting-group="musicVolume">
-              <button data-setting="musicVolume" data-value="0.16">FULL</button><button data-setting="musicVolume" data-value="0.07">SOFT</button><button data-setting="musicVolume" data-value="0">OFF</button>
-            </div>
+          <article class="setting-row audio-setting-row">
+            <div><strong>MASTER AUDIO</strong><p>Controls the entire BrawlPaws mix.</p></div>
+            <label class="audio-slider"><input type="range" min="0" max="1" step="0.01" data-audio-setting="masterVolume"><output data-audio-output="masterVolume">80%</output></label>
           </article>
-          <article class="setting-row">
-            <div><strong>COMBAT AUDIO</strong><p>Controls recorded weapon, impact, ability, enemy, and guardian sounds.</p></div>
-            <div class="setting-options" data-setting-group="sfxVolume">
-              <button data-setting="sfxVolume" data-value="1">FULL</button><button data-setting="sfxVolume" data-value="0.5">REDUCED</button><button data-setting="sfxVolume" data-value="0">OFF</button>
-            </div>
+          <article class="setting-row audio-setting-row">
+            <div><strong>MUSIC</strong><p>Adaptive menu, area, combat, and guardian music.</p></div>
+            <label class="audio-slider"><input type="range" min="0" max="1" step="0.01" data-audio-setting="musicVolume"><output data-audio-output="musicVolume">55%</output></label>
+          </article>
+          <article class="setting-row audio-setting-row">
+            <div><strong>WEAPONS &amp; IMPACTS</strong><p>Gunfire, arrows, body hits, slashes, and enemy attacks.</p></div>
+            <label class="audio-slider"><input type="range" min="0" max="1" step="0.01" data-audio-setting="sfxVolume"><output data-audio-output="sfxVolume">85%</output></label>
+          </article>
+          <article class="setting-row audio-setting-row">
+            <div><strong>ABILITIES</strong><p>Foxfire, Undertow, Wild Heart, lightning, and ultimates.</p></div>
+            <label class="audio-slider"><input type="range" min="0" max="1" step="0.01" data-audio-setting="abilityVolume"><output data-audio-output="abilityVolume">85%</output></label>
+          </article>
+          <article class="setting-row audio-setting-row">
+            <div><strong>UI &amp; REWARDS</strong><p>Menu confirmations, upgrades, discoveries, and rewards.</p></div>
+            <label class="audio-slider"><input type="range" min="0" max="1" step="0.01" data-audio-setting="uiVolume"><output data-audio-output="uiVolume">70%</output></label>
           </article>
         </div>
         <button id="close-settings">RETURN <kbd>ESC</kbd></button>

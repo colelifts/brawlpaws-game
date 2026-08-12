@@ -212,7 +212,7 @@ const ui = {
 const PROFILE_KEY='brawlpaws-profile-v1';
 const RUN_KEY='brawlpaws-run-v1';
 const RUN_VERSION=1;
-const DEFAULT_SETTINGS={screenShake:1,flashIntensity:1,damageNumbers:true,ambientMotion:true,minimap:true,musicVolume:.16,sfxVolume:1};
+const DEFAULT_SETTINGS={screenShake:1,flashIntensity:1,damageNumbers:true,ambientMotion:true,minimap:true,masterVolume:.8,musicVolume:.55,sfxVolume:.85,abilityVolume:.85,uiVolume:.7};
 const DEFAULT_CONTRACT_PROGRESS={spiritCull:0,eliteBreakers:0,foxfireHunt:0,sealRunner:0,guardianOath:0};
 const DEFAULT_PROFILE={spiritShards:0,campaignClears:0,runsStarted:0,bestDifficulty:'',lastDifficulty:'ferocious',selectedHero:'kitsune',highestLevel:1,vitalityRank:0,forgeRank:0,attunementRank:0,purseRank:0,ascensionRank:1,ascensionClears:0,unlockedHeroes:['kitsune','bamboo'],discoveredEnemies:['groveMinion'],discoveredGuardians:[],contractProgress:DEFAULT_CONTRACT_PROGRESS,claimedContracts:[],settings:DEFAULT_SETTINGS};
 function loadProfile(){
@@ -224,8 +224,7 @@ function loadProfile(){
     loaded.settings.damageNumbers=loaded.settings.damageNumbers!==false;
     loaded.settings.ambientMotion=loaded.settings.ambientMotion!==false;
     loaded.settings.minimap=loaded.settings.minimap!==false;
-    loaded.settings.musicVolume=[0,.07,.16].includes(Number(loaded.settings.musicVolume))?Number(loaded.settings.musicVolume):.16;
-    loaded.settings.sfxVolume=[0,.5,1].includes(Number(loaded.settings.sfxVolume))?Number(loaded.settings.sfxVolume):1;
+    for(const key of ['masterVolume','musicVolume','sfxVolume','abilityVolume','uiVolume'])loaded.settings[key]=clamp(Number(loaded.settings[key]??DEFAULT_SETTINGS[key]),0,1);
     loaded.discoveredEnemies=Array.isArray(loaded.discoveredEnemies)?loaded.discoveredEnemies:['groveMinion'];
     loaded.discoveredGuardians=Array.isArray(loaded.discoveredGuardians)?loaded.discoveredGuardians:[];
     loaded.unlockedHeroes=Array.isArray(loaded.unlockedHeroes)?loaded.unlockedHeroes:['kitsune','bamboo'];
@@ -392,9 +391,11 @@ let hitStop = 0;
 let clearDelay = -1;
 let comboUiTimer = 0;
 const lastSfxAt=new Map();
-const AUDIO_SOURCES={music:'assets/audio/music-spirit-woods.mp3',blaster:'assets/audio/weapon-blaster.mp3',arrow:'assets/audio/weapon-arrow.mp3',slice:'assets/audio/weapon-magic-slice.mp3',impact:'assets/audio/impact-body.mp3',strike:'assets/audio/impact-strike.mp3',heavyImpact:'assets/audio/impact-heavy.mp3',dash:'assets/audio/dash-whoosh.mp3',heal:'assets/audio/ability-heal.mp3',upgrade:'assets/audio/upgrade-awaken.mp3',fire:'assets/audio/ability-fire.mp3',water:'assets/audio/ability-water.mp3',lightning:'assets/audio/ability-lightning.mp3',stomp:'assets/audio/boss-stomp.mp3'};
+const AUDIO_SOURCES={blaster:'assets/audio/weapon-blaster.mp3',arrow:'assets/audio/weapon-arrow.mp3',slice:'assets/audio/weapon-magic-slice.mp3',impact:'assets/audio/impact-body.mp3',strike:'assets/audio/impact-strike.mp3',heavyImpact:'assets/audio/impact-heavy.mp3',dash:'assets/audio/dash-whoosh.mp3',heal:'assets/audio/ability-heal.mp3',upgrade:'assets/audio/upgrade-awaken.mp3',fire:'assets/audio/ability-fire.mp3',water:'assets/audio/ability-water.mp3',lightning:'assets/audio/ability-lightning.mp3',stomp:'assets/audio/boss-stomp.mp3'};
 const audioSamples=Object.fromEntries(Object.entries(AUDIO_SOURCES).map(([id,src])=>[id,new Audio(src)]));
-audioSamples.music.loop=true;
+const MUSIC_TRACKS={menu:'assets/audio/music-menu-upbeat.mp3',hub:'assets/audio/music-spirit-woods.mp3',grove:'assets/audio/music-combat-orchestral.mp3',rush:'assets/audio/music-combat-rush.ogg',boss:'assets/audio/music-boss-oh.mp3'};
+const musicPlayers=[new Audio(),new Audio()];for(const musicPlayer of musicPlayers)musicPlayer.loop=true;
+let audioUnlocked=false,activeMusicPlayer=0,activeMusicTrack='',musicFade=0;
 let enemyId = 0;
 let encounter;
 let currentUpgradeChoices = [];
@@ -582,6 +583,7 @@ function refreshSettingsUi(){
     const key=button.dataset.setting;const raw=button.dataset.value;const value=raw==='true'?true:raw==='false'?false:Number(raw);
     button.classList.toggle('selected',profile.settings[key]===value);
   }
+  for(const slider of settingsScreen.querySelectorAll('[data-audio-setting]')){const key=slider.dataset.audioSetting;slider.value=profile.settings[key];const output=settingsScreen.querySelector(`[data-audio-output="${key}"]`);if(output)output.value=`${Math.round(profile.settings[key]*100)}%`;}
 }
 
 function openSettings(returnState=state){
@@ -591,8 +593,10 @@ function openSettings(returnState=state){
 function closeSettings(){if(state!=='settings')return;settingsScreen.classList.remove('active');state=settingsReturnState||'preview';lastTime=performance.now();}
 
 function changeSetting(key,raw){
-  if(!(key in DEFAULT_SETTINGS))return;profile.settings[key]=raw==='true'?true:raw==='false'?false:Number(raw);if(key==='musicVolume')audioSamples.music.volume=profile.settings.musicVolume;saveProfile();refreshSettingsUi();
+  if(!(key in DEFAULT_SETTINGS))return;profile.settings[key]=raw==='true'?true:raw==='false'?false:Number(raw);saveProfile();refreshSettingsUi();applyAudioMix();
 }
+
+for(const slider of settingsScreen.querySelectorAll('[data-audio-setting]'))slider.addEventListener('input',()=>changeSetting(slider.dataset.audioSetting,slider.value));
 
 function returnToTitle(){
   runActive=false;pauseScreen.classList.remove('active');settingsScreen.classList.remove('active');dojoPanel.classList.remove('active');
@@ -1339,10 +1343,14 @@ function openRoute(nextWave){
   pendingRouteWave=nextWave;state='route';routeScreen.classList.add('active');currentRouteChoices=ROUTE_SETS[(nextWave-1)%ROUTE_SETS.length];
   ui.routeBiome.textContent=`${room.name.toUpperCase()}  BRANCHING ROUTE`;
   ui.routeProgress.innerHTML=[...Array(chapter.waves.length).keys(),'boss'].map((step,index)=>`<span class="route-step ${index<nextWave?'cleared':index===nextWave?'current':''} ${step==='boss'?'boss':''}">${step==='boss'?'BOSS':index+1}</span>`).join('');
-  routeGrid.innerHTML=currentRouteChoices.map((node,index)=>`<button class="route-card ${node.id==='elite'?'elite':''}" style="--node:${node.color}" data-route-index="${index}"><span class="node-icon">${node.icon}</span><strong>${node.name}</strong><em>${node.tag}</em><span>${node.description}</span></button>`).join('');
+  routeGrid.innerHTML=currentRouteChoices.map((node,index)=>`<button class="route-card ${node.id==='elite'?'elite':''}" style="--node:${node.color}" data-route-index="${index}"><span class="choice-art node-icon" data-choice-art="${routeArtFrame(node.id)}" aria-hidden="true"></span><strong>${node.name}</strong><em>${node.tag}</em><span>${node.description}</span></button>`).join('');
   for(const button of routeGrid.querySelectorAll('.route-card'))button.addEventListener('click',()=>selectRoute(Number(button.dataset.routeIndex)));
   refreshRouteSummary();updateHud();playSfx('upgrade',.2,.92);saveRunCheckpoint({kind:'route',nextWave});
 }
+
+function routeArtFrame(id){return ({combat:8,event:14,elite:9,shop:11,treasure:12,secret:14,shrine:13,heal:10}[id]??8);}
+function shopArtFrame(id){return ({moonTonic:10,twinSpirits:0,spiritScope:3,jadeBand:2,foxfireCharm:5,stormSeal:7}[id]??12);}
+function choiceArtFrame(choice){const text=`${choice.name} ${choice.tag||''} ${choice.type||''}`.toLowerCase();if(text.includes('heart')||text.includes('health')||text.includes('mercy'))return 6;if(text.includes('fire')||text.includes('inferno')||text.includes('oni'))return 5;if(text.includes('storm')||text.includes('lightning')||text.includes('tempest'))return 7;if(text.includes('water')||text.includes('current')||text.includes('tide'))return 4;if(text.includes('gold')||text.includes('fortune')||text.includes('cache'))return 12;if(text.includes('ward')||text.includes('shell')||text.includes('aegis'))return 2;if(text.includes('crown')||text.includes('power'))return 15;if(text.includes('weapon')||text.includes('edge')||text.includes('hunt'))return 0;return 14;}
 
 function refreshRouteSummary(){
   ui.routeHealth.textContent=`HP ${Math.ceil(player.health)} / ${player.maxHealth}`;ui.routeGold.textContent=`GOLD ${player.gold}`;ui.routeRelics.textContent=player.relics.length?player.relics.map((id)=>RELICS.find((relic)=>relic.id===id)?.name).join('  '):'NO RELICS';
@@ -1362,7 +1370,7 @@ function openRouteEvent(kind){
   activeRouteEvent=(unseen.length?unseen:pool)[Math.floor(Math.random()*(unseen.length?unseen.length:pool.length))];
   player.eventHistory.add(`${kind}:${activeRouteEvent.title}`);state='event';eventScreen.classList.add('active');
   ui.eventKicker.textContent=activeRouteEvent.kicker;ui.eventTitle.textContent=activeRouteEvent.title;ui.eventCopy.textContent=activeRouteEvent.copy;ui.eventQuote.textContent=activeRouteEvent.quote;
-  eventChoiceGrid.innerHTML=activeRouteEvent.choices.map((choice,index)=>`<button class="event-choice" style="--event:${choice.color}" data-event-index="${index}" ${choice.available&&!choice.available()?'disabled':''}><strong>${choice.name}</strong><em>${choice.tag}</em><p>${choice.description}</p><b>${choice.result}</b></button>`).join('');
+  eventChoiceGrid.innerHTML=activeRouteEvent.choices.map((choice,index)=>`<button class="event-choice" style="--event:${choice.color}" data-event-index="${index}" ${choice.available&&!choice.available()?'disabled':''}><span class="choice-art event-icon" data-choice-art="${choiceArtFrame(choice)}" aria-hidden="true"></span><strong>${choice.name}</strong><em>${choice.tag}</em><p>${choice.description}</p><b>${choice.result}</b></button>`).join('');
   for(const button of eventChoiceGrid.querySelectorAll('.event-choice'))button.addEventListener('click',()=>chooseRouteEvent(Number(button.dataset.eventIndex)));
   playSfx('upgrade',.24,kind==='secret'?1.18:.9);
 }
@@ -1381,7 +1389,7 @@ function openGuardianReward(guardianId){
   const guardianCourt=chapter.bossRoom&&ROOMS[chapter.bossRoom];if(guardianCourt&&room.id!==guardianCourt.id)activateRoom(guardianCourt,{reposition:true});
   clearDelay=-1;pendingGuardianReward=guardianId;currentGuardianRewards=reward.choices;state='guardianReward';guardianRewardScreen.classList.add('active');
   ui.guardianRewardKicker.textContent=reward.kicker;ui.guardianRewardTitle.textContent=reward.title;ui.guardianRewardCopy.textContent=reward.copy;
-  guardianRewardGrid.innerHTML=reward.choices.map((choice,index)=>`<button class="guardian-reward-card ${reward.final?'final-vow':''}" style="--guardian:${choice.color}" data-guardian-reward="${index}"><span class="guardian-choice">${index+1} / CLAIM</span><span class="guardian-icon">${choice.icon}</span><strong>${choice.name}</strong><em>${choice.type}</em><p>${choice.description}</p><b>${choice.detail}</b></button>`).join('');
+  guardianRewardGrid.innerHTML=reward.choices.map((choice,index)=>`<button class="guardian-reward-card ${reward.final?'final-vow':''}" style="--guardian:${choice.color}" data-guardian-reward="${index}"><span class="guardian-choice">${index+1} / CLAIM</span><span class="choice-art guardian-icon" data-choice-art="${choiceArtFrame(choice)}" aria-hidden="true"></span><strong>${choice.name}</strong><em>${choice.type}</em><p>${choice.description}</p><b>${choice.detail}</b></button>`).join('');
   for(const button of guardianRewardGrid.querySelectorAll('.guardian-reward-card'))button.addEventListener('click',()=>chooseGuardianReward(Number(button.dataset.guardianReward)));
   saveRunCheckpoint({kind:'guardianReward',guardianId});playSfx('upgrade',.32,reward.final?.86:1.1);
 }
@@ -1521,7 +1529,7 @@ function openShop(){
 function renderShop(){
   ui.shopGold.textContent=` ${player.gold}`;
   const items=SHOP_ITEMS.filter((item)=>item.available()).slice(0,4);
-  shopGrid.innerHTML=items.map((item,index)=>`<button class="shop-item" style="--item:${item.color}" data-shop-index="${index}" ${player.gold<item.price?'disabled':''}><span class="item-icon">${item.icon}</span><strong>${item.name}</strong><p>${item.description}</p><b> ${item.price}</b></button>`).join('');
+  shopGrid.innerHTML=items.map((item,index)=>`<button class="shop-item" style="--item:${item.color}" data-shop-index="${index}" ${player.gold<item.price?'disabled':''}><span class="choice-art item-icon" data-choice-art="${shopArtFrame(item.id)}" aria-hidden="true"></span><strong>${item.name}</strong><p>${item.description}</p><b> ${item.price}</b></button>`).join('');
   for(const button of shopGrid.querySelectorAll('.shop-item'))button.addEventListener('click',()=>buyShopItem(items[Number(button.dataset.shopIndex)]));
 }
 
@@ -1618,7 +1626,7 @@ function renderUpgradeChoices(){
       <span class="upgrade-icon ${upgrade.type==='ARSENAL AWAKENING'?'arsenal-icon':''}" data-arsenal="${upgrade.id}" data-icon="${upgradeIconFrame(upgrade)}"></span>
       <strong>${upgrade.name}</strong>
       <span class="upgrade-type">${upgradeOfferClass(upgrade)}</span>
-      <span class="upgrade-comparison">${upgrade.detail.toUpperCase()}</span>
+      <span class="upgrade-comparison">${upgradeComparison(upgrade)}</span>
       ${upgradeSynergyPreview(upgrade)?`<span class="upgrade-synergy">${upgradeSynergyPreview(upgrade)}</span>`:''}
     </button>`).join('');
   for (const button of upgradeGrid.querySelectorAll('.upgrade-card')) {
@@ -1763,7 +1771,8 @@ function endGame(won) {
 function resize() {
   const width = shell.clientWidth;
   const height = shell.clientHeight;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  // 1.25x remains crisp on high-DPI displays while avoiding Chrome's costly 4x pixel workload at 2x DPR.
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.25);
   if (canvas.width !== Math.round(width * dpr) || canvas.height !== Math.round(height * dpr)) {
     canvas.width = Math.round(width * dpr);
     canvas.height = Math.round(height * dpr);
@@ -1775,10 +1784,21 @@ function resize() {
   return { width, height, dpr };
 }
 
-function ensureAudio(){audioSamples.music.volume=profile.settings.musicVolume;if(audioSamples.music.paused)audioSamples.music.play().catch(()=>{});}
+function musicTrackForState(){
+  if(state==='preview'||state==='codex'||state==='settings'&&settingsReturnState==='preview')return 'menu';
+  if(state==='hub'||state==='hubMenu'||room.id==='spiritVillage')return 'hub';
+  if(encounter?.bossActive||state==='guardianReward')return 'boss';
+  return chapterIndex===0?'grove':chapterIndex%2?'rush':'grove';
+}
+function applyAudioMix(){const volume=profile.settings.masterVolume*profile.settings.musicVolume*.68;for(let i=0;i<musicPlayers.length;i++)musicPlayers[i].volume=clamp(volume*(musicFade>0?(i===activeMusicPlayer?musicFade:1-musicFade):(i===activeMusicPlayer?1:0)),0,1);}
+function switchMusic(trackId){
+  if(!audioUnlocked||trackId===activeMusicTrack||!MUSIC_TRACKS[trackId])return;const next=1-activeMusicPlayer,player=musicPlayers[next];player.src=MUSIC_TRACKS[trackId];player.currentTime=0;player.volume=0;player.play().catch(()=>{});activeMusicPlayer=next;activeMusicTrack=trackId;musicFade=.001;
+}
+function updateAudioDirector(dt){if(!audioUnlocked)return;switchMusic(musicTrackForState());if(musicFade>0)musicFade=Math.min(1,musicFade+dt*1.65);applyAudioMix();if(musicFade>=1){musicPlayers[1-activeMusicPlayer].pause();musicFade=0;applyAudioMix();}}
+function ensureAudio(){audioUnlocked=true;switchMusic(musicTrackForState());updateAudioDirector(.016);}
 
 function playSfx(id,volume=.35,rate=1,cooldown){
-  const source=audioSamples[id],mix=profile.settings.sfxVolume;if(!source||mix<=0)return;
+  const source=audioSamples[id],abilityIds=new Set(['fire','water','lightning','heal']),uiIds=new Set(['upgrade']),bus=abilityIds.has(id)?'abilityVolume':uiIds.has(id)?'uiVolume':'sfxVolume',mix=profile.settings.masterVolume*profile.settings[bus];if(!source||mix<=0)return;
   const intervals={impact:42,strike:90,heavyImpact:105,arrow:75,blaster:42,slice:80,fire:110,water:130,lightning:155,stomp:180,dash:90,heal:180,upgrade:160};const now=performance.now(),minimum=cooldown??intervals[id]??65;
   if(now-(lastSfxAt.get(id)||-Infinity)<minimum)return;lastSfxAt.set(id,now);
   const sound=source.cloneNode();sound.volume=clamp(volume*mix,0,1);sound.playbackRate=rate*(.96+Math.random()*.08);sound.play().catch(()=>{});
@@ -2763,12 +2783,18 @@ function setWorldTransform(screen) {
     screen.dpr * (screen.height / 2 - camera.y * camera.zoom + shakeY));
 }
 
+function drawArenaBackdrop(screen){
+  if(!assets.arena.complete||!assets.arena.naturalWidth){ctx.fillStyle='#12112a';ctx.fillRect(0,0,room.width,room.height);return;}
+  const halfWidth=screen.width/(camera.zoom*2)+160,halfHeight=screen.height/(camera.zoom*2)+160;
+  const x=clamp(camera.x-halfWidth,0,room.width),y=clamp(camera.y-halfHeight,0,room.height),width=Math.min(room.width-x,halfWidth*2),height=Math.min(room.height-y,halfHeight*2);
+  ctx.drawImage(assets.arena,x/room.width*assets.arena.naturalWidth,y/room.height*assets.arena.naturalHeight,width/room.width*assets.arena.naturalWidth,height/room.height*assets.arena.naturalHeight,x,y,width,height);
+}
+
 function draw(screen) {
   ctx.setTransform(screen.dpr, 0, 0, screen.dpr, 0, 0);
   ctx.fillStyle = '#080718'; ctx.fillRect(0, 0, screen.width, screen.height);
   setWorldTransform(screen);
-  if (assets.arena.complete && assets.arena.naturalWidth) ctx.drawImage(assets.arena, 0, 0, room.width, room.height);
-  else { ctx.fillStyle = '#12112a'; ctx.fillRect(0, 0, room.width, room.height); }
+  drawArenaBackdrop(screen);
 
   if(room.id!=='spiritVillage')drawWorldZones();
   if(room.id==='jadeCourtyard'){drawFloorDetails();drawArchitectureLandmarks();drawLightPools();}
@@ -2778,6 +2804,8 @@ function draw(screen) {
   if(room.id!=='spiritVillage')drawRoomInteractable();
   if(room.id==='jadeCourtyard')drawSpiritGates();
   for (const after of effects.afterimages) drawHero(after, after.life / after.maxLife * .36, true);
+  // Attack art belongs in the world, behind readable character silhouettes. Hit motion/status tint stays on bodies.
+  drawEffects(false);
   const renderables = [
     ...(room.id==='jadeCourtyard'?props.filter((prop) => !prop.foreground).map((prop) => ({ ...prop, renderType: 'prop' })):[]),
     ...destructibles.filter((prop)=>!prop.broken).map((prop)=>({...prop,renderType:'destructible'})),
@@ -2785,7 +2813,7 @@ function draw(screen) {
     ...(roomMission?.ward&&!roomMission.complete?[{...roomMission.ward,renderType:'missionWard'}]:[]),
     ...enemies.filter((enemy) => enemy.state !== 'waiting' && (enemy.deathTime > 0 || !enemy.dead)),
     ...[...coop.remotePlayers.values()].filter((member)=>member.room===room.id&&member.state!=='preview').map((member)=>({...member,renderType:'coopPlayer'})),player
-  ].sort((a, b) => a.y - b.y);
+  ].filter((entity)=>entity&&Math.abs(entity.x-camera.x)<screen.width/(camera.zoom*2)+520&&Math.abs(entity.y-camera.y)<screen.height/(camera.zoom*2)+420).sort((a, b) => a.y - b.y);
   for (const entity of renderables) {
     if (entity.renderType === 'prop') drawProp(entity);
     else if(entity.renderType==='destructible')drawDestructible(entity);
@@ -2796,9 +2824,9 @@ function draw(screen) {
     else if (entity === player) drawHero(player, 1, false);
     else drawEnemy(entity);
   }
-  drawEffects();
   if(room.id==='jadeCourtyard')for (const prop of props.filter((item) => item.foreground)) drawProp(prop, .94);
   drawForegroundHaze();
+  drawEffects(true);
   if(player?.ultimateFlash>0&&profile.settings.flashIntensity>0){ctx.setTransform(screen.dpr,0,0,screen.dpr,0,0);const a=clamp(player.ultimateFlash/.16,0,1)*profile.settings.flashIntensity;const flash=ctx.createRadialGradient(screen.width/2,screen.height/2,20,screen.width/2,screen.height/2,screen.width*.7);flash.addColorStop(0,`rgba(255,214,126,${a*.42})`);flash.addColorStop(.45,`rgba(201,53,255,${a*.26})`);flash.addColorStop(1,'rgba(82,10,122,0)');ctx.fillStyle=flash;ctx.fillRect(0,0,screen.width,screen.height);}
   drawMinimap();
 }
@@ -3303,7 +3331,8 @@ function drawGridAtlasFrame(sheet, frame, columns, rows, x, y, width, height, ro
   ctx.save();ctx.translate(x,y);ctx.rotate(rotation);ctx.globalAlpha=alpha;if(glow){ctx.shadowColor=glow;ctx.shadowBlur=24;}ctx.drawImage(sheet,sx,sy,sw,sh,-width/2,-height/2,width,height);ctx.restore();return true;
 }
 
-function drawEffects() {
+function drawEffects(textOnly=false) {
+  if(textOnly){drawCombatText();return;}
   for(const pressure of effects.biomePressures){
     const warning=pressure.stage==='warning',p=1-pressure.life/pressure.maxLife,pulse=.82+Math.sin(performance.now()/85+pressure.index)*.14;ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=warning?.35+p*.4:.44;
     if(pressure.type==='bellEcho'){ctx.translate(pressure.x,pressure.y);ctx.scale(1,.58);ctx.strokeStyle=warning?'#fff3a1':pressure.color;ctx.fillStyle=`${pressure.color}18`;ctx.shadowColor=pressure.color;ctx.shadowBlur=22;ctx.lineWidth=warning?4+p*5:8;ctx.setLineDash(warning?[22,11,5,10]:[]);ctx.lineDashOffset=-performance.now()/30;ctx.beginPath();ctx.arc(0,0,pressure.radius*pulse,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.rotate(performance.now()/900);for(let i=0;i<8;i++){ctx.rotate(Math.PI/4);ctx.strokeRect(pressure.radius*.66,-7,14,14);}ctx.setLineDash([]);}
@@ -3387,6 +3416,9 @@ function drawEffects() {
     ctx.save(); ctx.translate(particle.x, particle.y); ctx.rotate(Math.atan2(particle.vy, particle.vx)); ctx.fillRect(-particle.size * 1.8, -particle.size / 2, particle.size * 3.6, particle.size); ctx.restore();
   }
   ctx.shadowBlur = 0;
+}
+
+function drawCombatText(){
   if(profile.settings.damageNumbers)for (const number of effects.numbers) {
     const p = 1 - number.life / number.maxLife;
     const scale = p < .18 ? lerp(.4, 1.35, p / .18) : lerp(1.35, .9, (p - .18) / .82);
@@ -3408,15 +3440,21 @@ function easeOutBack(x) {
   return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
 }
 
+let lastDrawTime=0,lastFrameMetric=performance.now();const frameDurations=[];
 function frame(now) {
   const screen = resize();
   const dt = Math.min((now - lastTime) / 1000, .033);
   lastTime = now;
-  update(dt, screen); draw(screen);
+  updateAudioDirector(dt);
+  const liveWorld=['playing','hub','dojo'].includes(state),ambientPreview=state==='preview'&&profile.settings.ambientMotion;
+  if(liveWorld){update(dt,screen);draw(screen);lastDrawTime=now;}
+  else if(ambientPreview&&now-lastDrawTime>=50){update(Math.min(dt,.05),screen);draw(screen);lastDrawTime=now;}
+  else if(!lastDrawTime||now-lastDrawTime>=1000){update(0,screen);draw(screen);lastDrawTime=now;}
+  const frameMs=now-lastFrameMetric;lastFrameMetric=now;if(liveWorld&&frameMs<100){frameDurations.push(frameMs);if(frameDurations.length>180)frameDurations.shift();const sorted=[...frameDurations].sort((a,b)=>a-b),average=frameDurations.reduce((sum,value)=>sum+value,0)/frameDurations.length;window.__BRAWLPAWS_PERF__={fps:Math.round(1000/average),p95Ms:Number((sorted[Math.floor(sorted.length*.95)]||0).toFixed(1)),renderDpr:screen.dpr,samples:frameDurations.length,effects:Object.values(effects).reduce((sum,list)=>sum+(Array.isArray(list)?list.length:0),0)};}
   requestAnimationFrame(frame);
 }
 
-window.addEventListener('resize', resize);
+window.addEventListener('resize', ()=>{lastDrawTime=0;resize();});
 window.addEventListener('keydown', (event) => {
   const key = event.key.toLowerCase();
   if(state==='settings'&&(key==='escape'||key==='o')){closeSettings();event.preventDefault();return;}

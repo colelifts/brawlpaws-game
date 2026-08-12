@@ -9,6 +9,8 @@ const mime = {
   '.js': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.png': 'image/png',
+  '.mp3': 'audio/mpeg',
+  '.ogg': 'audio/ogg',
   '.svg': 'image/svg+xml',
   '.json': 'application/json; charset=utf-8'
 };
