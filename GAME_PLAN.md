@@ -83,7 +83,7 @@ Every milestone is reviewed against the supplied gameplay, loadout, hub, hero-ro
 - Brawlers wind up and commit to weapon strikes; boar visibly prepares and slams
 - Contact shadows reduced to soft ellipses directly under the feet
 - Muzzle flashes, trails, impact stars, elemental colors, comic words, XP shards, and enemy death bursts
-- Audio layers for attacks, impacts, abilities, pickups, room clear, and player damage
+- Recorded Mixkit audio layers now cover weapons, dash, light/heavy impacts, enemy strikes, elemental abilities, healing, upgrades, boss slams, and soft background music; independent music/SFX controls and anti-stacking mix limits keep large armies clean
 - Add missing Kitsune hurt, stun, death, victory, and ability-specific animation sheets when final art is available
 
 **Exit gate:** screenshots and live motion plausibly belong to the same game as the concept art. No attack can look like a static sprite sliding into a target.

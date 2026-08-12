@@ -45,9 +45,24 @@ test('level ups support weighted rarity, rerolls, and a recovery skip',()=>{
 test('upgrade offers show exact build changes instead of hidden prose',()=>{
   for(const helper of ['upgradeOfferClass','upgradeComparison','upgradeSynergyPreview'])assert.match(game,new RegExp(`function ${helper}\\(`));
   assert.match(game,/class="upgrade-comparison"/);
-  assert.match(game,/class="upgrade-offer-class"/);
+  assert.match(game,/class="upgrade-type">\$\{upgradeOfferClass\(upgrade\)\}/);
+  assert.doesNotMatch(game,/class="upgrade-detail"/);
+  assert.match(game,/class="upgrade-comparison">\$\{upgrade\.detail\.toUpperCase\(\)\}/);
   assert.match(game,/ABILITIES\.length|Object\.keys\(ABILITIES\)\.length/);
   assert.doesNotMatch(styles,/\.upgrade-card \.upgrade-description\s*\{\s*display\s*:\s*none/);
+});
+
+test('combat presentation uses licensed recordings and whole-body hit reactions',()=>{
+  for(const asset of ['dash-whoosh.mp3','impact-heavy.mp3','impact-strike.mp3','ability-heal.mp3','upgrade-awaken.mp3'])assert.match(game,new RegExp(asset.replace('.','\\.')));
+  for(const setting of ['musicVolume','sfxVolume'])assert.match(html,new RegExp(`data-setting="${setting}"`));
+  for(const helper of ['playSfx','registerEnemyHitReaction','enemyMotion'])assert.match(game,new RegExp(`function ${helper}\\(`));
+  assert.match(game,/registerEnemyHitReaction\(enemy,direction,'ability',damage\)/);
+  assert.match(game,/registerEnemyHitReaction\(enemy,direction,critical\?'critical':'projectile',damage\)/);
+  assert.match(game,/enemy\.hitReactTime=Math\.max\(0/);
+  assert.match(game,/const speed=Math\.hypot\(enemy\.vx\|\|0,enemy\.vy\|\|0\)/);
+  assert.match(game,/playSfx\('stomp'/);
+  assert.match(game,/const lastSfxAt=new Map\(\)/);
+  assert.doesNotMatch(game,/createOscillator|function playTone/);
 });
 
 test('each chapter has checkpoint-safe mid-run story continuity',()=>{

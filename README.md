@@ -51,7 +51,7 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - Deliberately modest starting Spirit Blaster damage with directional gunner poses, muzzle flash, recoil, neon projectile trails, and ranged hit reactions
 - Directional dash with i-frames, afterimages, streak particles, and cooldown UI
 - Jade Brawler enemies with pursuit, separation, telegraphed lunges, health, knockback, and death
-- Hit-stop, damage numbers, impact rings, sparks, comic attack words, recorded combat SFX, and a soft looping score (licensed sources are listed in `assets/audio/CREDITS.md`)
+- Hit-stop, damage numbers, impact rings, sparks, comic attack words, directional whole-body enemy reactions, speed-scaled run cycles, recorded combat SFX with anti-stacking mix limits, and an independently adjustable soft looping score (licensed sources are listed in `assets/audio/CREDITS.md`)
 - Ability hits drive target-specific burn recoil, wet squash, and shock jitter/tint reactions instead of placing the whole effect over the enemy body
 - Grounded fade-and-rise enemy entrances, reduced normal-enemy scale, and locomotion bob/lean cycles for every enemy family and all three guardians
 - Compact illustrated upgrade cards with a dedicated nine-emblem atlas and one-line outcome summaries

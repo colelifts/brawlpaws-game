@@ -11,5 +11,10 @@ All files in this folder come from [Mixkit](https://mixkit.co/). Mixkit's free s
 - `ability-water.mp3` — “Water splash”, Mixkit SFX #1311.
 - `ability-lightning.mp3` — “Electricity lightning blast”, Mixkit SFX #2601.
 - `boss-stomp.mp3` — “Golem stomp”, Mixkit SFX #3046.
+- `dash-whoosh.mp3` — “Air woosh”, Mixkit SFX #1489.
+- `impact-strike.mp3` — “Strong punches to the body”, Mixkit SFX #2198.
+- `impact-heavy.mp3` — “Metal hammer hit”, Mixkit SFX #833.
+- `ability-heal.mp3` — “Spell of healing”, Mixkit SFX #876.
+- `upgrade-awaken.mp3` — “Fantasy game success notification”, Mixkit SFX #270.
 
 License reference: https://mixkit.co/license/
