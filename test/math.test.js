@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { clamp, normalize, segmentCircleHit, shortestAngle, withinArc } from '../src/math.js';
+import { clamp, normalize, segmentCircleHit, shortestAngle, withinArc, encounterActiveLimit, cappedWardPressure } from '../src/math.js';
 import { HEROES, WEAPONS, ABILITIES, STATUS_EFFECTS, ELITE_MODIFIERS, BOSS_PATTERNS, BOSS_PROFILES, ENEMIES, ENCOUNTERS, ROOMS, DIFFICULTIES } from '../src/data.js';
 
 test('math helpers support movement and spatial hit tests', () => {
@@ -11,6 +11,17 @@ test('math helpers support movement and spatial hit tests', () => {
   assert.ok(Math.abs(shortestAngle(Math.PI * 0.9, -Math.PI * 0.9)) < Math.PI);
   assert.equal(withinArc({ x: 0, y: 0 }, 0, { x: 100, y: 0, radius: 10 }, 95, Math.PI / 2), true);
   assert.equal(withinArc({ x: 0, y: 0 }, 0, { x: -40, y: 0, radius: 10 }, 95, Math.PI / 2), false);
+});
+
+test('army reserves cap simultaneous threats while preserving difficulty and co-op scaling',()=>{
+  assert.equal(encounterActiveLimit({waveIndex:0,chapterIndex:0}),8);
+  const lateSolo=encounterActiveLimit({waveIndex:5,chapterIndex:2,difficultyId:'nightmare'});
+  const lateCoop=encounterActiveLimit({waveIndex:5,chapterIndex:2,difficultyId:'nightmare',partySize:4});
+  assert.equal(lateSolo,34);
+  assert.equal(lateCoop,44);
+  assert.ok(lateSolo>encounterActiveLimit({waveIndex:1,chapterIndex:0,difficultyId:'spirited'}));
+  assert.equal(cappedWardPressure(999,520,40),520/(40*.62));
+  assert.equal(cappedWardPressure(8,520,40),8);
 });
 
 test('Phase 1 definitions are internally valid', () => {
@@ -54,19 +65,22 @@ test('the hero roster contains distinct ranged archetypes',()=>{
 });
 
 test('the starter ability loadout is complete and data-driven', () => {
-  assert.deepEqual(Object.keys(ABILITIES), ['riptide', 'foxfireVolley', 'wildHeart', 'shockPaws']);
+  assert.deepEqual(Object.keys(ABILITIES), ['undertowWell', 'foxfireVolley', 'wildHeart', 'shockPaws']);
   assert.equal(new Set(Object.values(ABILITIES).map((ability) => ability.id)).size, 4);
   for (const ability of Object.values(ABILITIES)) {
     assert.ok(ability.cooldown > 0);
     assert.match(ability.color, /^#[0-9a-f]{6}$/i);
   }
-  assert.ok(ABILITIES.riptide.duration > 0);
+  assert.deepEqual(Object.values(ABILITIES).map((ability)=>ability.unlockLevel),[2,4,6,8]);
+  assert.ok(ABILITIES.undertowWell.duration > 0);
+  assert.ok(ABILITIES.undertowWell.collapseDamage > ABILITIES.undertowWell.damage);
+  assert.ok(ABILITIES.undertowWell.pull >= 900);
   assert.ok(ABILITIES.foxfireVolley.burnDuration > 0);
   assert.ok(ABILITIES.wildHeart.damageReduction > 0);
   assert.ok(ABILITIES.shockPaws.duration >= 5);
   assert.ok(ABILITIES.shockPaws.damage >= 16);
   assert.ok(ABILITIES.shockPaws.tickRate > 0);
-  assert.ok(ABILITIES.riptide.wetDuration > 0);
+  assert.ok(ABILITIES.undertowWell.wetDuration > 0);
 });
 
 test('statuses and elite mutations have complete combat data',()=>{
@@ -112,7 +126,7 @@ test('boss profiles expose reusable timing and phase schedules',()=>{
 test('the Jade Grove chapter escalates into a real boss encounter', () => {
   const chapter = ENCOUNTERS.jadeChapter;
   assert.equal(chapter.waves.length, 6);
-  assert.deepEqual(chapter.waves.map((wave)=>wave.targetCount||wave.roster.length),[4,8,13,18,28,40]);
+  assert.deepEqual(chapter.waves.map((wave)=>wave.targetCount||wave.roster.length),[4,10,18,30,48,72]);
   assert.ok(chapter.waves[3].roster.length >= 18);
   assert.ok(chapter.waves[3].speedScale > chapter.waves[0].speedScale);
   assert.ok(chapter.waves[3].healthScale > chapter.waves[0].healthScale);
@@ -138,7 +152,7 @@ test('Bamboo Hollow is a harder second chapter with its own enemy family and gua
   const chapter = ENCOUNTERS.bambooChapter;
   assert.equal(chapter.room, 'bambooHollow');
   assert.equal(chapter.waves.length, 6);
-  assert.deepEqual(chapter.waves.map((wave)=>wave.targetCount||wave.roster.length),[8,14,22,30,44,58]);
+  assert.deepEqual(chapter.waves.map((wave)=>wave.targetCount||wave.roster.length),[14,14,22,30,84,112]);
   assert.ok(chapter.waves[0].roster.length >= 8);
   assert.ok(chapter.waves[3].roster.length >= 30);
   assert.ok(chapter.waves[3].speedScale > ENCOUNTERS.jadeChapter.waves[3].speedScale * .9);
@@ -154,7 +168,7 @@ test('Bamboo Hollow is a harder second chapter with its own enemy family and gua
 test('Crimson Dojo escalates into the densest chapter and a third giant guardian', () => {
   const chapter=ENCOUNTERS.crimsonChapter;
   assert.equal(chapter.room,'crimsonDojo');
-  assert.deepEqual(chapter.waves.map((wave)=>wave.targetCount||wave.roster.length),[12,20,30,42,56,72]);
+  assert.deepEqual(chapter.waves.map((wave)=>wave.targetCount||wave.roster.length),[12,20,30,42,112,150]);
   assert.ok(chapter.waves.every((wave,index)=>index===0||wave.healthScale>chapter.waves[index-1].healthScale));
   assert.ok(chapter.waves.every((wave,index)=>index===0||wave.speedScale>chapter.waves[index-1].speedScale));
   for(const id of ['emberAkita','gongwing','ironhorn'])assert.equal(ENEMIES[id].biome,'crimson');

@@ -105,8 +105,8 @@ button, kbd { font: inherit; }
 #game-shell[data-hero="rusty"] .ability.weapon{border-color:#ff9b32;color:#ffb33f}
 #game-shell[data-hero="rusty"] .blaster-icon::before{width:43px;height:16px;border-radius:5px 12px 5px 4px;background:linear-gradient(180deg,#e9f6f0 0 24%,#4b515d 28% 51%,#152229 54% 100%);border:2px solid #160d12;box-shadow:-10px 13px 0 -3px #704221,10px -12px 0 -3px #b7d7d0,0 0 13px #ffad35;transform:translate(-7px,-3px) rotate(-18deg)}
 #game-shell[data-hero="rusty"] .blaster-icon::after{width:42px;height:5px;border-radius:5px;background:linear-gradient(90deg,#fff8cf,#ffb231 55%,#48eeff);box-shadow:0 0 9px #ffb231,13px 13px 0 -1px #48eeff;transform:translate(13px,-15px) rotate(-18deg)}
-.tide-icon::before { content:""; width:42px; height:42px; border:9px solid #eaffff; border-left-color:transparent; border-bottom-color:#30e8ff; border-radius:50%; transform:rotate(-34deg); box-shadow:0 0 10px #27dcff,inset 0 0 9px #156be8; }
-.tide-icon::after { content:""; position:absolute; width:42px; height:4px; background:#55efff; transform:rotate(-18deg); box-shadow:0 8px 0 #3170eb,0 0 9px #48eaff; clip-path:polygon(0 50%,100% 0,82% 100%); }
+.undertow-icon::before { content:""; width:43px; height:43px; border:8px solid #eaffff; border-left-color:#1266d9; border-bottom-color:#30e8ff; border-radius:50%; transform:rotate(-34deg); box-shadow:0 0 10px #27dcff,inset 0 0 9px #156be8; }
+.undertow-icon::after { content:""; position:absolute; width:18px; height:18px; border-radius:50%; background:#061847; box-shadow:0 0 0 5px #33e9ff,0 0 18px #48eaff; }
 .flame-icon::before { content:""; width:43px; height:53px; background:linear-gradient(145deg,#fff3a5,#ff9821 40%,#ef3131 76%,#7c1426); clip-path:polygon(54% 0,72% 27%,91% 14%,84% 55%,100% 62%,67% 100%,25% 91%,0 60%,25% 32%,32% 56%); filter:drop-shadow(0 0 9px #ff5b23); }
 .heart-icon::before { content:"♥"; color:#baff8c; font:900 48px Impact; text-shadow:0 0 7px #fff,0 0 17px #47ef55; transform:rotate(-6deg); }
 .heart-icon::after { content:""; position:absolute; width:48px; height:48px; border:3px solid #70f05d; border-radius:50%; box-shadow:0 0 12px #54ea66; }

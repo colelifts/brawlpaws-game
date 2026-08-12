@@ -23,7 +23,7 @@ Some old BrawlPaws prompts describe Kitsune as a katana fighter and include mult
 Current controls:
 
 - Left mouse / J: Spirit Blaster
-- E: Tidal Slash
+- E: Undertow Well (earned at level 2)
 - C: Foxfire Volley
 - F: Wild Heart
 - Q: Spirit Inferno
@@ -31,9 +31,9 @@ Current controls:
 
 ## Current ability mechanics and required visual identities
 
-### Tidal Slash — directional traveling wave
+### Undertow Well — aimed pack-control vortex
 
-A wide cyan water crescent travels forward and pierces enemies. It needs an unmistakable traveling silhouette: sharp crescent leading edge, brilliant white-blue core, deep-cyan body, violet rim accents, separated spray droplets, ink-brush water fragments, and a directional wake. It must not be a circular bubble or a soft blue glow.
+Kitsune places a wide circular whirlpool at the aimed location. It needs an unmistakable inward-pull silhouette: a broken cyan brush-ring, curved water claws spiraling into a dark center, brilliant white-blue compression core, deep-cyan body, inward-moving droplets, a violent collapse peak, then a low soaked release ring. It must never read as a sideways projectile, crescent slash, circular bubble, or soft blue glow.
 
 ### Foxfire Volley — directional five-shot fan
 
@@ -72,7 +72,7 @@ Jadebreaker must **not dash**. He walks slowly, raises the sledgehammer with a l
 - For effect animation, use anticipation/build, release, peak, follow-through, and dissipate—not several nearly identical frames.
 - Deliver a high-resolution PNG. Also state the exact grid dimensions, frame order, and intended playback timing in text outside the image.
 
-## First production request: Tidal Slash VFX atlas
+## Completed production request: Undertow Well VFX atlas
 
 Use this prompt with GPT Image after attaching the BrawlPaws references:
 
@@ -80,7 +80,7 @@ Use this prompt with GPT Image after attaching the BrawlPaws references:
 {
   "type": "production-ready transparent-background 2D game VFX sprite sheet",
   "style": "premium anime action-roguelite effect art, Japanese ink-brush energy shapes, thick controlled dark edging, crisp cel-shaded water, brilliant white core light, saturated cyan and electric blue with restrained violet accents, readable at a distant three-quarter gameplay camera",
-  "subject": "BrawlPaws Tidal Slash, a fast directional water crescent projectile cast by the small fox gunner Kitsune; effect only, no character and no weapon",
+  "subject": "BrawlPaws Undertow Well, an aimed circular water vortex that traps and drags a dangerous pack inward before a crushing collapse; effect only, no character and no weapon",
   "canvas": {
     "aspect_ratio": "3:2",
     "background": "fully transparent",
@@ -90,22 +90,22 @@ Use this prompt with GPT Image after attaching the BrawlPaws references:
     "grid": "2 rows by 3 columns, six equal frame cells with no visible dividers",
     "frame_order": "left to right across the top row, then left to right across the bottom row",
     "frames": [
-      "01 compact hooked cyan anticipation crescent with tiny suspended droplets",
-      "02 crescent rapidly opens forward, white edge begins to ignite",
-      "03 full traveling slash, dominant sharp crescent silhouette, brilliant white leading core and deep-cyan body",
-      "04 peak-width traveling wave with separated spray fins and a violet brush-ink wake",
-      "05 crescent breaks into directional water ribbons while preserving forward momentum",
-      "06 dissipating droplets and thin cyan ink fragments, no solid central mass"
+      "01 broken cyan brush-ring appears with droplets suspended inward",
+      "02 curved water claws spiral toward a dark readable center",
+      "03 wide undertow basin with strong natural inward-flow shapes",
+      "04 peak-pressure whirlpool with a white central compression star",
+      "05 soaked release pulse and collapsing center",
+      "06 dissipating puddle ribbons and inward-falling droplets"
     ]
   },
   "shape_language": {
-    "primary": "one asymmetric forward-facing crescent with a pointed leading tip and broad curved cutting edge",
-    "secondary": "three to seven separated water droplets and tapered ink-brush wake fragments",
-    "depth": "white-hot leading rim, cyan middle body, darker blue underside, narrow violet trailing accent"
+    "primary": "one circular spiraling ground vortex with a dark center and force flowing inward",
+    "secondary": "curved water claws, suspended inward droplets, and a low collapse ring",
+    "depth": "white-hot compression core, cyan water body, darker blue underside, narrow cool-violet accent"
   },
   "consistency": "same effect scale, travel direction, viewing angle, palette, and visual center across all six cells",
   "negative_constraints": [
-    "no circles or bubble spell",
+    "no bubble spell or sideways projectile",
     "no character",
     "no text or icons",
     "no scenery or floor",
@@ -127,4 +127,4 @@ Use this prompt with GPT Image after attaching the BrawlPaws references:
 5. Kitsune ability-cast character atlas: eight directions, anticipation and release poses that preserve the approved Spirit Blaster costume and proportions.
 6. Jadebreaker hammer-slam atlas: eight directions with overhead lift, planted impact, recoil, and recovery; absolutely no charge or dash pose.
 
-Before generating each later asset, write a separate structured JSON production prompt at the same level of specificity as the Tidal Slash prompt. Do not redesign mechanics. Ask for clarification only if a required reference image is missing.
+Before generating each later asset, write a separate structured JSON production prompt at the same level of specificity as the Undertow Well prompt. Do not redesign mechanics. Ask for clarification only if a required reference image is missing.

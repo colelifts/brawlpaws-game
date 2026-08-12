@@ -26,7 +26,7 @@ test('the extended campaign has physical room rewards and destructible loot',()=
   assert.match(game,/wave\.targetCount\|\|wave\.roster\.length/);
   assert.match(game,/currentRouteChoices=ROUTE_SETS\[\(nextWave-1\)%ROUTE_SETS\.length\]/);
   assert.match(game,/CLAIM YOUR ROUTE REWARD/);
-  for(const count of [40,58,72])assert.match(data,new RegExp(`targetCount:${count}`));
+  for(const count of [72,112,150])assert.match(data,new RegExp(`targetCount:${count}`));
 });
 
 test('level ups support weighted rarity, rerolls, and a recovery skip',()=>{
@@ -36,7 +36,43 @@ test('level ups support weighted rarity, rerolls, and a recovery skip',()=>{
   assert.match(game,/rerolls:1/);
   assert.match(game,/player\.gold\+=20/);
   assert.match(game,/player\.health=Math\.min\(player\.maxHealth,player\.health\+18\)/);
-  assert.match(game,/player\.unlockedAbilities\.size===0&&player\.level<=4/);
+  assert.match(game,/const earnedUnlock=pool\.find/);
+  for(const id of ['unlockUndertow','unlockFoxfire','unlockHeart','unlockShock'])assert.match(game,new RegExp(`upgrade\.id==='${id}'`));
+});
+
+test('earned ability ladder replaces Tidal Slash with a readable Undertow trap',()=>{
+  assert.match(data,/spiritBlaster:[\s\S]{0,100}damage:\s*7/);
+  assert.match(data,/undertowWell:[^\n]*unlockLevel:\s*2/);
+  assert.match(data,/foxfireVolley:[^\n]*unlockLevel:\s*4/);
+  assert.match(data,/wildHeart:[^\n]*unlockLevel:\s*6/);
+  assert.match(data,/shockPaws:[^\n]*unlockLevel:\s*8/);
+  assert.match(game,/unlockedAbilities:\s*new Set\(\)/);
+  assert.match(game,/xpToNext:\s*48/);
+  assert.match(game,/debugSystem==='levelup'[^\n]*encounter\.startWaveAfterUpgrade=0/);
+  assert.match(game,/assets\/vfx\/undertow-well-v2\.png/);
+  assert.match(game,/vortex\.definition\.collapseDamage/);
+  assert.match(game,/enemy\.vx\*=Math\.exp\(-8\*dt\)/);
+  assert.doesNotMatch(game,/if\(player\.unlockedAbilities\.has\('shockPaws'\)\).*unlockedAbilities\.add\('shockPaws'\)/);
+  assert.doesNotMatch(game,/if\(player\.unlockedAbilities\.has\('foxfireVolley'\)\).*unlockedAbilities\.add\('foxfireVolley'\)/);
+  const withoutSaveMigration=game.replace(/function restorePlayerCheckpoint[\s\S]*?function resumeSavedRun/,'function resumeSavedRun');
+  assert.doesNotMatch(withoutSaveMigration,/\briptide\b/i);
+  assert.doesNotMatch(game,/tidal[-A-Z]/i);
+});
+
+test('late campaign armies compound enemy count, pursuit, and spawn pressure',()=>{
+  const counts=Object.values(ENCOUNTERS).map((chapter)=>chapter.waves.map((wave)=>wave.targetCount||wave.roster.length));
+  assert.equal(counts[0][0],4);
+  assert.equal(counts[0].at(-1),72);
+  assert.equal(counts[1].at(-1),112);
+  assert.equal(counts[2].at(-1),150);
+  for(const chapter of Object.values(ENCOUNTERS)){
+    assert.ok(chapter.waves.at(-1).speedScale>chapter.waves[0].speedScale*1.75);
+    assert.ok(chapter.waves.at(-1).spawnRate<chapter.waves[0].spawnRate*.18);
+  }
+  const math=readFileSync(new URL('../src/math.js',import.meta.url),'utf8');
+  for(const fn of ['activeEnemyLimit','encounterActiveLimit','cappedWardPressure'])assert.match(game+math,new RegExp(`function ${fn}\\(`));
+  assert.match(game,/activationSlots=Math\.max\(0,activeEnemyLimit\(\)-activeCombatants\.length\)/);
+  assert.match(game,/activationSlots--;activeCombatants\.push\(enemy\)/);
 });
 
 test('hero-specific upgrades create distinct gunner and tank build paths',()=>{
@@ -247,6 +283,9 @@ test('rooms carry first-class rescue, curse-anchor, and ward-defense missions',(
   assert.match(game,/!volatileDanger&&missionComplete\(\)/);
   assert.match(game,/if\(!damageRoomMissionObjects\(shot\)\)damageDestructibles\(shot\)/);
   assert.match(game,/MISSION FAILED/);
+  assert.match(game,/\.slice\(0,8\)/);
+  assert.match(game,/ward\.grace<=0/);
+  assert.match(game,/cappedWardPressure\(pressure,ward\.maxHealth,roomMission\.duration\)/);
   assert.match(game,/debugSystem==='mission'/);
 });
 

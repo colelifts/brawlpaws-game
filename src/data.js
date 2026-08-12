@@ -45,7 +45,7 @@ export const HEROES = {
 
 export const WEAPONS = {
   spiritBlaster: {
-    id: 'spiritBlaster', name: 'Spirit Blaster', damage: 9, fireRate: .22,
+    id: 'spiritBlaster', name: 'Spirit Blaster', damage: 7, fireRate: .24,
     projectileSpeed: 980, projectileLife: 1.1, range: 1050,
     knockback: 210, criticalChance: .14, shots: 1, spread: 0,
     projectileRadius: 9, attackDuration: .14, muzzleDistance: 48,
@@ -79,10 +79,10 @@ export const WEAPONS = {
 };
 
 export const ABILITIES = {
-  riptide: { id: 'riptide', name: 'Undertow Well', cooldown: 7, damage: 19, radius: 230, pull: 680, duration: 1.9, wetDuration: 5, slow: .4, color: '#35e7ff', purpose:'Trap a pack in one place and Soak it. Wet enemies move 40% slower, trigger Steam Burst from Foxfire, and take 50% more Shock damage.' },
-  foxfireVolley: { id: 'foxfireVolley', name: 'Foxfire Volley', cooldown: 6, damage: 18, speed: 680, life: .95, spread: .18, shots: 5, burnDamage: 6, burnDuration: 4, color: '#ff6a24' },
-  wildHeart: { id: 'wildHeart', name: 'Wild Heart', cooldown: 12, heal: 30, duration: 5, damageReduction: .35, color: '#68ef50' },
-  shockPaws: { id: 'shockPaws', name: 'Shock Paws', cooldown: 23, damage: 16, duration: 5.4, tickRate: .48, wetBonus: .5, color: '#d94cff' }
+  undertowWell: { id: 'undertowWell', name: 'Undertow Well', unlockLevel: 2, cooldown: 8, damage: 8, collapseDamage: 26, radius: 250, pull: 920, duration: 2.4, wetDuration: 5.5, slow: .42, holdRadius: .3, holdDuration: .5, color: '#35e7ff', purpose:'Aim a whirlpool into a dangerous pack. It drags enemies into one firing lane, holds them together, Soaks and slows them, then crushes the trapped group. Wet enemies trigger Foxfire Steam Bursts and take 50% more Shock damage.' },
+  foxfireVolley: { id: 'foxfireVolley', name: 'Foxfire Volley', unlockLevel: 4, cooldown: 6, damage: 18, speed: 680, life: .95, spread: .18, shots: 5, burnDamage: 6, burnDuration: 4, color: '#ff6a24' },
+  wildHeart: { id: 'wildHeart', name: 'Wild Heart', unlockLevel: 6, cooldown: 12, heal: 30, duration: 5, damageReduction: .35, color: '#68ef50' },
+  shockPaws: { id: 'shockPaws', name: 'Shock Paws', unlockLevel: 8, cooldown: 23, damage: 16, duration: 5.4, tickRate: .48, wetBonus: .5, color: '#d94cff' }
 };
 
 export const STATUS_EFFECTS = {
@@ -234,22 +234,22 @@ export const ENCOUNTERS = {
     id: 'jadeChapter', name: 'The Silent Bells', room: 'jadeCourtyard', rooms: ['jadeCourtyard','jadeMoonbridge','jadeRootGarden','jadeBellTerraces','jadeLanternCanals','jadeWardenProcessional'], bossRoom:'jadeGuardianApproach', boss: 'jadeguardTanuki',
     waves: [
       { name: 'Whispering Scouts', roster: ['groveMinion','groveMinion','groveMinion','groveMinion'], spawnRate: 1.05, healthScale: 1, speedScale: 1, damageScale: 1, mission:{type:'eliminate',title:'SILENCE THE SCOUTS'} },
-      { name: 'Broken Shrine Pack', roster: ['groveMinion','jadeBrawler','groveMinion','spiritArcher','groveMinion','jadeBrawler','groveMinion','spiritArcher'], spawnRate: .7, healthScale: 1.18, speedScale: 1.14, damageScale: 1.12, mission:{type:'rescue',title:'FREE THE BELLKEEPERS',count:2} },
-      { name: 'Jade Moon Swarm', roster: ['groveMinion','groveMinion','jadeBrawler','spiritArcher','groveMinion','jadeBrawler','bellweaverCat','spiritArcher','groveMinion','armoredBoar','groveMinion','spiritArcher','jadeBrawler'], spawnRate: .42, healthScale: 1.43, speedScale: 1.3, damageScale: 1.25, mission:{type:'anchors',title:'SHATTER ROOT ANCHORS',count:3,health:58} },
-      { name: 'Guardian Onslaught', roster: ['jadeBrawler','groveMinion','bellweaverCat','jadeBrawler','groveMinion','armoredBoar','spiritArcher','jadeBrawler','groveMinion','spiritArcher','bellweaverCat','armoredBoar','groveMinion','jadeBrawler','spiritArcher','groveMinion','jadeBrawler','bellweaverCat'], spawnRate: .26, healthScale: 1.72, speedScale: 1.48, damageScale: 1.42, mission:{type:'defend',title:'DEFEND THE JADE WARD',duration:24,health:260} },
-      { name:'Bellbreaker Legion',roster:['jadeBrawler','spiritArcher','bellweaverCat','armoredBoar','groveMinion','jadeBrawler','bellweaverCat'],targetCount:28,spawnRate:.18,healthScale:1.98,speedScale:1.66,damageScale:1.58,mission:{type:'anchors',title:'BREAK THE BELL CURSE',count:4,health:88} },
-      { name:'Thousand-Paw Siege',roster:['jadeBrawler','bellweaverCat','armoredBoar','spiritArcher','groveMinion','jadeBrawler','armoredBoar','bellweaverCat'],targetCount:40,spawnRate:.115,healthScale:2.26,speedScale:1.84,damageScale:1.78,mission:{type:'defend',title:'HOLD THE WARDEN SEAL',duration:32,health:340} }
+      { name: 'Broken Shrine Pack', roster: ['groveMinion','jadeBrawler','groveMinion','spiritArcher','groveMinion','jadeBrawler','groveMinion','spiritArcher'], targetCount:10, spawnRate: .62, healthScale: 1.18, speedScale: 1.16, damageScale: 1.12, mission:{type:'rescue',title:'FREE THE BELLKEEPERS',count:2} },
+      { name: 'Jade Moon Swarm', roster: ['groveMinion','groveMinion','jadeBrawler','spiritArcher','groveMinion','jadeBrawler','bellweaverCat','spiritArcher','groveMinion','armoredBoar','groveMinion','spiritArcher','jadeBrawler'], targetCount:18, spawnRate: .34, healthScale: 1.43, speedScale: 1.34, damageScale: 1.25, mission:{type:'anchors',title:'SHATTER ROOT ANCHORS',count:3,health:58} },
+      { name: 'Guardian Onslaught', roster: ['jadeBrawler','groveMinion','bellweaverCat','jadeBrawler','groveMinion','armoredBoar','spiritArcher','jadeBrawler','groveMinion','spiritArcher','bellweaverCat','armoredBoar','groveMinion','jadeBrawler','spiritArcher','groveMinion','jadeBrawler','bellweaverCat'], targetCount:30, spawnRate: .19, healthScale: 1.72, speedScale: 1.54, damageScale: 1.42, mission:{type:'defend',title:'DEFEND THE JADE WARD',duration:24,health:260} },
+      { name:'Bellbreaker Legion',roster:['jadeBrawler','spiritArcher','bellweaverCat','armoredBoar','groveMinion','jadeBrawler','bellweaverCat'],targetCount:48,spawnRate:.115,healthScale:1.98,speedScale:1.78,damageScale:1.58,mission:{type:'anchors',title:'BREAK THE BELL CURSE',count:4,health:88} },
+      { name:'Thousand-Paw Siege',roster:['jadeBrawler','bellweaverCat','armoredBoar','spiritArcher','groveMinion','jadeBrawler','armoredBoar','bellweaverCat'],targetCount:72,spawnRate:.068,healthScale:2.26,speedScale:2.05,damageScale:1.78,mission:{type:'defend',title:'HOLD THE WARDEN SEAL',duration:32,health:340} }
     ]
   },
   bambooChapter: {
     id: 'bambooChapter', name: 'Breath Beneath the Reeds', room: 'bambooHollow', rooms: ['bambooHollow','bambooMoonbridge','bambooSporeMarsh','bambooMoonlotusReservoir','bambooSporelightMonastery','bambooMoonstoneCauseway'], bossRoom:'bambooMoonfangBurrow', boss: 'moonfangKomainu',
     waves: [
-      { name: 'Reedblade Scouts', roster: ['bambooStalker','bambooStalker','sporeArcher','bambooStalker','sporeArcher','bambooStalker','bambooStalker','sporeArcher'], spawnRate: .58, healthScale: 1.08, speedScale: 1.06, damageScale: 1.05, mission:{type:'eliminate',title:'CLEAR THE REEDBLADES'} },
+      { name: 'Reedblade Scouts', roster: ['bambooStalker','bambooStalker','sporeArcher','bambooStalker','sporeArcher','bambooStalker','bambooStalker','sporeArcher'], targetCount:14, spawnRate: .42, healthScale: 1.08, speedScale: 1.12, damageScale: 1.05, mission:{type:'eliminate',title:'CLEAR THE REEDBLADES'} },
       { name: 'Hollow Hunting Party', roster: ['bambooStalker','sporeArcher','bambooStalker','powderkegToad','sporeArcher','bambooStalker','bambooStalker','sporeArcher','bambooStalker','mossBrute','sporeArcher','bambooStalker','bambooStalker','sporeArcher'], spawnRate: .34, healthScale: 1.28, speedScale: 1.16, damageScale: 1.18, mission:{type:'rescue',title:'FREE THE MOON MONKS',count:3} },
       { name: 'Moonroot Stampede', roster: ['bambooStalker','sporeArcher','powderkegToad','mossBrute','bambooStalker','sporeArcher','mistclawLynx','powderkegToad','sporeArcher','bambooStalker','bambooStalker','sporeArcher','mossBrute','bambooStalker','sporeArcher','bambooStalker','mossBrute','sporeArcher','powderkegToad','mistclawLynx','sporeArcher','bambooStalker'], spawnRate: .22, healthScale: 1.5, speedScale: 1.28, damageScale: 1.34, mission:{type:'anchors',title:'BURN THE SPORE TOTEMS',count:3,health:82} },
       { name: 'Moonfang Warpack', roster: ['mossBrute','bambooStalker','powderkegToad','bambooStalker','bambooStalker','sporeArcher','mossBrute','bambooStalker','sporeArcher','powderkegToad','mossBrute','sporeArcher','bambooStalker','bambooStalker','powderkegToad','mossBrute','bambooStalker','sporeArcher','bambooStalker','mossBrute','sporeArcher','powderkegToad','bambooStalker','sporeArcher','mossBrute','bambooStalker','sporeArcher','bambooStalker','mossBrute','powderkegToad'], spawnRate: .15, healthScale: 1.78, speedScale: 1.42, damageScale: 1.52, mission:{type:'defend',title:'DEFEND THE LOTUS WARD',duration:28,health:330} },
-      { name:'Sporemoon Deluge',roster:['bambooStalker','sporeArcher','powderkegToad','mistclawLynx','mossBrute','bambooStalker','sporeArcher'],targetCount:44,spawnRate:.105,healthScale:2.08,speedScale:1.6,damageScale:1.7,mission:{type:'rescue',title:'RELEASE THE HOLLOW SAGES',count:4} },
-      { name:'Hollow Eclipse',roster:['mossBrute','powderkegToad','mistclawLynx','sporeArcher','bambooStalker','mossBrute','powderkegToad'],targetCount:58,spawnRate:.072,healthScale:2.42,speedScale:1.79,damageScale:1.94,mission:{type:'defend',title:'HOLD THE MOONSTONE SEAL',duration:36,health:430} }
+      { name:'Sporemoon Deluge',roster:['bambooStalker','sporeArcher','powderkegToad','mistclawLynx','mossBrute','bambooStalker','sporeArcher'],targetCount:84,spawnRate:.062,healthScale:2.08,speedScale:1.82,damageScale:1.7,mission:{type:'rescue',title:'RELEASE THE HOLLOW SAGES',count:4} },
+      { name:'Hollow Eclipse',roster:['mossBrute','powderkegToad','mistclawLynx','sporeArcher','bambooStalker','mossBrute','powderkegToad'],targetCount:112,spawnRate:.038,healthScale:2.42,speedScale:2.15,damageScale:1.94,mission:{type:'defend',title:'HOLD THE MOONSTONE SEAL',duration:36,health:430} }
     ]
   },
   crimsonChapter: {
@@ -259,17 +259,17 @@ export const ENCOUNTERS = {
       { name: 'Crimson Trial', roster: ['emberAkita','gongwing','emberAkita','gatewardenRhino','gongwing','emberAkita','emberAkita','gongwing','emberAkita','ironhorn','gongwing','emberAkita','emberAkita','gongwing','gatewardenRhino','emberAkita','gongwing','emberAkita','emberAkita','gongwing'], spawnRate: .26, healthScale: 1.42, speedScale: 1.22, damageScale: 1.28, mission:{type:'anchors',title:'BREAK THE EXECUTION SEALS',count:3,health:105} },
       { name: 'Burning Hundred', roster: ['emberAkita','gongwing','ironhorn','emberAkita','gongwing','emberAkita','emberAkita','gongwing','ironhorn','emberAkita','gongwing','emberAkita','ironhorn','gongwing','emberAkita','emberAkita','gongwing','ironhorn','emberAkita','gongwing','emberAkita','ironhorn','gongwing','emberAkita','emberAkita','gongwing','ironhorn','emberAkita','gongwing','emberAkita'], spawnRate: .16, healthScale: 1.72, speedScale: 1.38, damageScale: 1.48, mission:{type:'rescue',title:'FREE THE ASH PRISONERS',count:3} },
       { name: 'Shogun Warhost', roster: ['gatewardenRhino','emberAkita','gongwing','emberAkita','emberAkita','gongwing','ironhorn','emberAkita','gongwing','gatewardenRhino','ironhorn','gongwing','emberAkita','emberAkita','gongwing','gatewardenRhino','emberAkita','gongwing','emberAkita','ironhorn','gongwing','emberAkita','emberAkita','gongwing','gatewardenRhino','emberAkita','gongwing','emberAkita','ironhorn','gongwing','emberAkita','emberAkita','gongwing','gatewardenRhino','emberAkita','gongwing','emberAkita','ironhorn','gongwing','emberAkita','gatewardenRhino','gongwing'], spawnRate: .105, healthScale: 2.06, speedScale: 1.55, damageScale: 1.72, mission:{type:'defend',title:'DEFEND THE ANCESTRAL FLAME',duration:30,health:390} },
-      { name:'Ashen Clan Avalanche',roster:['gatewardenRhino','emberAkita','gongwing','ironhorn','mistclawLynx','emberAkita','gongwing'],targetCount:56,spawnRate:.07,healthScale:2.44,speedScale:1.76,damageScale:1.98,mission:{type:'anchors',title:'DESTROY THE ONI CHAINS',count:5,health:132} },
-      { name:'Oni Gate Cataclysm',roster:['gatewardenRhino','ironhorn','mistclawLynx','gongwing','emberAkita','gatewardenRhino','gongwing','ironhorn'],targetCount:72,spawnRate:.045,healthScale:2.88,speedScale:1.98,damageScale:2.28,mission:{type:'defend',title:'HOLD THE SHOGUN SEAL',duration:40,health:520} }
+      { name:'Ashen Clan Avalanche',roster:['gatewardenRhino','emberAkita','gongwing','ironhorn','mistclawLynx','emberAkita','gongwing'],targetCount:112,spawnRate:.041,healthScale:2.44,speedScale:2.02,damageScale:1.98,mission:{type:'anchors',title:'DESTROY THE ONI CHAINS',count:5,health:132} },
+      { name:'Oni Gate Cataclysm',roster:['gatewardenRhino','ironhorn','mistclawLynx','gongwing','emberAkita','gatewardenRhino','gongwing','ironhorn'],targetCount:150,spawnRate:.026,healthScale:2.88,speedScale:2.35,damageScale:2.28,mission:{type:'defend',title:'HOLD THE SHOGUN SEAL',duration:40,health:520} }
     ]
   }
 };
 
 export const DIFFICULTIES = {
-  spirited: { id:'spirited', name:'Spirited', healthScale:.86, speedScale:.92, damageScale:.82, rewardScale:.9, description:'A fair campaign with gentler enemy pressure.' },
-  ferocious: { id:'ferocious', name:'Ferocious', healthScale:1, speedScale:1, damageScale:1, rewardScale:1, description:'The intended hard BrawlPaws experience.' },
-  nightmare: { id:'nightmare', name:'Nightmare', healthScale:1.38, speedScale:1.18, damageScale:1.32, rewardScale:1.4, description:'Relentless speed, stronger packs, richer rewards.' },
-  ascension: { id:'ascension', name:'Ascension', healthScale:1.56, speedScale:1.24, damageScale:1.48, rewardScale:1.7, enemyCountScale:1.16, spawnRateScale:1.12, description:'A post-clear climb that adds enemies and scales again after every victory.' }
+  spirited: { id:'spirited', name:'Spirited', healthScale:.86, speedScale:.92, damageScale:.82, rewardScale:.9, enemyCountScale:.86, spawnRateScale:.9, description:'A fair campaign with gentler enemy pressure.' },
+  ferocious: { id:'ferocious', name:'Ferocious', healthScale:1, speedScale:1, damageScale:1, rewardScale:1, enemyCountScale:1, spawnRateScale:1, description:'The intended hard BrawlPaws experience.' },
+  nightmare: { id:'nightmare', name:'Nightmare', healthScale:1.38, speedScale:1.18, damageScale:1.32, rewardScale:1.4, enemyCountScale:1.18, spawnRateScale:1.15, description:'Relentless speed, larger packs, stronger spirits, and richer rewards.' },
+  ascension: { id:'ascension', name:'Ascension', healthScale:1.56, speedScale:1.24, damageScale:1.48, rewardScale:1.7, enemyCountScale:1.25, spawnRateScale:1.22, description:'A post-clear climb that adds enemies and scales again after every victory.' }
 };
 
 export const ROOMS = {

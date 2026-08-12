@@ -18,12 +18,12 @@ The current Visual Combat Prototype V2 provides the first quality gate:
 - Dedicated six-frame travel, impact, enemy-attack, elemental-status, and ambient-environment atlases
 - Animated lantern flames, drifting spirit wisps, water ripples, moving petals, and swaying environment props
 - Gameplay HUD, title screen, level-up flow, two chapter story scenes, chapter clear, defeat, and restart loop
-- Six escalating Jade Grove waves culminating in a 40-enemy siege
+- Six escalating Jade Grove waves culminating in a 72-enemy siege
 - A dedicated multi-phase Jadeguard Tanuki with production sprite atlas, boss HUD, planted sweep, stunning slam, radial jade fire, phase reinforcements, enrage, and defeat sequence
 - A complete second chapter transition that carries Kitsune's level, health upgrades, unlocked abilities, relics, gold, and Dual-Wield build through the moon gate
-- Bamboo Hollow's animated moonlit arenas, six escalating 8/14/22/30/44/58-enemy waves, and a distinct Stalker/Spore Archer/Moss Brute enemy family
+- Bamboo Hollow's animated moonlit arenas, six escalating 14/14/22/30/84/112-enemy waves, and a distinct Stalker/Spore Archer/Moss Brute enemy family
 - Moonfang Komainu, a second 5,200-HP guardian with six authored animation states, crescent sweeps, stunning cleaves, moon projectiles, phase summons, and enrage
-- Crimson Dojo's circular mountain arenas, dedicated Ember Akita/Gongwing/Ironhorn combat atlas, dedicated six-effect VFX atlas, and 12/20/30/42/56/72-enemy escalation
+- Crimson Dojo's circular mountain arenas, dedicated Ember Akita/Gongwing/Ironhorn combat atlas, dedicated six-effect VFX atlas, and 12/20/30/42/112/150-enemy escalation
 - Pyreclaw Shogun Tora, a third 7,600-HP guardian with a six-state giant atlas, flaming sword sweeps, gong slams, fire lanes, summons, and Nightmare scaling above 10,000 HP
 - Spirited, Ferocious, and Nightmare difficulty modes that scale health, pursuit speed, damage, and run rewards
 - Versioned local profile data for spirit shards, campaign clears, best difficulty, highest level, and small capped legacy health/gold bonuses
@@ -117,8 +117,8 @@ Next ability work:
 
 Initial upgrade set:
 
-1. Riptide Reach — larger vortex and stronger pull
-2. Undertow — Riptide holds Wet enemies near its center longer
+1. Abyssal Grip — larger Undertow Well, stronger pull, and a deeper collapse hit
+2. Drowning Hold — Undertow pins Wet enemies near its center long enough to line up the next attack
 3. Flame Wake — wider and longer burn trail
 4. Cinderbite — burn can critically strike
 5. Heart Bloom — stronger heal and max-HP bonus
@@ -136,8 +136,8 @@ Initial upgrade set:
 
 - Handcrafted room-template data separated into floor, collision, walls, props, decorations, foreground, lights, gates, spawns, and interactables
 - Twenty-one production-painted combat rooms are playable across the three chapters: every one of the eighteen pre-boss waves has its own location and all three giant guardians have dedicated courts
-- Six escalating combat seals per chapter now create eighteen pre-boss encounters, scaling from four opening scouts to 40/58/72-enemy chapter finales before difficulty multipliers
-- All eighteen combat seals now have authored objectives: named elimination packs, destructible curse anchors, spatial spirit rescues, and timed wards with real health. Objectives own HUD progress, arena actors, completion gates, rewards, checkpoint state, and ward-break failure consequences.
+- Six escalating combat seals per chapter now create eighteen pre-boss encounters, scaling from four opening scouts to 72/112/150-enemy chapter finales before difficulty multipliers. A chapter-, difficulty-, route-, and co-op-scaled active budget turns excess fighters into continuous reserves, preserving the full army without instant unreadable pileups.
+- All eighteen combat seals now have authored objectives: named elimination packs, destructible curse anchors, spatial spirit rescues, and timed wards with real health. Objectives own HUD progress, arena actors, completion gates, rewards, checkpoint state, and ward-break failure consequences. Ward missions use a brief grace window, an eight-attacker pressure budget, and a duration-scaled maximum DPS so they demand active defense without mathematically failing before the player can react.
 - Route-selected Sacred Springs, Spirit Vaults, and Hero Shrines now exist as physical room objectives, while breakable pots and crates provide optional gold and experience
 - Minimum eight Jade Grove templates: courtyard, bamboo bridge, ruined shrine, root garden, lantern crossroads, crystal terrace, flooded gate, guardian approach
 - Room state machine: enter → lock → spawn → fight/event → reward → unlock → route choice

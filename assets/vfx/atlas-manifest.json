@@ -7,11 +7,11 @@
     "order": "left-to-right, top-to-bottom"
   },
   "atlases": {
-    "tidalSlash": {
-      "file": "tidal-slash.png",
-      "source": "../source-art/ability-vfx-v1/tidal-slash-key.png",
-      "drawSize": { "width": 270, "height": 190 },
-      "frames": ["anticipation", "opening", "release", "impact", "breakup", "dissipate"]
+    "undertowWell": {
+      "file": "undertow-well-v2.png",
+      "source": "../source-art/ability-vfx-v1/undertow-well-v2-chroma.png",
+      "drawSize": { "width": 512, "height": 345 },
+      "frames": ["broken-ring", "spiral-pull", "inward-force", "compression-peak", "collapse-release", "dissipate"]
     },
     "foxfireBolt": {
       "file": "foxfire-bolt.png",

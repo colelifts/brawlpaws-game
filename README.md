@@ -24,11 +24,11 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - `WASD` or arrow keys — move
 - `Shift` — use the selected hero's directional dash with invulnerability frames
 - Hold left mouse or `J` — fire the selected hero's ranged weapon toward the pointer
-- `E` — Undertow Well, once unlocked; traps and slows a pack, then primes Wet enemies for Foxfire Steam Bursts and empowered Shock damage. `E` also activates nearby route rewards.
+- `E` — Undertow Well, earned at level 2; aim a violent whirlpool that drags a pack into one firing lane, holds, Soaks, slows, and crushes them before priming Foxfire Steam Bursts and empowered Shock damage. `E` also activates nearby route rewards.
 - `E` also frees nearby captive spirits during rescue missions; the interaction takes priority over Undertow.
-- `C` — Foxfire Volley, once unlocked; a five-shot burning fan
-- `F` — Wild Heart, once unlocked; an instant heal plus temporary damage reduction
-- `Q` — Shock Paws, once unlocked; a 4.2-second storm that repeatedly hits every active enemy
+- `C` — Foxfire Volley, earned at level 4; a five-shot burning fan
+- `F` — Wild Heart, earned at level 6; an instant heal plus temporary damage reduction
+- `Q` — Shock Paws, earned at level 8; a 5.4-second storm that repeatedly hits every active enemy
 - `K` — open or close the Spirit Archive Codex; combat pauses while it is open
 - `1` / `2` / `3` — choose an upgrade when a level-up pauses combat
 - `R` — restart from a result screen
@@ -65,21 +65,23 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - Depth-sorted Jade Grove prop atlas, prop collision, foreground occlusion, light pools, ambient petals, cracks, spirit gates, and haze
 - Neon blaster trails, impact stars, elemental ability VFX, ink death bursts, enemy projectiles, and magnetizing XP shards
 - Four unlockable active abilities with locked-slot HUD states, directional targeting, damage, healing, damage reduction, burn damage, and distinct VFX
-- Eighteen escalating pre-boss combats across the campaign: Chapter I grows from 4 slow scouts to 40 enemies, Chapter II reaches 58, and Chapter III reaches a 72-enemy cataclysm before Pyreclaw
+- Eighteen escalating pre-boss combats across the campaign: Chapter I grows from 4 slow scouts to 72 enemies, Chapter II reaches 112, and Chapter III reaches a 150-enemy cataclysm before Pyreclaw
 - Every pre-boss room now carries an authored mission: eliminate a named warband, shoot and shatter curse anchors, reach and free captive spirits, or defend a damageable ward until its seal stabilizes. Mission progress is visible in the HUD, gates room completion, grants gold/XP, fails the run when a ward breaks, and persists in room-safe checkpoints.
 - Physical Sacred Springs, Spirit Vaults, and Hero Shrines selected from the route screen must be reached and activated inside combat rooms; destructible pots and crates provide optional gold and XP
 - Real level progression with rising XP thresholds, combat-pausing three-card choices, 37 upgrade definitions, repeatable ranks, Dual-Wield, hero-specific branches, piercing, critical-draw, guardian-hunter, mobility, economy, and four earned weapon capstones
 - Faster enemy pursuit, shorter windups, and stronger pressure balanced against reduced player speed and starting damage
-- Six escalating named waves: 4 scouts, 8 mixed enemies, a 13-enemy swarm, an 18-enemy onslaught, a 28-enemy legion, and a 40-enemy siege
+- Six escalating Jade Grove waves: 4 teaching scouts, then 10, 18, 30, 48, and a 72-enemy siege; Bamboo and Crimson finales reach 112 and 150 enemies before difficulty, corruption, and co-op multipliers
+- Large armies use a difficulty-, chapter-, and party-scaled active combat budget. The entire authored army remains present as reinforcements, but excess enemies wait at the perimeter and replace defeated fighters instead of forming an unreadable instant pileup.
+- Ward-defense missions have a short opening grace period, limited simultaneous ward attackers, and a survival-scaled damage ceiling. Ignoring the ward still loses the room, while active defense has a fair reaction window.
 - Chapter story scenes before the first wave and before the guardian confrontation
 - Dedicated Jadeguard Tanuki boss artwork, a 2,600-HP boss HUD, three phases, staff sweep, stunning ground slam, radial jade projectiles, phase summons, enrage, and chapter-clear story payoff
 - A branching Choose Your Path screen between waves with Combat, Elite, Heal, Shop, Treasure, and Shrine nodes
 - Enemy gold rewards, mutation-scaled elite routes, twelve run relics, and a functional Moon Market with persistent purchases
-- Shop unlocks and upgrades include Dual-Wield, weapon damage, maximum health, Foxfire Volley, Shock Paws, and healing
-- Chapter 2: Bamboo Hollow, with build-preserving moon-gate transition, six unique pre-boss arenas ending at Hollow Moonstone Causeway, a separate Moonfang Burrow guardian court, and six escalating 8/14/22/30/44/58-enemy waves
+- Shop purchases include Dual-Wield, weapon damage, maximum health, ability-power improvements, and healing; active abilities remain tied to the level 2/4/6/8 earned ladder.
+- Chapter 2: Bamboo Hollow, with build-preserving moon-gate transition, six unique pre-boss arenas ending at Hollow Moonstone Causeway, a separate Moonfang Burrow guardian court, and six escalating 14/14/22/30/84/112-enemy waves
 - Bamboo Stalkers with twin-sickle attacks, Spore Archers with visible bow draw/release, and stun-maul Moss Brutes
 - A dedicated 5,200-HP Moonfang Komainu boss atlas and fight with crescent sweeps, cleaves, moon projectiles, summons, and enrage
-- Chapter 3: Crimson Dojo, with six unique pre-boss arenas ending at Shogun War Processional, a separate Oni Gate Throne guardian court, and six-wave 12/20/30/42/56/72-enemy escalation
+- Chapter 3: Crimson Dojo, with six unique pre-boss arenas ending at Shogun War Processional, a separate Oni Gate Throne guardian court, and six-wave 12/20/30/42/112/150-enemy escalation
 - Ember Akita swordsmen, Gongwing ranged monks, and stunning Ironhorn pillar brutes with a dedicated combat/VFX atlas
 - A giant 7,600-HP Pyreclaw Shogun Tora boss with flaming sweeps, gong impacts, fire lanes, summons, and enrage
 - Every guardian death now opens a three-choice guardian chest instead of immediately skipping ahead. Jadeguard and Moonfang blessings create major offense, defense, economy, status, and mobility pivots for the next chapter; the unclaimed choice persists as a safe checkpoint.
@@ -107,7 +109,7 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - Hub campaign records, control training, spatial interaction prompts, and a portal-driven campaign start
 - Weighted Common, Rare, and Epic level-up offers with a guaranteed early ability option, one free reroll, escalating paid rerolls, and a recovery-focused skip choice
 - Four combat-changing build recipes: Steam Burst, Storm Current, Guardian Tempest, and Twin Cinders, with persistent HUD badges
-- Authored Story Event and Secret route nodes with branching costs, relics, weapon evolutions, ability unlocks, curses, and harder high-reward follow-up waves
+- Authored Story Event and Secret route nodes with branching costs, relics, weapon evolutions, ability-power rewards, curses, and harder high-reward follow-up waves
 - Reusable boss-pattern and boss-profile data now owns windup/action/recovery timing, damage identity, phase labels, and per-phase schedules for Jadeguard, Moonfang, and Pyreclaw
 - A persistent Spirit Archive Codex records enemies and guardians when first encountered, with data-driven hero/weapon stats, status interactions, enemy counterplay, and each guardian's actual phase patterns
 - All three guardians now gain Sealing Crossfire in later phases: a profile-scaled set of intersecting floor lanes that locks to the player's position, clearly warns, then converges with a stunning impact

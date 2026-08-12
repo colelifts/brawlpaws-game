@@ -14,6 +14,15 @@ export const withinArc = (origin, facing, target, range, arc) => {
   return Math.hypot(dx, dy) <= range + (target.radius || 0)
     && Math.abs(shortestAngle(facing, Math.atan2(dy, dx))) <= arc / 2;
 };
+export function encounterActiveLimit({ waveIndex = 0, chapterIndex = 0, difficultyId = 'ferocious', partySize = 1, elite = false } = {}) {
+  const difficultyBonus = difficultyId === 'ascension' ? 7 : difficultyId === 'nightmare' ? 5 : difficultyId === 'spirited' ? -2 : 0;
+  const partyBonus = Math.max(0, partySize - 1) * 5;
+  return clamp(Math.round(8 + waveIndex * 3 + chapterIndex * 3 + difficultyBonus + partyBonus + (elite ? 3 : 0)), 6, 44);
+}
+export function cappedWardPressure(rawDamagePerSecond, maxHealth, duration) {
+  const survivalWindow = Math.max(18, duration * .62);
+  return clamp(rawDamagePerSecond, 0, maxHealth / survivalWindow);
+}
 export function segmentCircleHit(start, end, circle, padding = 0) {
   const dx = end.x - start.x;
   const dy = end.y - start.y;

@@ -1,4 +1,4 @@
-import { clamp, lerp, normalize, distance, approachAngle } from './math.js';
+import { clamp, lerp, normalize, distance, approachAngle, encounterActiveLimit, cappedWardPressure } from './math.js';
 import { HEROES, WEAPONS, ABILITIES, STATUS_EFFECTS, ELITE_MODIFIERS, BOSS_PATTERNS, BOSS_PROFILES, ENEMIES, ENCOUNTERS, ROOMS, DIFFICULTIES } from './data.js';
 
 const canvas = document.querySelector('#game');
@@ -57,7 +57,7 @@ const debugMission = debugParams.get('mission');
 const assets = {
   arena: new Image(), kitsune: new Image(), kitsuneFire: new Image(), bamboo: new Image(), bambooFire: new Image(), hopscotch: new Image(), hopscotchFire: new Image(), rusty: new Image(), rustyFire: new Image(), enemies: new Image(), props: new Image(),
   archerMove: new Image(), archerAttack: new Image(), raccoonAttack: new Image(), boarAttack: new Image(),
-  tidalVfx: new Image(), foxfireVfx: new Image(), wildHeartVfx: new Image(),
+  undertowVfx: new Image(), foxfireVfx: new Image(), wildHeartVfx: new Image(),
   blasterShotVfx: new Image(), blasterImpactVfx: new Image(), spiritArrowVfx: new Image(), spiritArrowImpactVfx: new Image(), hopscotchArrow: new Image(), trickshotVfx: new Image(),
   burnStatusVfx: new Image(), waterImpactVfx: new Image(), clawSlashVfx: new Image(), hammerSlamVfx: new Image(),
   shockImpactVfx: new Image(), shockLinkVfx: new Image(), spiritWispVfx: new Image(), lanternFlameVfx: new Image(), waterRippleVfx: new Image(),
@@ -81,7 +81,7 @@ const assetSources = {
   archerAttack: 'assets/characters/archer-attack.png',
   raccoonAttack: 'assets/characters/raccoon-attack.png',
   boarAttack: 'assets/characters/boar-attack.png',
-  tidalVfx: 'assets/vfx/tidal-slash.png',
+  undertowVfx: 'assets/vfx/undertow-well-v2.png',
   foxfireVfx: 'assets/vfx/foxfire-bolt.png',
   wildHeartVfx: 'assets/vfx/wild-heart.png',
   blasterShotVfx: 'assets/vfx/spirit-blaster-shot.png',
@@ -145,7 +145,7 @@ const ui = {
   storyKicker: document.querySelector('#story-kicker'), storyTitle: document.querySelector('#story-title'), storyCopy: document.querySelector('#story-copy'), storyQuote: document.querySelector('#story-quote'), storyButton: document.querySelector('#story-button'),
   biomeTitle: document.querySelector('#biome-title'), routeBiome: document.querySelector('#route-biome'), bossName: document.querySelector('#boss-name'),
   abilityCards: {
-    riptide: { card: document.querySelector('#tide-card'), fill: document.querySelector('#tide-cooldown') },
+    undertowWell: { card: document.querySelector('#undertow-card'), fill: document.querySelector('#undertow-cooldown') },
     foxfireVolley: { card: document.querySelector('#flame-card'), fill: document.querySelector('#flame-cooldown') },
     wildHeart: { card: document.querySelector('#heart-card'), fill: document.querySelector('#heart-cooldown') },
     shockPaws: { card: document.querySelector('#ultimate-card'), fill: document.querySelector('#ultimate-cooldown') }
@@ -364,9 +364,13 @@ const coop={peer:null,hostConnection:null,connections:new Map(),connected:false,
 function coopPartySize(){return coop.connected?Math.max(1,coop.members.size):1;}
 function coopIsHost(){return coopPartySize()===1||coop.hostId===coop.id;}
 function coopPressure(){const extra=Math.max(0,coopPartySize()-1);return {health:1+extra*.62,damage:1+extra*.16,count:1+extra*.34,elite:extra*.07,reward:1+extra*.18,reinforcements:extra};}
+function activeEnemyLimit(){
+  if(!encounter||encounter.bossActive||state==='dojo')return Number.POSITIVE_INFINITY;
+  return encounterActiveLimit({waveIndex:encounter.wave,chapterIndex,difficultyId:selectedDifficulty,partySize:coopPartySize(),elite:encounter.nodeType==='elite'||encounter.nodeType?.includes('Elite')});
+}
 function refreshCoopUi(message=''){
   const online=coop.connected;coopPanel?.classList.toggle('online',online);if(coopStatus)coopStatus.textContent=online?`${coopIsHost()?'HOST':'ALLY'} · ${coop.code} · ${coopPartySize()}/4`:'SOLO · OFFLINE READY';
-  if(coopRoster)coopRoster.textContent=message||(online?[...coop.members.values()].map((member)=>`${member.name} ${member.hero.toUpperCase()}`).join(' · '):'FREE PEER-TO-PEER CO-OP · NO SIGNFLOW SERVERS · 2–4 PLAYERS INCREASE THE CHALLENGE');
+  if(coopRoster)coopRoster.textContent=message||(online?[...coop.members.values()].map((member)=>`${member.name} ${member.hero.toUpperCase()}`).join(' · '):'FREE PEER-TO-PEER CO-OP · 2–4 PLAYERS INCREASE THE CHALLENGE');
   if(coopLeaveButton)coopLeaveButton.hidden=!online;if(coopCreateButton)coopCreateButton.hidden=online;if(coopJoinButton)coopJoinButton.hidden=online;if(coopCodeInput)coopCodeInput.readOnly=online;
 }
 function coopRoomCode(){const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';const bytes=crypto.getRandomValues(new Uint8Array(5));return [...bytes].map((value)=>alphabet[value%alphabet.length]).join('');}
@@ -478,7 +482,10 @@ function clearRunCheckpoint(){try{localStorage.removeItem(RUN_KEY);}catch{/* Sto
 
 function restorePlayerCheckpoint(saved){
   const restored={...saved};
-  restored.unlockedAbilities=new Set(Array.isArray(saved.unlockedAbilities)?saved.unlockedAbilities:[]);
+  const migratedAbilities=(Array.isArray(saved.unlockedAbilities)?saved.unlockedAbilities:[]).map((id)=>id==='riptide'?'undertowWell':id);
+  restored.unlockedAbilities=new Set(migratedAbilities);
+  restored.abilityCooldowns={...player.abilityCooldowns,...saved.abilityCooldowns};if('riptide' in restored.abilityCooldowns){restored.abilityCooldowns.undertowWell=restored.abilityCooldowns.riptide;delete restored.abilityCooldowns.riptide;}
+  restored.abilityPower={...player.abilityPower,...saved.abilityPower};if('riptide' in restored.abilityPower){restored.abilityPower.undertowWell=restored.abilityPower.riptide;delete restored.abilityPower.riptide;}
   restored.synergies=new Set(Array.isArray(saved.synergies)?saved.synergies:[]);
   restored.eventHistory=new Set(Array.isArray(saved.eventHistory)?saved.eventHistory:[]);
   restored.shopPurchases=new Set(Array.isArray(saved.shopPurchases)?saved.shopPurchases:[]);
@@ -632,15 +639,15 @@ function closeCodex(){
 }
 
 const UPGRADES = [
-  { id:'unlockRiptide', name:'Undertow Well', icon:'WATER', type:'ABILITY UNLOCK', color:'#35e7ff', description:'Trap a whole pack, slow it by 40%, and prime it for Foxfire Steam Bursts and empowered Shock damage.', detail:'Pack trap / Wet slow / combo primer', available:()=>!player.unlockedAbilities.has('riptide'), apply:()=>player.unlockedAbilities.add('riptide') },
-  { id:'unlockFoxfire', name:'Foxfire Volley', icon:'FIRE', type:'ABILITY UNLOCK', color:'#ff6a24', description:'Fan out spirit flames that ignite every enemy they strike.', detail:'Burn damage over time', available:()=>!player.unlockedAbilities.has('foxfireVolley'), apply:()=>player.unlockedAbilities.add('foxfireVolley') },
-  { id:'unlockHeart', name:'Wild Heart', icon:'HEART', type:'ABILITY UNLOCK', color:'#68ef50', description:'Restore health and briefly reduce incoming damage.', detail:'Survival + recovery', available:()=>!player.unlockedAbilities.has('wildHeart'), apply:()=>player.unlockedAbilities.add('wildHeart') },
-  { id:'unlockShock', name:'Shock Paws', icon:'STORM', type:'ULTIMATE UNLOCK', color:'#d94cff', description:'Call a long spirit storm that repeatedly strikes every active enemy, anywhere in the room.', detail:'5.4 sec / all active enemies', available:()=>!player.unlockedAbilities.has('shockPaws'), apply:()=>player.unlockedAbilities.add('shockPaws') },
+  { id:'unlockUndertow', name:'Undertow Well', icon:'VORTEX', type:'LEVEL 2 TECHNIQUE', color:'#35e7ff', description:'Aim a violent whirlpool into a dangerous pack. It pulls the group into one firing lane, Soaks and slows them, then crushes the center.', detail:'Pack trap / collapse hit / Wet combo primer', available:()=>player.level>=ABILITIES.undertowWell.unlockLevel&&!player.unlockedAbilities.has('undertowWell'), apply:()=>player.unlockedAbilities.add('undertowWell') },
+  { id:'unlockFoxfire', name:'Foxfire Volley', icon:'FIRE', type:'LEVEL 4 TECHNIQUE', color:'#ff6a24', description:'Fan out spirit flames that ignite every enemy they strike.', detail:'Burn damage over time', available:()=>player.level>=ABILITIES.foxfireVolley.unlockLevel&&player.unlockedAbilities.has('undertowWell')&&!player.unlockedAbilities.has('foxfireVolley'), apply:()=>player.unlockedAbilities.add('foxfireVolley') },
+  { id:'unlockHeart', name:'Wild Heart', icon:'HEART', type:'LEVEL 6 TECHNIQUE', color:'#68ef50', description:'Restore health and briefly reduce incoming damage.', detail:'Survival + recovery', available:()=>player.level>=ABILITIES.wildHeart.unlockLevel&&player.unlockedAbilities.has('foxfireVolley')&&!player.unlockedAbilities.has('wildHeart'), apply:()=>player.unlockedAbilities.add('wildHeart') },
+  { id:'unlockShock', name:'Shock Paws', icon:'STORM', type:'LEVEL 8 ULTIMATE', color:'#d94cff', description:'Call a long spirit storm that repeatedly strikes every active enemy, anywhere in the room.', detail:'5.4 sec / all active enemies', available:()=>player.level>=ABILITIES.shockPaws.unlockLevel&&player.unlockedAbilities.has('wildHeart')&&!player.unlockedAbilities.has('shockPaws'), apply:()=>player.unlockedAbilities.add('shockPaws') },
   { id:'dualWield', name:'Twin Spirits', icon:'TWIN', type:'WEAPON EVOLUTION', color:'#ffcf3a', description:'Echo your weapon with a second spirit volley.', detail:'2 volleys  80% damage each', available:()=>!player.dualWield, apply:()=>{player.dualWield=true;} },
   { id:'spiritRounds', name:'Spirit Rounds', icon:'SHOT', type:'WEAPON UPGRADE', color:'#42eaff', description:'Charge every weapon round with denser spirit energy.', detail:'+22% weapon damage', available:()=>player.upgradeRanks.spiritRounds<4, apply:()=>{player.upgradeRanks.spiritRounds++;player.damageMultiplier*=1.22;} },
   { id:'quickPaws', name:'Quick Paws', icon:'FAST', type:'WEAPON UPGRADE', color:'#42eaff', description:'Recover faster after every shot and keep pressure on the pack.', detail:'+15% attack speed', available:()=>player.upgradeRanks.quickPaws<3, apply:()=>{player.upgradeRanks.quickPaws++;player.fireRateMultiplier*=.85;} },
   { id:'vitality', name:'Iron Resolve', icon:'HP', type:'HERO UPGRADE', color:'#77f059', description:'Strengthen your BrawlPaw and immediately restore the health gained.', detail:'+20 maximum health', available:()=>player.upgradeRanks.vitality<3, apply:()=>{player.upgradeRanks.vitality++;player.maxHealth+=20;player.health=Math.min(player.maxHealth,player.health+20);} },
-  { id:'undertow', name:'Undertow', icon:'PULL', type:'RIPTIDE UPGRADE', color:'#35e7ff', description:'Widen Riptide and drag enemies toward its center more violently.', detail:'+18% size and pull', available:()=>player.unlockedAbilities.has('riptide')&&player.upgradeRanks.undertow<3, apply:()=>{player.upgradeRanks.undertow++;player.abilityPower.riptide*=1.18;} },
+  { id:'undertow', name:'Abyssal Grip', icon:'PULL', type:'UNDERTOW UPGRADE', color:'#35e7ff', description:'Widen Undertow Well, strengthen its inward drag, and deepen the final collapse.', detail:'+18% size, pull, and collapse power', available:()=>player.unlockedAbilities.has('undertowWell')&&player.upgradeRanks.undertow<3, apply:()=>{player.upgradeRanks.undertow++;player.abilityPower.undertowWell*=1.18;} },
   { id:'hungryFlame', name:'Hungry Flame', icon:'BURN', type:'FOXFIRE UPGRADE', color:'#ff6a24', description:'Foxfire burns hotter and the flames cling to enemies longer.', detail:'+25% burn power', available:()=>player.unlockedAbilities.has('foxfireVolley')&&player.upgradeRanks.hungryFlame<3, apply:()=>{player.upgradeRanks.hungryFlame++;player.abilityPower.foxfireVolley*=1.25;} },
   { id:'heartBloom', name:'Heart Bloom', icon:'HEAL', type:'WILD HEART UPGRADE', color:'#68ef50', description:'Wild Heart restores more health without covering the hero in effects.', detail:'+15 healing', available:()=>player.unlockedAbilities.has('wildHeart')&&player.upgradeRanks.heartBloom<3, apply:()=>{player.upgradeRanks.heartBloom++;player.heartBonus+=15;} },
   { id:'stormHeart', name:'Storm Heart', icon:'BOLT', type:'ULTIMATE UPGRADE', color:'#d94cff', description:'Each global lightning pulse becomes stronger and the storm lasts longer.', detail:'+20% damage  +0.5 sec', available:()=>player.unlockedAbilities.has('shockPaws')&&player.upgradeRanks.stormHeart<3, apply:()=>{player.upgradeRanks.stormHeart++;player.abilityPower.shockPaws*=1.2;player.stormBonus+=.5;} },
@@ -674,15 +681,15 @@ const UPGRADES = [
 const RELICS=[
   {id:'luckyCoin',name:'Lucky Coin',icon:'GOLD',color:'#ffd13a',description:'+35% gold from every enemy.',apply:()=>{player.goldMultiplier*=1.35;}},
   {id:'spiritMask',name:'Spirit Mask',icon:'MASK',color:'#d95cff',description:'+15% weapon and ability power.',apply:()=>{player.damageMultiplier*=1.15;for(const id of Object.keys(player.abilityPower))player.abilityPower[id]*=1.15;}},
-  {id:'thunderSeal',name:'Thunder Seal',icon:'STORM',color:'#c84fff',description:'Unlock Shock Paws or empower its storm by 30%.',apply:()=>{if(player.unlockedAbilities.has('shockPaws'))player.abilityPower.shockPaws*=1.3;else player.unlockedAbilities.add('shockPaws');}},
+  {id:'thunderSeal',name:'Thunder Seal',icon:'STORM',color:'#c84fff',description:'Empower Shock Paws by 30% after its level-8 awakening.',apply:()=>{player.abilityPower.shockPaws*=1.3;}},
   {id:'bloodVial',name:'Blood Vial',icon:'HEAL',color:'#ff4268',description:'Heal 2 HP whenever an enemy falls.',apply:()=>{player.killHeal+=2;}},
   {id:'dragonScale',name:'Dragon Scale',icon:'ARMOR',color:'#69ef55',description:'Reduce all incoming damage by 12%.',apply:()=>{player.damageTakenMultiplier*=.88;}},
   {id:'rainbowFeather',name:'Rainbow Feather',icon:'MOVE',color:'#43eaff',description:'+12% movement speed and faster dash recovery.',apply:()=>{player.speedMultiplier*=1.12;player.dashCooldownMultiplier*=.85;}},
   {id:'wardBell',name:'Ward Bell',icon:'WARD',color:'#75f08a',description:'Double shield damage and deal 15% more damage to elites.',apply:()=>{player.shieldDamageMultiplier*=2;player.eliteDamageMultiplier*=1.15;}},
   {id:'oniContract',name:'Oni Contract',icon:'RISK',color:'#ff4a91',description:'Elite bounties are 75% richer, but you take 10% more damage.',apply:()=>{player.eliteGoldMultiplier*=1.75;player.damageTakenMultiplier*=1.1;}}
   ,{id:'moonPearl',name:'Moon Pearl',icon:'PIERCE',color:'#ff5fbd',description:'Every weapon projectile pierces one additional enemy.',apply:()=>{player.bonusPierces++;}}
-  ,{id:'phoenixPlume',name:'Phoenix Plume',icon:'FIRE',color:'#ff6a24',description:'Unlock Foxfire Volley or empower its flames by 35%.',apply:()=>{if(player.unlockedAbilities.has('foxfireVolley'))player.abilityPower.foxfireVolley*=1.35;else player.unlockedAbilities.add('foxfireVolley');}}
-  ,{id:'riverMirror',name:'River Mirror',icon:'WATER',color:'#35e7ff',description:'Unlock Undertow Well or empower its pull and damage by 35%.',apply:()=>{if(player.unlockedAbilities.has('riptide'))player.abilityPower.riptide*=1.35;else player.unlockedAbilities.add('riptide');}}
+  ,{id:'phoenixPlume',name:'Phoenix Plume',icon:'FIRE',color:'#ff6a24',description:'Empower Foxfire Volley by 35% after its level-4 awakening.',apply:()=>{player.abilityPower.foxfireVolley*=1.35;}}
+  ,{id:'riverMirror',name:'River Mirror',icon:'WATER',color:'#35e7ff',description:'Empower Undertow Well pull and collapse by 35% after its level-2 awakening.',apply:()=>{player.abilityPower.undertowWell*=1.35;}}
   ,{id:'guardianFang',name:'Guardian Fang',icon:'BOSS',color:'#ffd13a',description:'Deal 30% more weapon and ability damage to guardians.',apply:()=>{player.guardianDamageMultiplier*=1.3;}}
 ];
 
@@ -690,7 +697,7 @@ const GUARDIAN_REWARDS={
   jadeguardTanuki:{
     kicker:'JADEGUARD TANUKI IS FREED',title:'CLAIM THE JADE OATH',copy:'The ancient warden bows. Choose the vow that will carry into Bamboo Hollow.',
     choices:[
-      {id:'jadeTempest',name:'Tempest Magazine',icon:'STORM',type:'OFFENSE / STORM',color:'#49eaff',description:'The Jadeguard loads your weapon with a second spirit echo and awakens Shock Paws.',detail:'+1 projectile / Shock unlocked or +35% power',apply:()=>{player.bonusProjectiles++;if(player.unlockedAbilities.has('shockPaws'))player.abilityPower.shockPaws*=1.35;else player.unlockedAbilities.add('shockPaws');}},
+      {id:'jadeTempest',name:'Tempest Magazine',icon:'STORM',type:'OFFENSE / STORM',color:'#49eaff',description:'The Jadeguard loads your weapon with a second spirit echo and charges your future storm.',detail:'+1 projectile / +35% Shock power',apply:()=>{player.bonusProjectiles++;player.abilityPower.shockPaws*=1.35;}},
       {id:'jadeAegis',name:'Warden Aegis',icon:'WARD',type:'SURVIVAL / CONTROL',color:'#75f08a',description:'Jade scales reinforce your body and make every guardian recovery window more vulnerable.',detail:'+45 max HP / -12% damage / +20% guardian damage',apply:()=>{player.maxHealth+=45;player.health+=45;player.damageTakenMultiplier*=.88;player.guardianDamageMultiplier*=1.2;}},
       {id:'jadeFortune',name:'Bell of Plenty',icon:'GOLD',type:'ECONOMY / RECOVERY',color:'#ffd13a',description:'The restored bells shower the run in spirit coin and sharpen future reward choices.',detail:'+120 gold / +2 rerolls / full heal',apply:()=>{player.gold+=120;player.rerolls+=2;player.health=player.maxHealth;}}
     ]
@@ -699,7 +706,7 @@ const GUARDIAN_REWARDS={
     kicker:'MOONFANG KOMAINU IS FREED',title:'CLAIM THE MOON OATH',copy:'The Hollow exhales. Moonfang tears three fangs from the curse and offers one to you.',
     choices:[
       {id:'moonHunt',name:'Predator Moon',icon:'FANG',type:'WEAPON / EXECUTION',color:'#ff5fbd',description:'Moonfang sharpens every projectile and teaches it to pass through crowded warpacks.',detail:'+28% weapon damage / +2 pierce / +10% critical',apply:()=>{player.damageMultiplier*=1.28;player.bonusPierces+=2;player.critBonus+=.1;}},
-      {id:'moonCurrent',name:'Eclipse Current',icon:'TIDE',type:'ABILITY / STATUS',color:'#45eaff',description:'The moon floods every active technique with lasting elemental force.',detail:'All abilities unlocked / +28% ability power / +30% status duration',apply:()=>{for(const id of Object.keys(ABILITIES)){player.unlockedAbilities.add(id);player.abilityPower[id]*=1.28;}player.statusDurationMultiplier*=1.3;}},
+      {id:'moonCurrent',name:'Eclipse Current',icon:'TIDE',type:'ABILITY / STATUS',color:'#45eaff',description:'The moon floods every awakened and future technique with lasting elemental force.',detail:'+28% all ability power / +30% status duration',apply:()=>{for(const id of Object.keys(ABILITIES))player.abilityPower[id]*=1.28;player.statusDurationMultiplier*=1.3;}},
       {id:'moonStride',name:'Unchained Hunt',icon:'HUNT',type:'MOBILITY / LIFESTEAL',color:'#8cff58',description:'Move like Moonfang and recover whenever the warpack breaks beneath you.',detail:'+18% speed / faster dash / heal 3 on kill',apply:()=>{player.speedMultiplier*=1.18;player.dashCooldownMultiplier*=.72;player.killHeal+=3;}}
     ]
   },
@@ -718,8 +725,8 @@ const SHOP_ITEMS=[
   {id:'twinSpirits',name:'Twin Spirits',icon:'TWIN',color:'#ffd13a',price:90,description:'Evolve the blaster into Dual-Wield.',available:()=>!player.dualWield,apply:()=>{player.dualWield=true;}},
   {id:'spiritScope',name:'Spirit Scope',icon:'SHOT',color:'#43eaff',price:75,description:'+25% weapon damage.',available:()=>player.upgradeRanks.spiritRounds<4,apply:()=>{player.upgradeRanks.spiritRounds++;player.damageMultiplier*=1.25;}},
   {id:'jadeBand',name:'Jade Band',icon:'HP',color:'#69ef55',price:70,description:'+25 max HP and restore it.',available:()=>player.upgradeRanks.vitality<3,apply:()=>{player.upgradeRanks.vitality++;player.maxHealth+=25;player.health+=25;}},
-  {id:'foxfireCharm',name:'Foxfire Charm',icon:'FIRE',color:'#ff6a24',price:95,description:'Unlock Foxfire or increase its power 30%.',available:()=>true,apply:()=>{if(player.unlockedAbilities.has('foxfireVolley'))player.abilityPower.foxfireVolley*=1.3;else player.unlockedAbilities.add('foxfireVolley');}},
-  {id:'stormSeal',name:'Storm Seal',icon:'STORM',color:'#d94cff',price:115,description:'Unlock Shock Paws or increase its power 25%.',available:()=>true,apply:()=>{if(player.unlockedAbilities.has('shockPaws'))player.abilityPower.shockPaws*=1.25;else player.unlockedAbilities.add('shockPaws');}}
+  {id:'foxfireCharm',name:'Foxfire Charm',icon:'FIRE',color:'#ff6a24',price:95,description:'Increase awakened or future Foxfire power by 30%.',available:()=>true,apply:()=>{player.abilityPower.foxfireVolley*=1.3;}},
+  {id:'stormSeal',name:'Storm Seal',icon:'STORM',color:'#d94cff',price:115,description:'Increase awakened or future Shock Paws power by 25%.',available:()=>true,apply:()=>{player.abilityPower.shockPaws*=1.25;}}
 ];
 
 const ROUTE_SETS=[
@@ -736,7 +743,7 @@ const INTERACTABLE_DEFS={
 };
 
 const UPGRADE_RARITIES={
-  unlockRiptide:'rare',unlockFoxfire:'rare',unlockHeart:'rare',unlockShock:'epic',dualWield:'epic',
+  unlockUndertow:'rare',unlockFoxfire:'rare',unlockHeart:'rare',unlockShock:'epic',dualWield:'epic',
   spiritRounds:'common',quickPaws:'common',vitality:'common',undertow:'rare',hungryFlame:'rare',heartBloom:'rare',stormHeart:'epic',
   wardbreaker:'common',spiritHunter:'rare',spiritCatalyst:'rare',pressureChamber:'epic',headhunter:'rare',keenEye:'common',
   spiritCylinder:'common',phaseRounds:'epic',foxstepMastery:'rare',ironBelly:'rare',scatterBore:'epic',guardianHide:'rare',
@@ -744,8 +751,8 @@ const UPGRADE_RARITIES={
 };
 const RARITY_STYLES={common:{name:'COMMON',color:'#a9b4c3',weight:56},rare:{name:'RARE',color:'#39e8ff',weight:32},epic:{name:'EPIC',color:'#e04cff',weight:12}};
 const SYNERGIES=[
-  {id:'steamBurst',name:'STEAM BURST',color:'#50ecff',requires:()=>player.unlockedAbilities.has('riptide')&&player.unlockedAbilities.has('foxfireVolley'),description:'Foxfire detonates Wet enemies in a scalding area blast.'},
-  {id:'stormCurrent',name:'STORM CURRENT',color:'#c84fff',requires:()=>player.unlockedAbilities.has('riptide')&&player.unlockedAbilities.has('shockPaws'),description:'Shock Paws deals 50% more damage to Wet enemies.'},
+  {id:'steamBurst',name:'STEAM BURST',color:'#50ecff',requires:()=>player.unlockedAbilities.has('undertowWell')&&player.unlockedAbilities.has('foxfireVolley'),description:'Foxfire detonates Wet enemies in a scalding area blast.'},
+  {id:'stormCurrent',name:'STORM CURRENT',color:'#c84fff',requires:()=>player.unlockedAbilities.has('undertowWell')&&player.unlockedAbilities.has('shockPaws'),description:'Shock Paws deals 50% more damage to Wet enemies.'},
   {id:'guardianTempest',name:'GUARDIAN TEMPEST',color:'#72ef5b',requires:()=>player.unlockedAbilities.has('wildHeart')&&player.unlockedAbilities.has('shockPaws'),description:'Every global storm pulse restores a small amount of health.'},
   {id:'twinCinders',name:'TWIN CINDERS',color:'#ff8a2a',requires:()=>player.dualWield&&player.unlockedAbilities.has('foxfireVolley'),description:'Every eighth gun volley loads burning spirit rounds.'}
 ];
@@ -767,7 +774,7 @@ const ROUTE_EVENTS={
       {name:'EMPTY THE SPIRIT CACHE',tag:'TREASURE  BLOOD PRICE',color:'#d94cff',description:'Take 100 gold and one reroll. The sealed cache drains 22 current health.',result:'+100 GOLD  +1 REROLL  -22 HP',apply:()=>{player.gold+=100;player.rerolls++;player.health=Math.max(1,player.health-22);finishRouteEvent({speedScale:1.08});}}
     ]},
     {kicker:'SECRET PATH / MIRROR SHRINE',title:'FOUR POWERS, ONE REFLECTION',copy:'A cracked mirror contains an ability the hero has not yet awakened. Pulling it free will also pull something hungry through the glass.',quote:'Every shortcut opens in both directions.',choices:[
-      {name:'STEAL THE REFLECTION',tag:'ABILITY UNLOCK  CURSE',color:'#e04cff',description:'Unlock one random missing active ability. Take 8% more damage for the rest of this run.',result:'ABILITY UNLOCK  +8% DAMAGE TAKEN',available:()=>Object.keys(ABILITIES).some((id)=>!player.unlockedAbilities.has(id)),apply:()=>{const missing=Object.keys(ABILITIES).filter((id)=>!player.unlockedAbilities.has(id));player.unlockedAbilities.add(missing[Math.floor(Math.random()*missing.length)]);player.damageTakenMultiplier*=1.08;resolveSynergies();finishRouteEvent({damageScale:1.1});}},
+      {name:'STEAL THE REFLECTION',tag:'ABILITY POWER  CURSE',color:'#e04cff',description:'Charge every future technique by 24%, but take 8% more damage for the rest of this run.',result:'+24% ABILITY POWER  +8% DAMAGE TAKEN',available:()=>true,apply:()=>{for(const id of Object.keys(player.abilityPower))player.abilityPower[id]*=1.24;player.damageTakenMultiplier*=1.08;resolveSynergies();finishRouteEvent({damageScale:1.1});}},
       {name:'SHATTER THE MIRROR',tag:'RELIC  GUARDIAN WRATH',color:'#45eaff',description:'Destroy the passage and claim a relic shard. The next enemies arrive much faster.',result:'RANDOM RELIC  FAST WAVE',apply:()=>{grantRelic();finishRouteEvent({speedScale:1.2,rewardScale:1.35,nodeType:'secret'});}}
     ]}
   ]
@@ -853,7 +860,7 @@ function openHubStation(station){
 
 function renderHubUpgrade(upgrade){
   const rank=profile[upgrade.id]||0;const maxed=rank>=upgrade.max;const cost=maxed?0:upgrade.cost(rank);const affordable=profile.spiritShards>=cost;
-  hubUpgradeGrid.innerHTML=`<button class="hub-upgrade-card" style="--hub:${upgrade.color}" data-hub-buy ${maxed||!affordable?'disabled':''}><strong>${upgrade.name}</strong><em>RANK ${rank} / ${upgrade.max}</em><p>${upgrade.description}</p><b>${maxed?'MAXIMUM RANK':`  ${cost}`}</b></button><div class="hub-upgrade-card" style="--hub:#78658a"><strong>NEXT RUN</strong><em>PERMANENT LEGACY</em><p>These bonuses do not unlock active abilities. Riptide, Foxfire, Wild Heart, and Shock Paws must still be earned every run.</p><b>  ${profile.spiritShards} AVAILABLE</b></div>`;
+  hubUpgradeGrid.innerHTML=`<button class="hub-upgrade-card" style="--hub:${upgrade.color}" data-hub-buy ${maxed||!affordable?'disabled':''}><strong>${upgrade.name}</strong><em>RANK ${rank} / ${upgrade.max}</em><p>${upgrade.description}</p><b>${maxed?'MAXIMUM RANK':`  ${cost}`}</b></button><div class="hub-upgrade-card" style="--hub:#78658a"><strong>NEXT RUN</strong><em>PERMANENT LEGACY</em><p>These bonuses do not unlock active abilities. Undertow Well, Foxfire Volley, Wild Heart, and Shock Paws must still be earned at levels 2, 4, 6, and 8.</p><b>  ${profile.spiritShards} AVAILABLE</b></div>`;
   if(upgrade.id==='vitalityRank'){
     hubUpgradeGrid.insertAdjacentHTML('beforeend',Object.values(HEROES).map((hero)=>{const unlocked=profile.unlockedHeroes.includes(hero.id)||hero.id===debugHero;const lockCallout=hero.id==='rusty'?'CLEAR ASCENSION TO UNLOCK':'DEFEAT PYRECLAW TO UNLOCK';return `<button class="hub-upgrade-card hub-hero-card ${hero.id===selectedHeroId?'selected':''}" style="--hub:${hero.accent}" data-hub-hero="${hero.id}" ${unlocked?'':'disabled'}><strong>${unlocked?hero.name.toUpperCase():'??? LOCKED'}</strong><em>${hero.role.toUpperCase()}  ${hero.passiveName.toUpperCase()}</em><p>${unlocked?`${WEAPONS[hero.weapon].name}. ${hero.summary}`:(hero.unlockRequirement||'Complete the campaign to unlock.')}</p><b>${unlocked?(hero.id===selectedHeroId?'ACTIVE BRAWLPAW':'SWITCH HERO'):lockCallout}</b></button>`;}).join(''));
     for(const button of hubUpgradeGrid.querySelectorAll('[data-hub-hero]'))button.addEventListener('click',()=>selectHero(button.dataset.hubHero,{returnToHub:true}));
@@ -945,17 +952,17 @@ function resetGame() {
     facing: -Math.PI / 2, health: heroDef.maxHealth+legacyHealth, maxHealth: heroDef.maxHealth+legacyHealth, invulnerable: 0, flash: 0,
     dashTime: 0, dashCooldown: 0, dashDirection: { x: 0, y: -1 }, dashTrailClock: 0,
     attack: null, shotCooldown: 0,
-    abilityCooldowns: { riptide: 0, foxfireVolley: 0, wildHeart: 0, shockPaws: 0 },
+    abilityCooldowns: { undertowWell: 0, foxfireVolley: 0, wildHeart: 0, shockPaws: 0 },
     unlockedAbilities: new Set(), dualWield:Boolean(heroDef.naturalDual), damageMultiplier: 1+profile.forgeRank*.03, fireRateMultiplier: 1,
     rerolls:1,paidRerolls:0,synergies:new Set(),eventHistory:new Set(),shotsFired:0,
-    abilityPower: { riptide: 1+profile.attunementRank*.04, foxfireVolley: 1+profile.attunementRank*.04, wildHeart: 1+profile.attunementRank*.04, shockPaws: 1+profile.attunementRank*.04 },
+    abilityPower: { undertowWell: 1+profile.attunementRank*.04, foxfireVolley: 1+profile.attunementRank*.04, wildHeart: 1+profile.attunementRank*.04, shockPaws: 1+profile.attunementRank*.04 },
     upgradeRanks:{spiritRounds:0,quickPaws:0,vitality:0,undertow:0,hungryFlame:0,heartBloom:0,stormHeart:0,wardbreaker:0,spiritHunter:0,spiritCatalyst:0,pressureChamber:0,headhunter:0,keenEye:0,moonPiercer:0,perfectDraw:0,glassFang:0,spiritMomentum:0,guardianHunter:0,deepReserves:0,bankShot:0,loadedDice:0,quickdraw:0,spiritCylinder:0,phaseRounds:0,foxstepMastery:0,ironBelly:0,scatterBore:0,guardianHide:0},
     heartBonus: 0, stormBonus: 0,guardianBlessings:[],endingVow:null,victoryShardBonus:0,
     gold:legacyGold,goldMultiplier:1,relics:[],shopPurchases:new Set(),killHeal:0,damageTakenMultiplier:heroDef.damageTakenMultiplier,speedMultiplier:1,dashCooldownMultiplier:1,
     knockbackResistance:heroDef.knockbackResistance,knockbackMultiplier:1,braceTime:0,braceDelay:.72,braceDamageMultiplier:.8,braced:false,shieldDamageMultiplier:1,eliteDamageMultiplier:1,guardianDamageMultiplier:1,eliteGoldMultiplier:1,eliteKillHeal:0,statusDurationMultiplier:1,bonusProjectiles:0,bonusPierces:0,bonusRicochets:0,ricochetDamageRetention:.78,critBonus:0,critDamageMultiplier:1,weaponEvolution:null,
     wildHeartTime: 0, ultimateFlash: 0, castTime: 0,
     hitCount: 0, maxCombo: 0, comboDrop: 0, dashes: 0, hurtTime: 0, stunTime: 0,
-    level: 1, xp: 0, xpToNext: 24
+    level: 1, xp: 0, xpToNext: 48
   };
   enemies = [];
   Object.values(effects).forEach((list) => list.splice(0));
@@ -1097,7 +1104,7 @@ function startWave(index,modifiers={}) {
 
 function startSpecialistShowcase(){
   activateRoom(ROOMS.jadeRootGarden,{reposition:true,announce:true,waveIndex:2,subtitle:'SPECIALIST COMBAT LAB'});state='playing';encounter.wave=2;encounter.transitioning=false;encounter.bossActive=false;encounter.nodeType='elite';encounter.rewardScale=1;clearDelay=-1;enemies=[];
-  player.maxHealth=520;player.health=520;player.damageMultiplier=1.4;player.unlockedAbilities.add('foxfireVolley');player.unlockedAbilities.add('riptide');
+  player.maxHealth=520;player.health=520;player.damageMultiplier=1.4;player.unlockedAbilities.add('foxfireVolley');player.unlockedAbilities.add('undertowWell');
   const placements=[
     {type:'bellweaverCat',x:player.x-540,y:player.y-250,delay:.2},
     {type:'powderkegToad',x:player.x+520,y:player.y-230,delay:1},
@@ -1231,15 +1238,15 @@ function spawnRoomMission(definition={type:'eliminate',title:'DEFEAT THE SPIRITS
     roomMission.actors=Array.from({length:count},(_,index)=>{const angle=(index/count)*Math.PI*2+.45;const id=`captive:${chapterIndex}:${encounter.wave}:${index}`;return {id,x:b.x+Math.cos(angle)*b.radiusX*.39,y:b.y+Math.sin(angle)*b.radiusY*.35,radius:48,released:released.has(id),kind:'captive'};});
     roomMission.complete=roomMission.complete||roomMission.actors.every((actor)=>actor.released);
   }else if(type==='defend'){
-    const maxHealth=definition.health||300;roomMission.ward={x:b.x,y:b.y+Math.min(125,b.radiusY*.12),radius:82,maxHealth,health:clamp(saved?.wardHealth??maxHealth,1,maxHealth)};
-    roomMission.remaining=clamp(saved?.remaining??definition.duration??25,0,definition.duration??25);roomMission.complete=roomMission.complete||roomMission.remaining<=0;
+    const maxHealth=definition.health||300;roomMission.duration=definition.duration||25;roomMission.ward={x:b.x,y:b.y+Math.min(125,b.radiusY*.12),radius:82,maxHealth,health:clamp(saved?.wardHealth??maxHealth,1,maxHealth),grace:clamp(saved?.wardGrace??3.5,0,3.5),calmTime:0};
+    roomMission.remaining=clamp(saved?.remaining??roomMission.duration,0,roomMission.duration);roomMission.complete=roomMission.complete||roomMission.remaining<=0;
   }
   missionCheckpointClock=0;
 }
 
 function serializeMissionState(){
   if(!roomMission)return null;
-  return {type:roomMission.type,complete:roomMission.complete,rewarded:roomMission.rewarded,brokenIds:roomMission.actors.filter((actor)=>actor.broken).map((actor)=>actor.id),releasedIds:roomMission.actors.filter((actor)=>actor.released).map((actor)=>actor.id),wardHealth:roomMission.ward?.health,remaining:roomMission.remaining};
+  return {type:roomMission.type,complete:roomMission.complete,rewarded:roomMission.rewarded,brokenIds:roomMission.actors.filter((actor)=>actor.broken).map((actor)=>actor.id),releasedIds:roomMission.actors.filter((actor)=>actor.released).map((actor)=>actor.id),wardHealth:roomMission.ward?.health,wardGrace:roomMission.ward?.grace,remaining:roomMission.remaining};
 }
 
 function saveMissionCheckpoint(){
@@ -1280,7 +1287,14 @@ function updateRoomMission(dt){
   if(roomMission.type==='eliminate'){if(!alive.length)roomMission.complete=true;return;}
   if(roomMission.type==='defend'&&!roomMission.complete){
     const active=alive.filter((enemy)=>enemy.state!=='waiting');if(!alive.length){completeRoomMission();return;}
-    if(active.length){roomMission.remaining=Math.max(0,roomMission.remaining-dt);let pressure=0;for(const enemy of active){if(distance(enemy,roomMission.ward)<roomMission.ward.radius+250)pressure+=(enemy.def.contactDamage||8)*enemy.damageScale*.032;}if(pressure>0){roomMission.ward.health=Math.max(0,roomMission.ward.health-pressure*dt);roomMission.damageFlash=.13;}if(roomMission.ward.health<=0){failRoomMission();return;}if(roomMission.remaining<=0)completeRoomMission();}
+    if(active.length){
+      const ward=roomMission.ward;roomMission.remaining=Math.max(0,roomMission.remaining-dt);ward.grace=Math.max(0,ward.grace-dt);
+      const attackers=active.filter((enemy)=>distance(enemy,ward)<ward.radius+250).sort((a,b)=>distance(a,ward)-distance(b,ward)).slice(0,8);
+      let pressure=0;for(const enemy of attackers)pressure+=(enemy.def.contactDamage||8)*enemy.damageScale*.022;
+      if(pressure>0&&ward.grace<=0){ward.calmTime=0;const appliedPressure=cappedWardPressure(pressure,ward.maxHealth,roomMission.duration);ward.health=Math.max(0,ward.health-appliedPressure*dt);roomMission.damageFlash=.13;}
+      else if(ward.grace<=0){ward.calmTime+=dt;if(ward.calmTime>1.25)ward.health=Math.min(ward.maxHealth,ward.health+ward.maxHealth*.01*dt);}
+      if(ward.health<=0){failRoomMission();return;}if(roomMission.remaining<=0)completeRoomMission();
+    }
     roomMission.damageFlash=Math.max(0,(roomMission.damageFlash||0)-dt);missionCheckpointClock+=dt;if(missionCheckpointClock>=2){missionCheckpointClock=0;saveMissionCheckpoint();}
   }
 }
@@ -1359,7 +1373,8 @@ function weightedUpgradeIndex(pool){
 
 function rollUpgradeChoices(available=UPGRADES.filter((upgrade)=>upgrade.available())){
   const pool=[...available];currentUpgradeChoices=[];
-  if(player.unlockedAbilities.size===0&&player.level<=4){const starters=pool.filter((upgrade)=>['unlockRiptide','unlockFoxfire','unlockHeart'].includes(upgrade.id));if(starters.length){const forced=starters[Math.floor(Math.random()*starters.length)];currentUpgradeChoices.push(forced);pool.splice(pool.indexOf(forced),1);}}
+  const earnedUnlock=pool.find((upgrade)=>upgrade.id==='unlockShock')||pool.find((upgrade)=>upgrade.id==='unlockHeart')||pool.find((upgrade)=>upgrade.id==='unlockFoxfire')||pool.find((upgrade)=>upgrade.id==='unlockUndertow');
+  if(earnedUnlock){currentUpgradeChoices.push(earnedUnlock);pool.splice(pool.indexOf(earnedUnlock),1);}
   while(currentUpgradeChoices.length<Math.min(3,available.length)){const index=weightedUpgradeIndex(pool);currentUpgradeChoices.push(pool.splice(index,1)[0]);}
 }
 
@@ -1440,7 +1455,7 @@ function begin() {
     Object.keys(ABILITIES).forEach((id)=>player.unlockedAbilities.add(id));
     resolveSynergies();updateHud();
   }
-  if(debugSystem==='levelup'){player.level=2;pendingLevelUps=1;openLevelUp();return;}
+  if(debugSystem==='levelup'){player.level=2;pendingLevelUps=1;encounter.startWaveAfterUpgrade=0;openLevelUp();return;}
   if(debugSystem==='dojo'){enterDojo();return;}
   if(debugSystem==='crossfire'){
     player.maxHealth=600;player.health=600;spawnBoss();const boss=enemies[0];const profile=BOSS_PROFILES[boss.def.id];boss.bossPhase=3;boss.health=boss.maxHealth*.3;boss.state='bossWindupCrossfire';boss.stateTime=BOSS_PATTERNS.crossfire.windup;boss.activePattern='crossfire';boss.patternTargetX=player.x;boss.patternTargetY=player.y;boss.patternAngle=Math.atan2(player.y-boss.y,player.x-boss.x)+.51;ui.bossPhase.textContent=profile.phaseNames[3];return;
@@ -1453,7 +1468,7 @@ function begin() {
   if(debugSystem==='guardianReward'){openGuardianReward(chapter.boss);return;}
   if(debugSystem==='codex'){openCodex('enemies');return;}
   if(debugSystem==='event'||debugSystem==='secret'){player.gold=80;pendingRouteWave=1;openRouteEvent(debugSystem);return;}
-  if(debugSystem==='synergy'){player.unlockedAbilities.add('riptide');player.unlockedAbilities.add('foxfireVolley');resolveSynergies();startWave(0);return;}
+  if(debugSystem==='synergy'){player.unlockedAbilities.add('undertowWell');player.unlockedAbilities.add('foxfireVolley');resolveSynergies();startWave(0);return;}
   if(debugRoute>0){encounter.wave=debugRoute-1;player.gold=180;openRoute(Math.min(debugRoute,chapter.waves.length-1));}
   else showStory(debugBoss?'boss':'intro');
 }
@@ -1620,10 +1635,10 @@ function useAbility(id) {
   const definition=ABILITIES[id];
   if (!definition || !player.unlockedAbilities.has(id) || player.abilityCooldowns[id] > 0 || player.hurtTime > .08 || player.stunTime > 0 || player.dashTime > 0 || !['playing','dojo'].includes(state)) return;
   const direction=aimDirection(); player.facing=Math.atan2(direction.y,direction.x); player.abilityCooldowns[id]=definition.cooldown;
-  if (id === 'riptide') {
+  if (id === 'undertowWell') {
     player.castTime=.34;
-    const power=player.abilityPower.riptide;
-    effects.vortices.push({x:player.x+direction.x*250,y:player.y+direction.y*250,life:definition.duration,maxLife:definition.duration,radius:definition.radius*power,pull:definition.pull*power,hit:new Set(),definition,rotation:player.facing});
+    const power=player.abilityPower.undertowWell;
+    effects.vortices.push({x:player.x+direction.x*300,y:player.y+direction.y*300,life:definition.duration,maxLife:definition.duration,radius:definition.radius*Math.sqrt(power),pull:definition.pull*power,hit:new Set(),collapsed:false,definition,rotation:0});
     effects.rings.push({x:player.x,y:player.y,radius:18,maxRadius:80,color:definition.color,life:.3,maxLife:.3});
     burst(player.x,player.y,definition.color,25,260,4); playTone(180,.3,'sine',.04,430);
   } else if (id === 'foxfireVolley') {
@@ -1670,7 +1685,7 @@ function updatePlayer(dt) {
   }
 
   if (input.pressed.has('shift')) startDash();
-  if (input.pressed.has('e')) {if(!useMissionInteraction()&&!useRoomInteractable())useAbility('riptide');}
+  if (input.pressed.has('e')) {if(!useMissionInteraction()&&!useRoomInteractable())useAbility('undertowWell');}
   if (input.pressed.has('c')) useAbility('foxfireVolley');
   if (input.pressed.has('f')) useAbility('wildHeart');
   if (input.pressed.has('q')) useAbility('shockPaws');
@@ -1947,6 +1962,8 @@ function throwPowderkegBomb(enemy){
 
 function updateEnemies(dt) {
   const alive = enemies.filter((enemy) => !enemy.dead);
+  const activeCombatants=alive.filter((enemy)=>enemy.state!=='waiting');
+  let activationSlots=Math.max(0,activeEnemyLimit()-activeCombatants.length);
   for (const enemy of enemies) {
     const definition = enemy.def;
     enemy.flash = Math.max(0, enemy.flash - dt);
@@ -1954,8 +1971,9 @@ function updateEnemies(dt) {
     enemy.bob += dt * 5;
     if (enemy.state === 'waiting') {
       enemy.stateTime -= dt;
-      if (enemy.stateTime <= 0) {
+      if (enemy.stateTime <= 0 && activationSlots > 0) {
         enemy.state = 'enter'; enemy.stateTime = 1.35;
+        activationSlots--;activeCombatants.push(enemy);
         effects.rings.push({ x: enemy.x, y: enemy.y, radius: 12, maxRadius: 84 * enemy.def.scale, color: enemy.def.color, life: .6, maxLife: .6 });
         burst(enemy.x, enemy.y, enemy.def.color, 16, 190, 4);
       }
@@ -2057,14 +2075,14 @@ function updateEnemies(dt) {
         };
         const toOrbit = normalize(orbitTarget.x - enemy.x, orbitTarget.y - enemy.y);
         const orbitDistance = distance(enemy, orbitTarget);
-        const statusSpeed = enemy.wetTime > 0 ? 1 - ABILITIES.riptide.slow : 1;
+        const statusSpeed = enemy.wetTime > 0 ? 1 - ABILITIES.undertowWell.slow : 1;
         const speed = definition.speed * enemy.speedScale * statusSpeed * (hunting?1.18:1) * clamp(orbitDistance / 65, .38, 1.15);
         enemy.vx = lerp(enemy.vx, toOrbit.x * speed, clamp(dt * 5.5, 0, 1));
         enemy.vy = lerp(enemy.vy, toOrbit.y * speed, clamp(dt * 5.5, 0, 1));
       }
     }
 
-    for (const other of alive) {
+    for (const other of activeCombatants) {
       if (other === enemy) continue;
       const d = distance(enemy, other);
       const minimum = enemy.radius + other.radius + 18;
@@ -2189,6 +2207,7 @@ function updateEffects(dt) {
   }
   for (const vortex of effects.vortices) {
     vortex.life -= dt;
+    const progress=1-vortex.life/vortex.maxLife;
     for (const enemy of enemies) {
       if (enemy.dead || enemy.state === 'waiting') continue;
       const dist = distance(vortex, enemy);
@@ -2197,13 +2216,15 @@ function updateEffects(dt) {
       const pullStrength = vortex.pull * clamp(1-dist/vortex.radius, .25, 1);
       const pullResistance=enemy.def.behavior==='boss' ? .06 : 1;
       enemy.vx += toward.x*pullStrength*dt*pullResistance; enemy.vy += toward.y*pullStrength*dt*pullResistance;
+      if(enemy.def.behavior!=='boss'&&progress>.28&&progress<.82&&dist<vortex.radius*vortex.definition.holdRadius){enemy.vx*=Math.exp(-8*dt);enemy.vy*=Math.exp(-8*dt);enemy.huntTime=0;}
       applyEnemyStatus(enemy,'wet',vortex.definition.wetDuration);
       if (!vortex.hit.has(enemy.id)) {
         vortex.hit.add(enemy.id);
-        damageEnemyFromAbility(enemy, Math.round(vortex.definition.damage*player.abilityPower.riptide), 40, toward, vortex.definition.color, 'SOAKED!');
+        damageEnemyFromAbility(enemy, Math.round(vortex.definition.damage*player.abilityPower.undertowWell), 40, toward, vortex.definition.color, 'DRAGGED!');
         effects.spriteEffects.push({asset:'waterImpactVfx',x:enemy.x,y:enemy.y-20,width:190,height:160,life:.56,maxLife:.56,glow:vortex.definition.color});
       }
     }
+    if(!vortex.collapsed&&vortex.life<=vortex.definition.holdDuration){vortex.collapsed=true;const targets=enemies.filter((enemy)=>!enemy.dead&&enemy.state!=='waiting'&&distance(vortex,enemy)<vortex.radius*.72+enemy.radius);for(const enemy of targets){const inward=normalize(vortex.x-enemy.x,vortex.y-enemy.y);damageEnemyFromAbility(enemy,Math.round(vortex.definition.collapseDamage*player.abilityPower.undertowWell),85,inward,vortex.definition.color,'UNDERTOW!');applyEnemyStatus(enemy,'wet',vortex.definition.wetDuration);}effects.rings.push({x:vortex.x,y:vortex.y,radius:vortex.radius*.5,maxRadius:vortex.radius*1.12,color:'#dfffff',life:.48,maxLife:.48});burst(vortex.x,vortex.y,'#dfffff',36,470,7);camera.shake=Math.max(camera.shake,10);hitStop=Math.max(hitStop,.055);playTone(92,.3,'sawtooth',.045,380);}
   }
   for (const storm of effects.shockStorms) {
     storm.life -= dt; storm.tick -= dt;
@@ -2831,7 +2852,7 @@ function drawEffects() {
   for (const vortex of effects.vortices) {
     const p=1-vortex.life/vortex.maxLife; const alpha=clamp(vortex.life/.18,0,1); const spin=performance.now()/260;
     drawAtlasFrame(assets.waterRippleVfx,Math.floor(p*6),vortex.x,vortex.y+12,vortex.radius*2.15,vortex.radius*1.18,spin*.12,alpha*.82,vortex.definition.color);
-    if(!drawAtlasFrame(assets.tidalVfx,Math.floor(p*6),vortex.x,vortex.y-15,vortex.radius*1.72,vortex.radius*1.18,spin,alpha,vortex.definition.color)){
+    if(!drawAtlasFrame(assets.undertowVfx,Math.floor(p*6),vortex.x,vortex.y-15,vortex.radius*2.05,vortex.radius*1.38,0,alpha,vortex.definition.color)){
       ctx.save();ctx.translate(vortex.x,vortex.y);ctx.rotate(spin);ctx.globalAlpha=alpha;ctx.shadowColor=vortex.definition.color;ctx.shadowBlur=30;ctx.strokeStyle='#dfffff';ctx.lineWidth=14;ctx.beginPath();ctx.arc(0,0,vortex.radius*.58,.3,Math.PI*1.8);ctx.stroke();ctx.restore();
     }
   }
