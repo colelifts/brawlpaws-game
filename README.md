@@ -96,6 +96,7 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - Spirited, Ferocious, and Nightmare difficulty selection with real health, speed, damage, and reward scaling
 - Ten post-clear Ascension ranks that compound enemy health, pursuit speed, damage, pack size, spawn cadence, and shard rewards after every successful clear
 - Persistent spirit shards, campaign clears, best-difficulty records, highest level, and capped legacy health/gold bonuses
+- The Mission Board now offers five persistent campaign contracts for total spirit defeats, elite hunting, Foxfire burn finishes, seal clears, and guardian victories. Progress records at the real combat event, survives across runs, and opens a manual claim for shards plus one restrained permanent modifier without pre-unlocking abilities.
 - A fully walkable Spirit Lantern Village hub with the Hero Shrine, Spirit Forge, Relic Altar, Mission Board, Dojo, Charm Shop, and Portal Gate
 - A real Spirit Dojo combat laboratory with four target/armor tiers, passive or live enemy AI, temporary ability access, dual-wield switching, rolling DPS, total damage, best DPS, status timers, target breaks, and isolated progression-safe resets
 - Two starting heroes with persistent title-screen and Hero Shrine selection: rapid precision gunner Kitsune and cannon-tank Bamboo
@@ -126,7 +127,7 @@ Route QA checkpoints are available at `?route=1`, `?route=2`, and `?route=3`; th
 Chapter 2 QA is available at `?chapter=2`, with `?chapter=2&boss=1` for Moonfang; these QA routes provide a reinforced test loadout and do not affect normal balance.
 Chapter 3 QA is available at `?chapter=3`, with `?chapter=3&boss=1` for Pyreclaw. Add `&difficulty=nightmare` to validate maximum pressure.
 Hub station QA is available at `?hub=heroShrine` or `?hub=portal`; normal play enters the village at its central plaza.
-Systems QA is available at `?system=levelup`, `?system=story&beat=interlude2`, `?system=story&beat=interlude4`, `?system=event`, `?system=secret`, `?system=synergy`, `?system=elites`, `?system=specialists`, `?system=capstone`, `?system=evolutions`, `?system=pressure`, `?system=room6`, `?system=signature`, and `?system=codex`.
+Systems QA is available at `?system=levelup`, `?system=story&beat=interlude2`, `?system=story&beat=interlude4`, `?system=contracts`, `?system=contracts&ready=1`, `?system=event`, `?system=secret`, `?system=synergy`, `?system=elites`, `?system=specialists`, `?system=capstone`, `?system=evolutions`, `?system=pressure`, `?system=room6`, `?system=signature`, and `?system=codex`.
 Mission QA is available at `?system=mission&mission=anchors`, `?system=mission&mission=rescue`, and `?system=mission&mission=defend`; add `&chapter=2` or `&chapter=3` to validate biome-specific mission schedules and palettes.
 Guardian reward QA is available at `?system=guardianReward`; combine it with `&chapter=2` for Moonfang or `&chapter=3` for Pyreclaw’s final-vow and epilogue sequence.
 Sealing Crossfire can be inspected immediately at `?system=crossfire`; combine it with `&chapter=2` or `&chapter=3` for each guardian's profile-scaled version.

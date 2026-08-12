@@ -171,6 +171,7 @@ Initial upgrade set:
 - Hero Shrine, Forge, Relic Altar, Dojo, Shopkeeper, Mission Board, and Portal Gate are spatially readable and interactive
 - Permanent health, weapon, ability, and starting-gold ranks can be purchased with banked Spirit Shards
 - Campaign records, difficulty record, controls, locked-ability rules, and campaign portal flow are playable
+- The Mission Board now hosts five persistent, claimable campaign contracts tied to real kill, elite, Burn-finish, seal-clear, and guardian-defeat events; each rewards spirit shards plus one restrained future-run modifier
 - Animal NPCs, ambient dialogue, lantern lighting, navigation signs, and interaction prompts
 - Dojo supports damage testing, ability preview, and input practice
 - Portal opens hero/loadout/difficulty selection and starts a run
@@ -180,7 +181,7 @@ Initial upgrade set:
 ## Phase 8 — Permanent progression and save (baseline playable)
 
 - Versioned local profile key with safe defaults and additive field loading is playable; explicit schema migrations remain next
-- Persist settings, gold, spirit shards, hero tokens, unlocks, hero mastery, weapon upgrades, relic discoveries, challenges, cosmetics, and difficulty modifiers
+- Persist settings, spirit shards, unlocks, hub ranks, discoveries, Ascension state, and five campaign-contract progress/claim records; broader hero mastery, weapon collections, cosmetics, and explicit save-management tools remain expansion work
 - Separate resumable-run snapshot with room seed, route, build, health, currency, and active room
 - Death rewards progress without making permanent power invalidate combat mastery
 - Corruption recovery and explicit reset/export/import options

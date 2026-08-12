@@ -173,7 +173,8 @@ const PROFILE_KEY='brawlpaws-profile-v1';
 const RUN_KEY='brawlpaws-run-v1';
 const RUN_VERSION=1;
 const DEFAULT_SETTINGS={screenShake:1,flashIntensity:1,damageNumbers:true,ambientMotion:true};
-const DEFAULT_PROFILE={spiritShards:0,campaignClears:0,runsStarted:0,bestDifficulty:'',lastDifficulty:'ferocious',selectedHero:'kitsune',highestLevel:1,vitalityRank:0,forgeRank:0,attunementRank:0,purseRank:0,ascensionRank:1,ascensionClears:0,unlockedHeroes:['kitsune','bamboo'],discoveredEnemies:['groveMinion'],discoveredGuardians:[],settings:DEFAULT_SETTINGS};
+const DEFAULT_CONTRACT_PROGRESS={spiritCull:0,eliteBreakers:0,foxfireHunt:0,sealRunner:0,guardianOath:0};
+const DEFAULT_PROFILE={spiritShards:0,campaignClears:0,runsStarted:0,bestDifficulty:'',lastDifficulty:'ferocious',selectedHero:'kitsune',highestLevel:1,vitalityRank:0,forgeRank:0,attunementRank:0,purseRank:0,ascensionRank:1,ascensionClears:0,unlockedHeroes:['kitsune','bamboo'],discoveredEnemies:['groveMinion'],discoveredGuardians:[],contractProgress:DEFAULT_CONTRACT_PROGRESS,claimedContracts:[],settings:DEFAULT_SETTINGS};
 function loadProfile(){
   try{
     const loaded={...DEFAULT_PROFILE,...JSON.parse(localStorage.getItem(PROFILE_KEY)||'{}')};
@@ -185,11 +186,12 @@ function loadProfile(){
     loaded.discoveredEnemies=Array.isArray(loaded.discoveredEnemies)?loaded.discoveredEnemies:['groveMinion'];
     loaded.discoveredGuardians=Array.isArray(loaded.discoveredGuardians)?loaded.discoveredGuardians:[];
     loaded.unlockedHeroes=Array.isArray(loaded.unlockedHeroes)?loaded.unlockedHeroes:['kitsune','bamboo'];
+    loaded.contractProgress={...DEFAULT_CONTRACT_PROGRESS,...loaded.contractProgress};loaded.claimedContracts=Array.isArray(loaded.claimedContracts)?loaded.claimedContracts:[];
     if(loaded.campaignClears>0&&!loaded.unlockedHeroes.includes('hopscotch'))loaded.unlockedHeroes.push('hopscotch');
     loaded.ascensionRank=clamp(Math.round(Number(loaded.ascensionRank)||1),1,10);loaded.ascensionClears=Math.max(0,Math.round(Number(loaded.ascensionClears)||0));
     if(loaded.ascensionClears>0&&!loaded.unlockedHeroes.includes('rusty'))loaded.unlockedHeroes.push('rusty');
     return loaded;
-  }catch{return {...DEFAULT_PROFILE,settings:{...DEFAULT_SETTINGS},unlockedHeroes:[...DEFAULT_PROFILE.unlockedHeroes],discoveredEnemies:[...DEFAULT_PROFILE.discoveredEnemies],discoveredGuardians:[]};}
+  }catch{return {...DEFAULT_PROFILE,settings:{...DEFAULT_SETTINGS},unlockedHeroes:[...DEFAULT_PROFILE.unlockedHeroes],discoveredEnemies:[...DEFAULT_PROFILE.discoveredEnemies],discoveredGuardians:[],contractProgress:{...DEFAULT_CONTRACT_PROGRESS},claimedContracts:[]};}
 }
 function saveProfile(){try{localStorage.setItem(PROFILE_KEY,JSON.stringify(profile));}catch{/* Storage can be unavailable in private contexts. */}}
 let profile=loadProfile();
@@ -806,6 +808,26 @@ const HUB_UPGRADES={
   relicAltar:{id:'attunementRank',name:'Relic Attunement',color:'#d95cff',max:5,cost:(rank)=>100+rank*70,description:'+4% permanent power for every unlocked ability.'},
   shopkeeper:{id:'purseRank',name:'Lucky Purse',color:'#ff4f79',max:5,cost:(rank)=>65+rank*50,description:'+5 permanent starting run gold.'}
 };
+const CAMPAIGN_CONTRACTS=[
+  {id:'spiritCull',name:'Thin the Curse',tag:'HUNTER CONTRACT',color:'#42eaff',target:120,reward:55,description:'Defeat 120 hostile spirits across any number of runs.',bonus:'START EACH RUN WITH +15 GOLD'},
+  {id:'eliteBreakers',name:'Break the Mutated',tag:'ELITE CONTRACT',color:'#ff4f91',target:18,reward:70,description:'Defeat 18 Swift, Bulwark, Frenzied, Volatile, or Splitter enemies.',bonus:'PERMANENT +8% ELITE DAMAGE'},
+  {id:'foxfireHunt',name:'Ashes Remember',tag:'FOXFIRE CONTRACT',color:'#ff6a24',target:35,reward:75,description:'Finish 35 burning enemies after awakening Foxfire Volley.',bonus:'PERMANENT +6% FOXFIRE POWER'},
+  {id:'sealRunner',name:'Road of Eighteen Seals',tag:'CAMPAIGN CONTRACT',color:'#8cff58',target:18,reward:90,description:'Clear 18 combat seals across the three chapters.',bonus:'START EACH RUN WITH +1 REROLL'},
+  {id:'guardianOath',name:'Free the Three',tag:'GUARDIAN CONTRACT',color:'#d95cff',target:3,reward:120,description:'Defeat three corrupted guardians across any number of runs.',bonus:'PERMANENT +8% GUARDIAN DAMAGE'}
+];
+
+function contractClaimed(id){return profile.claimedContracts.includes(id);}
+function contractProgress(contract){return clamp(Number(profile.contractProgress[contract.id])||0,0,contract.target);}
+let contractSaveTimer=0;
+function recordContractProgress(id,amount=1){const contract=CAMPAIGN_CONTRACTS.find((entry)=>entry.id===id);if(!contract||contractClaimed(id))return;profile.contractProgress[id]=clamp(contractProgress(contract)+amount,0,contract.target);clearTimeout(contractSaveTimer);contractSaveTimer=setTimeout(saveProfile,450);}
+function claimCampaignContract(id){
+  const contract=CAMPAIGN_CONTRACTS.find((entry)=>entry.id===id);if(!contract||contractClaimed(id)||contractProgress(contract)<contract.target)return;profile.claimedContracts.push(id);profile.spiritShards+=contract.reward;saveProfile();refreshProfileUi();ui.hubShards.textContent=`SHARDS ${profile.spiritShards}`;spawnWord(player.x,player.y-105,'CONTRACT CLAIMED!',contract.color);effects.rings.push({x:player.x,y:player.y,radius:20,maxRadius:175,color:contract.color,life:.75,maxLife:.75});playTone(320,.42,'triangle',.055,480);renderMissionBoard();
+}
+function renderMissionBoard(){
+  const complete=CAMPAIGN_CONTRACTS.filter((entry)=>contractClaimed(entry.id)).length;ui.hubMenuCopy.textContent=`Complete contracts across multiple runs. Claimed oaths grant shards and restrained permanent build options. ${complete} / ${CAMPAIGN_CONTRACTS.length} fulfilled.`;
+  hubUpgradeGrid.innerHTML=CAMPAIGN_CONTRACTS.map((contract)=>{const progress=contractProgress(contract),ready=progress>=contract.target,claimed=contractClaimed(contract.id);return `<button type="button" class="hub-upgrade-card mission-contract ${ready?'ready':''} ${claimed?'claimed':''}" style="--hub:${contract.color};--contract-progress:${progress/contract.target*100}%" data-contract="${contract.id}" ${ready&&!claimed?'':'disabled'}><span class="contract-status">${claimed?'FULFILLED':ready?'CLAIM REWARD':`${progress} / ${contract.target}`}</span><strong>${contract.name}</strong><em>${contract.tag}</em><p>${contract.description}</p><span class="contract-bar"><i></i></span><b>${claimed?contract.bonus:`${contract.reward} SHARDS  ·  ${contract.bonus}`}</b></button>`;}).join('')+`<button type="button" class="hub-upgrade-card mission-archive" style="--hub:#9c58d9" data-open-codex><strong>SPIRIT ARCHIVE</strong><em>${profile.discoveredEnemies.length} ENEMIES  ${profile.discoveredGuardians.length} GUARDIANS</em><p>Study recorded attacks, weaknesses, statuses, and guardian patterns.</p><b>OPEN BRAWLPAWS CODEX</b></button>`;
+  for(const button of hubUpgradeGrid.querySelectorAll('[data-contract]'))button.addEventListener('click',()=>claimCampaignContract(button.dataset.contract));hubUpgradeGrid.querySelector('[data-open-codex]').addEventListener('click',()=>openCodex('enemies'));
+}
 let activeHubStation=null;
 const DOJO_TARGETS=[
   {type:'groveMinion',name:'SWIFT SCOUT',health:800,armor:1,description:'Unarmored movement target'},
@@ -859,9 +881,7 @@ function openHubStation(station){
   const upgrade=HUB_UPGRADES[station.id];
   if(upgrade){ui.hubMenuCopy.textContent='Spend permanent spirit shards. Purchased ranks apply to every future run.';renderHubUpgrade(upgrade);}
   else if(station.id==='missionBoard'){
-    ui.hubMenuCopy.textContent='Your campaign record and every spirit encountered are stored on this device.';
-    const difficulty=activeDifficulty();hubUpgradeGrid.innerHTML=`<div class="hub-upgrade-card" style="--hub:#ffd13a"><strong>CAMPAIGN RECORD</strong><em>${profile.campaignClears} CLEARS  ${profile.runsStarted} RUNS</em><p>Highest level ${profile.highestLevel}. Best clear: ${profile.bestDifficulty?profile.bestDifficulty.toUpperCase():'NONE YET'}.</p><b>  ${profile.spiritShards} BANKED</b></div><div class="hub-upgrade-card" style="--hub:#42eaff"><strong>ACTIVE CHALLENGE</strong><em>${difficulty.name.toUpperCase()}${difficulty.rank?`  RANK ${difficulty.rank}`:''}</em><p>${difficulty.description}</p><b>${Math.round(difficulty.rewardScale*100)}% REWARDS</b></div><button type="button" class="hub-upgrade-card" style="--hub:#d95cff" data-open-codex><strong>SPIRIT ARCHIVE</strong><em>${profile.discoveredEnemies.length} ENEMIES  ${profile.discoveredGuardians.length} GUARDIANS</em><p>Study recorded attack roles, weaknesses, status effects, and guardian patterns.</p><b>OPEN BRAWLPAWS CODEX</b></button>`;
-    hubUpgradeGrid.querySelector('[data-open-codex]').addEventListener('click',()=>openCodex('enemies'));
+    renderMissionBoard();
   } else {
     ui.hubMenuCopy.textContent='Train before entering the spirit road. Abilities remain locked until earned during each run.';
     hubUpgradeGrid.innerHTML=`<div class="hub-upgrade-card" style="--hub:#72ef5b"><strong>MOVEMENT</strong><em>WASD  SHIFT</em><p>Move, kite, and use your hero dash for invulnerability. Enemy speed rises every chapter.</p><b>PERFECT DODGES BUILD SPACE</b></div><div class="hub-upgrade-card" style="--hub:#d95cff"><strong>COMBAT</strong><em>LMB  E  C  F  Q</em><p>Fire your ranged weapon and unlock abilities from level-up choices during the campaign.</p><b>ABILITIES START LOCKED</b></div>`;
@@ -956,7 +976,7 @@ function setChapter(index) {
 function resetGame() {
   dojoPanel.classList.remove('active');
   setChapter(0);
-  const legacyHealth=Math.min(25,profile.campaignClears*5)+profile.vitalityRank*5;const legacyGold=Math.min(25,profile.campaignClears*5)+profile.purseRank*5;
+  const legacyHealth=Math.min(25,profile.campaignClears*5)+profile.vitalityRank*5;const legacyGold=Math.min(25,profile.campaignClears*5)+profile.purseRank*5+(contractClaimed('spiritCull')?15:0);
   player = {
     x: room.playerSpawn.x, y: room.playerSpawn.y, vx: 0, vy: 0, radius: heroDef.radius,
     facing: -Math.PI / 2, health: heroDef.maxHealth+legacyHealth, maxHealth: heroDef.maxHealth+legacyHealth, invulnerable: 0, flash: 0,
@@ -964,13 +984,13 @@ function resetGame() {
     attack: null, shotCooldown: 0,
     abilityCooldowns: { undertowWell: 0, foxfireVolley: 0, wildHeart: 0, shockPaws: 0 },
     unlockedAbilities: new Set(), dualWield:Boolean(heroDef.naturalDual), damageMultiplier: 1+profile.forgeRank*.03, fireRateMultiplier: 1,
-    rerolls:1,paidRerolls:0,synergies:new Set(),eventHistory:new Set(),shotsFired:0,
-    abilityPower: { undertowWell: 1+profile.attunementRank*.04, foxfireVolley: 1+profile.attunementRank*.04, wildHeart: 1+profile.attunementRank*.04, shockPaws: 1+profile.attunementRank*.04 },
+    rerolls:1+(contractClaimed('sealRunner')?1:0),paidRerolls:0,synergies:new Set(),eventHistory:new Set(),shotsFired:0,
+    abilityPower: { undertowWell: 1+profile.attunementRank*.04, foxfireVolley:(1+profile.attunementRank*.04)*(contractClaimed('foxfireHunt')?1.06:1), wildHeart: 1+profile.attunementRank*.04, shockPaws: 1+profile.attunementRank*.04 },
     abilityEvolutions:{undertowWell:false,foxfireVolley:false,wildHeart:false,shockPaws:false},
     upgradeRanks:{spiritRounds:0,quickPaws:0,vitality:0,undertow:0,hungryFlame:0,heartBloom:0,stormHeart:0,wardbreaker:0,spiritHunter:0,spiritCatalyst:0,pressureChamber:0,headhunter:0,keenEye:0,moonPiercer:0,perfectDraw:0,glassFang:0,spiritMomentum:0,guardianHunter:0,deepReserves:0,bankShot:0,loadedDice:0,quickdraw:0,spiritCylinder:0,phaseRounds:0,foxstepMastery:0,ironBelly:0,scatterBore:0,guardianHide:0},
     heartBonus: 0, stormBonus: 0,guardianBlessings:[],endingVow:null,victoryShardBonus:0,
     gold:legacyGold,goldMultiplier:1,relics:[],shopPurchases:new Set(),killHeal:0,damageTakenMultiplier:heroDef.damageTakenMultiplier,speedMultiplier:1,dashCooldownMultiplier:1,
-    knockbackResistance:heroDef.knockbackResistance,knockbackMultiplier:1,braceTime:0,braceDelay:.72,braceDamageMultiplier:.8,braced:false,shieldDamageMultiplier:1,eliteDamageMultiplier:1,guardianDamageMultiplier:1,eliteGoldMultiplier:1,eliteKillHeal:0,statusDurationMultiplier:1,bonusProjectiles:0,bonusPierces:0,bonusRicochets:0,ricochetDamageRetention:.78,critBonus:0,critDamageMultiplier:1,weaponEvolution:null,
+    knockbackResistance:heroDef.knockbackResistance,knockbackMultiplier:1,braceTime:0,braceDelay:.72,braceDamageMultiplier:.8,braced:false,shieldDamageMultiplier:1,eliteDamageMultiplier:contractClaimed('eliteBreakers')?1.08:1,guardianDamageMultiplier:contractClaimed('guardianOath')?1.08:1,eliteGoldMultiplier:1,eliteKillHeal:0,statusDurationMultiplier:1,bonusProjectiles:0,bonusPierces:0,bonusRicochets:0,ricochetDamageRetention:.78,critBonus:0,critDamageMultiplier:1,weaponEvolution:null,
     wildHeartTime: 0, ultimateFlash: 0, castTime: 0,
     hitCount: 0, maxCombo: 0, comboDrop: 0, dashes: 0, hurtTime: 0, stunTime: 0,
     level: 1, xp: 0, xpToNext: 48
@@ -1178,6 +1198,7 @@ function spawnBoss({restoring=false}={}) {
 
 function beginWaveTransition() {
   if(encounter.transitioning)return;
+  recordContractProgress('sealRunner');
   encounter.transitioning=true; encounter.transitionTime=2.4;
   ui.roomState.textContent='WAVE CLEARED';ui.roomState.style.color='#65ef4f';ui.objective.textContent='THE CURSE GROWS STRONGER';
   player.health=Math.min(player.maxHealth,player.health+12);
@@ -1549,6 +1570,7 @@ function begin() {
     resolveSynergies();updateHud();
   }
   if(debugSystem==='levelup'){player.level=2;pendingLevelUps=1;encounter.startWaveAfterUpgrade=0;openLevelUp();return;}
+  if(debugSystem==='contracts'){if(debugParams.has('restore')){profile.spiritShards=764;profile.contractProgress={...DEFAULT_CONTRACT_PROGRESS};profile.claimedContracts=[];saveProfile();}if(debugParams.has('ready'))for(const contract of CAMPAIGN_CONTRACTS)profile.contractProgress[contract.id]=contract.target;enterHub();openHubStation(HUB_STATIONS.find((station)=>station.id==='missionBoard'));return;}
   if(debugSystem==='story'){const storyBeat=['intro','interlude2','interlude4','boss'].includes(debugParams.get('beat'))?debugParams.get('beat'):'interlude2';showStory(storyBeat);return;}
   if(debugSystem==='dojo'){enterDojo();return;}
   if(debugSystem==='crossfire'){
@@ -1915,6 +1937,7 @@ function killEnemy(enemy, direction) {
   const foxfireSpread=enemy.burnTime>0&&player.abilityEvolutions?.foxfireVolley;const spreadingPower=enemy.burnPower||1;enemy.dead = true; enemy.deathTime = .72;
   if(enemy.practice){dojoState.kills++;dojoState.respawnTimer=.82;enemy.vx+=direction.x*220;enemy.vy+=direction.y*220;burst(enemy.x,enemy.y,'#72ef5b',34,390,7);spawnWord(enemy.x,enemy.y-90,'TARGET BROKEN!','#72ef5b');camera.shake=10;return;}
   if(enemy.def.behavior==='boss'){
+    recordContractProgress('guardianOath');
     enemy.deathTime=2.8;encounter.bossDefeated=true;clearDelay=3.2;encounter.defeatedGuardianId=enemy.def.id;ui.bossPanel.classList.remove('active');
     const bamboo=enemy.def.id==='moonfangKomainu';const crimson=enemy.def.id==='pyreclawShogun';
     ui.roomState.textContent='GUARDIAN FREED';ui.roomState.style.color='#65ef80';ui.objective.textContent=crimson?'THE ONI GATE OPENS':bamboo?'THE HOLLOW BREATHES AGAIN':'THE JADE BELLS RING AGAIN';
@@ -1922,6 +1945,7 @@ function killEnemy(enemy, direction) {
     for(let i=0;i<48;i++){const a=Math.random()*Math.PI*2,s=120+Math.random()*420;effects.shards.push({x:enemy.x,y:enemy.y-60,vx:Math.cos(a)*s,vy:Math.sin(a)*s,color:i%3?enemy.def.color:'#d94cff',life:5,maxLife:5,delay:.4+Math.random()*.8,size:6+Math.random()*8});}
     return;
   }
+  recordContractProgress('spiritCull');if(enemy.eliteId)recordContractProgress('eliteBreakers');if(enemy.burnTime>0)recordContractProgress('foxfireHunt');
   recordCorruptionKill();
   if(foxfireSpread){
     const spreadTargets=enemies.filter((target)=>target!==enemy&&!target.dead&&target.state!=='waiting'&&distance(enemy,target)<360+target.radius).sort((a,b)=>distance(enemy,a)-distance(enemy,b)).slice(0,3);

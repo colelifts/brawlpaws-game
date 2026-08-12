@@ -59,6 +59,18 @@ test('each chapter has checkpoint-safe mid-run story continuity',()=>{
   for(const id of ['story-progress','story-objective'])assert.match(html,new RegExp(`id="${id}"`));
 });
 
+test('the Mission Board tracks and rewards persistent campaign contracts',()=>{
+  for(const id of ['spiritCull','eliteBreakers','foxfireHunt','sealRunner','guardianOath'])assert.match(game,new RegExp(`id:'${id}'`));
+  for(const helper of ['recordContractProgress','renderMissionBoard','claimCampaignContract','contractClaimed'])assert.match(game,new RegExp(`function ${helper}\\(`));
+  assert.match(game,/recordContractProgress\('spiritCull'\)/);
+  assert.match(game,/enemy\.eliteId\)recordContractProgress\('eliteBreakers'\)/);
+  assert.match(game,/enemy\.burnTime>0\)recordContractProgress\('foxfireHunt'\)/);
+  assert.match(game,/recordContractProgress\('sealRunner'\)/);
+  assert.match(game,/recordContractProgress\('guardianOath'\)/);
+  assert.match(game,/profile\.spiritShards\+=contract\.reward/);
+  assert.match(styles,/\.contract-bar i\{display:block;width:var\(--contract-progress\)/);
+});
+
 test('earned ability ladder replaces Tidal Slash with a readable Undertow trap',()=>{
   assert.match(data,/spiritBlaster:[\s\S]{0,100}damage:\s*7/);
   assert.match(data,/undertowWell:[^\n]*unlockLevel:\s*2/);
