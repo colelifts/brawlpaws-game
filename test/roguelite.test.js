@@ -50,6 +50,9 @@ test('upgrade offers show exact build changes instead of hidden prose',()=>{
   assert.match(game,/class="upgrade-comparison">\$\{upgrade\.detail\.toUpperCase\(\)\}/);
   assert.match(game,/ABILITIES\.length|Object\.keys\(ABILITIES\)\.length/);
   assert.doesNotMatch(styles,/\.upgrade-card \.upgrade-description\s*\{\s*display\s*:\s*none/);
+  assert.match(styles,/upgrade-icons-v2\.png/);
+  assert.match(styles,/background-size:400% 400%/);
+  for(const family of ['spiritMomentum','deepReserves','moonPiercer','bankShot','scatterBore'])assert.match(game,new RegExp(`['"]${family}['"]`));
 });
 
 test('combat presentation uses licensed recordings and whole-body hit reactions',()=>{

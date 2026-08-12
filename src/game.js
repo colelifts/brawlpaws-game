@@ -1515,7 +1515,8 @@ function renderUpgradeChoices(){
 
 function upgradeIconFrame(upgrade){
   if(upgrade.id==='unlockUndertow'||upgrade.type.includes('UNDERTOW'))return 0;if(upgrade.id==='unlockFoxfire'||upgrade.type.includes('FOXFIRE'))return 1;if(upgrade.id==='unlockHeart'||upgrade.type.includes('HEART'))return 2;if(upgrade.id==='unlockShock'||upgrade.type.includes('ULTIMATE'))return 3;
-  if(['dualWield','pressureChamber','bankShot','quickdraw'].includes(upgrade.id))return 4;if(['spiritRounds','quickPaws','spiritCylinder','phaseRounds'].includes(upgrade.id))return 5;if(['wardbreaker','ironBelly','guardianHide'].includes(upgrade.id))return 6;if(['keenEye','perfectDraw','loadedDice','headhunter'].includes(upgrade.id))return 7;return 8;
+  if(upgrade.id==='dualWield')return 4;if(['spiritRounds','quickPaws','quickdraw','spiritCylinder'].includes(upgrade.id))return 5;if(['wardbreaker','ironBelly','guardianHide','vitality','glassFang'].includes(upgrade.id))return 6;if(['keenEye','perfectDraw','loadedDice','spiritHunter'].includes(upgrade.id))return 7;
+  if(['guardianHunter','headhunter'].includes(upgrade.id)||upgrade.type.includes('CAPSTONE')||upgrade.type.includes('EVOLUTION'))return 8;if(['spiritMomentum','foxstepMastery'].includes(upgrade.id))return 9;if(upgrade.id==='deepReserves')return 10;if(['moonPiercer','phaseRounds'].includes(upgrade.id))return 11;if(['bankShot','deadeyeCircuit'].includes(upgrade.id))return 12;if(['perfectDraw','moonConstellation'].includes(upgrade.id))return 13;if(['pressureChamber','scatterBore','siegeLotus'].includes(upgrade.id))return 14;return 15;
 }
 
 function rerollUpgrades(){
