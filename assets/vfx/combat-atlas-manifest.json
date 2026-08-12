@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "layout": { "columns": 3, "rows": 2, "frames": 6, "order": "left-to-right, top-to-bottom" },
+  "combat": {
+    "spiritBlasterShot": { "file": "spirit-blaster-shot.png", "type": "travel", "drawSize": [112, 70] },
+    "spiritBlasterImpact": { "file": "spirit-blaster-impact.png", "type": "impact", "drawSize": [118, 104] },
+    "spiritArrow": { "file": "spirit-arrow.png", "type": "enemy-travel", "drawSize": [132, 72] },
+    "spiritArrowImpact": { "file": "spirit-arrow-impact.png", "type": "enemy-impact", "drawSize": [142, 126] },
+    "foxfireBurn": { "file": "burn-status.png", "type": "status-loop", "status": "burn", "duration": 4 },
+    "tidalWaterImpact": { "file": "water-impact.png", "type": "elemental-impact", "status": "wet", "duration": 4 },
+    "jadeBrawlerClaw": { "file": "claw-slash.png", "type": "enemy-attack", "drawSize": [190, 124] },
+    "jadebreakerSlam": { "file": "hammer-slam.png", "type": "enemy-attack-impact", "drawSize": [358, 282] },
+    "shockPawsImpact": { "file": "shock-paws-impact.png", "type": "elemental-impact", "status": "shock" },
+    "shockPawsLink": { "file": "shock-link.png", "type": "stretchable-link", "jumps": 4 }
+  },
+  "environment": {
+    "spiritWisp": { "file": "../environment/animated/spirit-wisp.png", "type": "ambient-loop" },
+    "lanternFlame": { "file": "../environment/animated/lantern-flame.png", "type": "ambient-loop" },
+    "waterRipple": { "file": "../environment/animated/water-ripple.png", "type": "ambient-loop" }
+  }
+}

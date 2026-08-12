@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "layout": {
+    "columns": 3,
+    "rows": 2,
+    "frames": 6,
+    "order": "left-to-right, top-to-bottom"
+  },
+  "atlases": {
+    "tidalSlash": {
+      "file": "tidal-slash.png",
+      "source": "../source-art/ability-vfx-v1/tidal-slash-key.png",
+      "drawSize": { "width": 270, "height": 190 },
+      "frames": ["anticipation", "opening", "release", "impact", "breakup", "dissipate"]
+    },
+    "foxfireBolt": {
+      "file": "foxfire-bolt.png",
+      "source": "../source-art/ability-vfx-v1/foxfire-bolt-key.png",
+      "drawSize": { "width": 145, "height": 96 },
+      "frames": ["spark", "form", "launch", "flight", "flare", "dissipate"]
+    },
+    "wildHeart": {
+      "file": "wild-heart.png",
+      "source": "../source-art/ability-vfx-v1/wild-heart-key.png",
+      "drawSize": { "width": 310, "height": 280 },
+      "frames": ["seed", "sprout", "heart-form", "bloom", "aura", "sustain"]
+    },
+    "spiritInferno": {
+      "file": "spirit-inferno.png",
+      "source": "../source-art/ability-vfx-v1/spirit-inferno-key.png",
+      "drawSize": { "width": 563, "height": 471 },
+      "frames": ["summon", "crest", "eruption", "peak", "collapse", "embers"]
+    }
+  }
+}

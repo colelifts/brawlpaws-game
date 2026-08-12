@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#080817" />
+  <title>BrawlPaws — Three-Chapter Roguelite Campaign</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main id="game-shell" aria-label="BrawlPaws roguelite campaign">
+    <canvas id="game" aria-label="Jade Grove combat arena"></canvas>
+
+    <div id="hud" class="hidden" aria-live="polite">
+      <section class="hero-panel brush-panel">
+        <div class="portrait" id="hero-portrait" aria-hidden="true"></div>
+        <div class="hero-data">
+          <div class="hero-heading"><strong id="hero-name">KITSUNE</strong><em id="hero-role">SPEEDSTER</em></div>
+          <div class="bar health"><i id="health-fill"></i><b id="health-text">120 / 120</b></div>
+          <div class="bar spirit"><i id="spirit-fill"></i><b>SPIRIT</b></div>
+        </div>
+        <div class="level-badge" id="level-badge">1</div>
+        <div class="currencies"><span class="gold-token" id="gold-token">● 0</span><span class="shard-token">◆ 3</span><span class="key-token">✦ 1</span></div>
+      </section>
+
+      <section class="room-panel">
+        <strong id="biome-title">JADE GROVE RUINS</strong>
+        <span id="wave-label">CHAPTER 1 · WAVE 1 / 4</span>
+        <em id="room-state">ENCOUNTER</em>
+      </section>
+
+      <section class="boss-panel" id="boss-panel">
+        <div><strong id="boss-name">JADEGUARD TANUKI</strong><em id="boss-phase">AWAKENED GUARDIAN</em></div>
+        <div class="boss-health"><i id="boss-health-fill"></i><b id="boss-health-text">2600 / 2600</b></div>
+      </section>
+
+      <section class="objective-panel brush-panel">
+        <span class="timer-label">RUN TIME</span>
+        <b id="timer">00:00</b>
+        <div class="objective"><i></i><span id="objective-text">DEFEAT THE AMBUSH</span></div>
+      </section>
+
+      <section class="corruption-panel" id="corruption-panel" aria-label="Corruption pressure">
+        <span>CORRUPTION</span><b id="corruption-tier">DORMANT</b><i><em id="corruption-fill"></em></i><small id="corruption-copy">THE GROVE IS QUIET</small>
+      </section>
+
+      <section class="combo-panel" id="combo-panel">
+        <b id="combo-count">3</b><span>HIT COMBO!</span>
+      </section>
+
+      <section class="xp-panel">
+        <b>XP</b><div class="bar xp"><i id="xp-fill"></i><span id="xp-text">0 / 24</span></div>
+      </section>
+
+      <section class="synergy-strip" id="synergy-strip" aria-label="Active build synergies"></section>
+
+      <section class="ability-dock">
+        <div class="ability weapon ready"><span class="icon blaster-icon"></span><b id="weapon-name">SPIRIT BLASTER</b><kbd>LMB</kbd></div>
+        <div class="ability tide locked" id="tide-card" title="Traps and slows a pack, then primes it for Foxfire and Shock combos."><span class="icon tide-icon"></span><b>UNDERTOW WELL</b><kbd>E</kbd><i id="tide-cooldown"></i></div>
+        <div class="ability flame locked" id="flame-card"><span class="icon flame-icon"></span><b>FOXFIRE VOLLEY</b><kbd>C</kbd><i id="flame-cooldown"></i></div>
+        <div class="ability heart locked" id="heart-card"><span class="icon heart-icon"></span><b>WILD HEART</b><kbd>F</kbd><i id="heart-cooldown"></i></div>
+        <div class="ability ultimate locked" id="ultimate-card"><span class="icon ultimate-icon"></span><b>SHOCK PAWS</b><kbd>Q</kbd><i id="ultimate-cooldown"></i></div>
+        <div class="dash-orb ready" id="dash-card"><span>➤</span><b id="dash-name">FOX STEP</b><kbd>SHIFT</kbd><i id="dash-cooldown"></i></div>
+      </section>
+    </div>
+
+    <section id="dojo-panel" class="dojo-panel brush-panel" aria-label="Spirit Dojo practice controls">
+      <div class="dojo-heading"><div><small>SPIRIT DOJO</small><strong id="dojo-target-name">SWIFT SCOUT</strong></div><b id="dojo-target-health">800 / 800</b></div>
+      <div class="dojo-health"><i id="dojo-health-fill"></i></div>
+      <div class="dojo-metrics">
+        <span><small>ROLLING DPS</small><b id="dojo-dps">0</b></span>
+        <span><small>TOTAL DAMAGE</small><b id="dojo-total-damage">0</b></span>
+        <span><small>BEST DPS</small><b id="dojo-best-dps">0</b></span>
+        <span><small>TARGETS BROKEN</small><b id="dojo-kills">0</b></span>
+      </div>
+      <div id="dojo-statuses" class="dojo-statuses"><em>NO STATUS</em></div>
+      <div class="dojo-actions">
+        <button id="dojo-cycle-target"><kbd>T</kbd><span>NEXT TARGET</span></button>
+        <button id="dojo-toggle-ai"><kbd>G</kbd><span>AI: PASSIVE</span></button>
+        <button id="dojo-toggle-dual"><kbd>V</kbd><span>DUAL-WIELD: OFF</span></button>
+        <button id="dojo-reset"><kbd>R</kbd><span>RESET TEST</span></button>
+        <button id="dojo-exit"><kbd>ESC</kbd><span>RETURN TO VILLAGE</span></button>
+      </div>
+      <p>All abilities are temporarily unlocked. Cooldowns recover four times faster. Practice results never alter campaign progression.</p>
+    </section>
+
+    <section id="room-transition" class="room-transition" aria-live="polite">
+      <p id="room-transition-kicker">CHAPTER I · THE SILENT BELLS</p>
+      <h2 id="room-transition-title">JADE GROVE RUINS</h2>
+      <span id="room-transition-subtitle">THE FIRST SEAL</span>
+    </section>
+
+    <section id="start-screen" class="overlay active">
+      <div class="vignette"></div>
+      <div class="title-lockup">
+        <div class="eyebrow">THREE-CHAPTER CAMPAIGN BUILD</div>
+        <h1>BRAWL<span>PAWS</span></h1>
+        <p class="kanji">大乱闘</p>
+        <p class="tagline">STRIKE FAST. DASH CLEAN. <strong>LEAVE A MARK.</strong></p>
+      </div>
+      <div class="start-card brush-panel">
+        <div class="kitsune-mark" id="start-hero-mark" aria-hidden="true"></div>
+        <div>
+          <small>PLAYING AS</small>
+          <h2 id="start-hero-name">KITSUNE</h2>
+          <p id="start-hero-copy">Mobile gunner speedster · Neon spirit blaster</p>
+        </div>
+        <div class="hero-select" aria-label="Choose your BrawlPaw">
+          <button type="button" data-hero="kitsune" class="selected"><i style="background-image:url('assets/characters/kitsune-portrait.png')"></i><span><b>KITSUNE</b><small>SPEEDSTER</small></span></button>
+          <button type="button" data-hero="bamboo"><i style="background-image:url('assets/characters/bamboo-portrait.png')"></i><span><b>BAMBOO</b><small>TANK</small></span></button>
+          <button type="button" data-hero="hopscotch"><i style="background-image:url('assets/characters/hopscotch-portrait.png')"></i><span><b>HOPSCOTCH</b><small>LOCKED · CLEAR 1 RUN</small></span></button>
+          <button type="button" data-hero="rusty"><i style="background-image:url('assets/characters/rusty-portrait.png')"></i><span><b>RUSTY</b><small>LOCKED · CLEAR ASCENSION</small></span></button>
+        </div>
+        <div class="hero-comparison" id="hero-comparison" aria-live="polite">
+          <div class="comparison-ratings" id="comparison-ratings"></div>
+          <div class="weapon-comparison">
+            <span><small>STARTING WEAPON</small><b id="comparison-weapon">SPIRIT BLASTER</b></span>
+            <em id="comparison-weapon-tags">PRECISION · RAPID · LONG RANGE</em>
+            <p id="comparison-weapon-copy">Fast single spirit rounds with long reach and the best base critical chance.</p>
+            <div id="comparison-weapon-stats" class="weapon-stat-row"></div>
+          </div>
+        </div>
+        <div class="controls">
+          <span><kbd>WASD</kbd> MOVE</span>
+          <span><kbd>SHIFT</kbd> DASH</span>
+          <span><kbd>LMB</kbd> / <kbd>J</kbd> FIRE</span>
+          <span><kbd>E</kbd><kbd>C</kbd><kbd>F</kbd><kbd>Q</kbd> ABILITIES</span>
+        </div>
+        <div class="difficulty-select" aria-label="Run difficulty">
+          <button type="button" data-difficulty="spirited"><b>SPIRITED</b><small>FAIR</small></button>
+          <button type="button" data-difficulty="ferocious" class="selected"><b>FEROCIOUS</b><small>INTENDED</small></button>
+          <button type="button" data-difficulty="nightmare"><b>NIGHTMARE</b><small>BRUTAL</small></button>
+          <button type="button" data-difficulty="ascension"><b>ASCENSION</b><small>LOCKED · CLEAR 1 RUN</small></button>
+        </div>
+        <section class="coop-start" id="coop-start" aria-label="Online co-op">
+          <header><span>ONLINE CO-OP</span><b id="coop-status">SOLO · OFFLINE READY</b></header>
+          <div class="coop-actions"><button id="coop-create" type="button">CREATE PARTY</button><input id="coop-code" maxlength="5" placeholder="ROOM CODE" aria-label="Five letter room code"><button id="coop-join" type="button">JOIN</button><button id="coop-leave" type="button" hidden>LEAVE</button></div>
+          <small id="coop-roster">FREE PEER-TO-PEER CO-OP · NO SIGNFLOW SERVERS · 2–4 PLAYERS INCREASE THE CHALLENGE</small>
+        </section>
+        <div class="profile-summary" id="profile-summary">SPIRIT SHARDS 0 · CAMPAIGN CLEARS 0</div>
+        <div class="start-actions">
+          <button id="start-button">ENTER SPIRIT LANTERN VILLAGE <span>›</span></button>
+          <button id="continue-run" class="continue-run-button" hidden>CONTINUE RUN <small id="continue-run-copy">ROOM CHECKPOINT</small></button>
+          <button id="codex-button" class="codex-open-button">CODEX <kbd>K</kbd></button>
+          <button id="settings-button" class="codex-open-button">SETTINGS <kbd>O</kbd></button>
+        </div>
+      </div>
+      <p class="build-note">JADE GROVE → BAMBOO HOLLOW → CRIMSON DOJO</p>
+    </section>
+
+    <section id="pause-screen" class="overlay pause-screen" aria-labelledby="pause-title">
+      <div class="pause-panel brush-panel">
+        <p>ROOM CHECKPOINT ACTIVE</p>
+        <h2 id="pause-title">PAUSED</h2>
+        <span>Progress is protected at the start of this room.</span>
+        <div class="pause-actions">
+          <button id="resume-button">RESUME BRAWL <kbd>ESC</kbd></button>
+          <button id="pause-settings">ACCESSIBILITY &amp; SETTINGS</button>
+          <button id="save-title-button" class="secondary-pause-action">SAVE CHECKPOINT &amp; TITLE</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="settings-screen" class="overlay settings-screen" aria-labelledby="settings-title">
+      <div class="settings-panel brush-panel">
+        <header><div><p>PLAYER COMFORT</p><h2 id="settings-title">ACCESSIBILITY</h2></div><span>CHANGES SAVE AUTOMATICALLY</span></header>
+        <div class="settings-grid">
+          <article class="setting-row">
+            <div><strong>SCREEN SHAKE</strong><p>Controls camera movement from hits, bosses, and abilities.</p></div>
+            <div class="setting-options" data-setting-group="screenShake">
+              <button data-setting="screenShake" data-value="1">FULL</button><button data-setting="screenShake" data-value="0.35">REDUCED</button><button data-setting="screenShake" data-value="0">OFF</button>
+            </div>
+          </article>
+          <article class="setting-row">
+            <div><strong>COMBAT FLASHES</strong><p>Controls full-screen flashes from ultimates and guardian phases.</p></div>
+            <div class="setting-options" data-setting-group="flashIntensity">
+              <button data-setting="flashIntensity" data-value="1">FULL</button><button data-setting="flashIntensity" data-value="0.35">REDUCED</button><button data-setting="flashIntensity" data-value="0">OFF</button>
+            </div>
+          </article>
+          <article class="setting-row">
+            <div><strong>DAMAGE NUMBERS</strong><p>Show or hide floating combat damage values.</p></div>
+            <div class="setting-options" data-setting-group="damageNumbers">
+              <button data-setting="damageNumbers" data-value="true">ON</button><button data-setting="damageNumbers" data-value="false">OFF</button>
+            </div>
+          </article>
+          <article class="setting-row">
+            <div><strong>AMBIENT MOTION</strong><p>Animates drifting wisps, motes, water, lanterns, and scenery.</p></div>
+            <div class="setting-options" data-setting-group="ambientMotion">
+              <button data-setting="ambientMotion" data-value="true">ON</button><button data-setting="ambientMotion" data-value="false">OFF</button>
+            </div>
+          </article>
+        </div>
+        <button id="close-settings">RETURN <kbd>ESC</kbd></button>
+      </div>
+    </section>
+
+    <section id="codex-screen" class="overlay codex-screen" aria-labelledby="codex-title">
+      <div class="codex-panel brush-panel">
+        <header class="codex-heading"><div><p>SPIRIT ARCHIVE</p><h2 id="codex-title">BRAWLPAWS CODEX</h2></div><span id="codex-progress">0 / 0 RECORDED</span></header>
+        <nav class="codex-tabs" aria-label="Codex sections">
+          <button type="button" data-codex-tab="heroes" class="selected">HEROES</button>
+          <button type="button" data-codex-tab="enemies">ENEMIES</button>
+          <button type="button" data-codex-tab="guardians">GUARDIANS</button>
+          <button type="button" data-codex-tab="statuses">STATUS</button>
+        </nav>
+        <div class="codex-body">
+          <div id="codex-grid" class="codex-grid"></div>
+          <article id="codex-detail" class="codex-detail"></article>
+        </div>
+        <footer><span>ENCOUNTER SPIRITS TO RECORD THEIR WEAKNESSES</span><button id="close-codex">CLOSE ARCHIVE <kbd>ESC</kbd></button></footer>
+      </div>
+    </section>
+
+    <section id="hub-menu-screen" class="overlay hub-menu-screen" aria-labelledby="hub-menu-title">
+      <div class="hub-menu-panel brush-panel">
+        <div class="hub-menu-heading"><div><p id="hub-menu-kicker">SPIRIT LANTERN VILLAGE</p><h2 id="hub-menu-title">HERO SHRINE</h2></div><strong id="hub-shards">◆ 0</strong></div>
+        <p id="hub-menu-copy">Spend permanent spirit shards on upgrades that carry into every future run.</p>
+        <div id="hub-upgrade-grid" class="hub-upgrade-grid"></div>
+        <button id="close-hub-menu">RETURN TO THE PLAZA <span>›</span></button>
+      </div>
+    </section>
+
+    <section id="story-screen" class="overlay story-screen" aria-labelledby="story-title">
+      <div class="story-panel brush-panel">
+        <p id="story-kicker">CHAPTER I · THE SILENT BELLS</p>
+        <h2 id="story-title">THE GROVE IS LISTENING</h2>
+        <p id="story-copy">The guardian bells have gone silent. Something ancient is gathering every corrupted spirit beneath the moonlit shrine.</p>
+        <blockquote id="story-quote">“Break the curse before the Jadeguard wakes.”</blockquote>
+        <button id="story-button">BEGIN THE CHAPTER <span>›</span></button>
+      </div>
+    </section>
+
+    <section id="route-screen" class="overlay route-screen" aria-labelledby="route-title">
+      <div class="route-panel">
+        <p id="route-biome">JADE GROVE RUINS · BRANCHING ROUTE</p>
+        <h2 id="route-title">CHOOSE YOUR PATH</h2>
+        <div class="route-progress" id="route-progress"></div>
+        <div class="route-grid" id="route-grid"></div>
+        <div class="route-build"><span id="route-health">♥ 120 / 120</span><span id="route-gold">● 0 GOLD</span><span id="route-relics">NO RELICS</span></div>
+      </div>
+    </section>
+
+    <section id="shop-screen" class="overlay shop-screen" aria-labelledby="shop-title">
+      <div class="shop-panel brush-panel">
+        <div class="shop-heading"><div><p>MOON MARKET</p><h2 id="shop-title">SPIRIT SHOP</h2></div><strong id="shop-gold">● 0</strong></div>
+        <p class="shop-copy">Spend gold from defeated spirits. Every purchase carries through the chapter.</p>
+        <div class="shop-grid" id="shop-grid"></div>
+        <button id="leave-shop">CONTINUE THE RUN <span>›</span></button>
+      </div>
+    </section>
+
+    <section id="levelup-screen" class="overlay levelup-screen" aria-labelledby="levelup-title">
+      <div class="levelup-panel">
+        <p class="levelup-kicker">POWER AWAKENS</p>
+        <h2 id="levelup-title">LEVEL UP!</h2>
+        <p class="levelup-subtitle">CHOOSE ONE UPGRADE</p>
+        <div class="upgrade-grid" id="upgrade-grid"></div>
+        <div class="levelup-actions">
+          <button id="reroll-upgrades" class="secondary-action">REROLL <span id="reroll-cost">FREE · 1 LEFT</span></button>
+          <button id="skip-upgrade" class="secondary-action skip-action">BANK POWER <span>+20 GOLD · +18 HP</span></button>
+        </div>
+        <p class="levelup-hint">PRESS <kbd>1</kbd>, <kbd>2</kbd>, OR <kbd>3</kbd> TO CHOOSE · <kbd>R</kbd> TO REROLL</p>
+      </div>
+    </section>
+
+    <section id="event-screen" class="overlay event-screen" aria-labelledby="event-title">
+      <div class="event-panel brush-panel">
+        <p id="event-kicker">UNKNOWN ENCOUNTER</p>
+        <h2 id="event-title">THE SPIRIT ROAD BENDS</h2>
+        <p id="event-copy">Something waits beyond the lantern light.</p>
+        <blockquote id="event-quote">“Every gift casts a shadow.”</blockquote>
+        <div id="event-choice-grid" class="event-choice-grid"></div>
+      </div>
+    </section>
+
+    <section id="guardian-reward-screen" class="overlay guardian-reward-screen" aria-labelledby="guardian-reward-title">
+      <div class="guardian-reward-panel">
+        <p id="guardian-reward-kicker">GUARDIAN CHEST OPENED</p>
+        <h2 id="guardian-reward-title">CHOOSE A BLESSING</h2>
+        <p id="guardian-reward-copy">The freed guardian offers one fragment of its ancient power.</p>
+        <div id="guardian-reward-grid" class="guardian-reward-grid"></div>
+        <p class="guardian-reward-hint">PRESS <kbd>1</kbd>, <kbd>2</kbd>, OR <kbd>3</kbd> TO CLAIM</p>
+      </div>
+    </section>
+
+    <section id="result-screen" class="overlay">
+      <div class="result-card brush-panel">
+        <p id="result-kicker">THE GROVE FALLS SILENT</p>
+        <h2 id="result-title">ROOM CLEAR!</h2>
+          <p id="result-copy">The spirit gates answer your blaster.</p>
+        <div class="result-reward" id="result-reward">+0 SPIRIT SHARDS</div>
+        <div class="result-stats">
+          <span><small>TIME</small><b id="result-time">00:00</b></span>
+          <span><small>MAX COMBO</small><b id="result-combo">0</b></span>
+          <span><small>DASHES</small><b id="result-dashes">0</b></span>
+        </div>
+        <button id="restart-button">BRAWL AGAIN <span>↻</span></button>
+      </div>
+    </section>
+
+    <div id="loading">AWAKENING THE GROVE…</div>
+  </main>
+  <script type="module" src="src/game.js"></script>
+</body>
+</html>
