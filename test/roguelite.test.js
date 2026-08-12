@@ -474,3 +474,12 @@ test('Bamboo, Crimson, and guardian locomotion use authored pose atlases',()=>{
   assert.match(game,/const useMove=motion\.moving&&enemy\.state==='bossIdle'/);
   assert.match(game,/drawGridAtlasFrame\(moveSheet,moveFrame,2,1/);
 });
+
+test('crowds preserve readable bodies and sprint creates real escape space',()=>{
+  assert.match(game,/function resolveEnemyCrowding\(activeCombatants,dt\)/);
+  assert.match(game,/resolveEnemyCrowding\(activeCombatants,dt\)/);
+  assert.match(game,/minimum=\(a\.radius\+b\.radius\+24\)\*\(heavyA\|\|heavyB\?1\.2:1\.08\)/);
+  assert.match(game,/committedA\?\.18:1/);
+  assert.match(game,/sprintBoost=player\.sprinting\?1\.58:1/);
+  assert.match(game,/player\.sprinting\?-27:28/);
+});

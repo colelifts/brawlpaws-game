@@ -1829,7 +1829,7 @@ function updatePlayer(dt) {
   const move = movementVector();
   const wantsSprint=input.keys.has(' ')&&Boolean(move.x||move.y)&&!player.attack&&player.castTime<=0&&player.dashTime<=0;
   player.sprinting=wantsSprint&&player.sprint>2;
-  player.sprint=clamp(player.sprint+(player.sprinting?-34:23)*dt,0,100);
+  player.sprint=clamp(player.sprint+(player.sprinting?-27:28)*dt,0,100);
   if(selectedHeroId==='bamboo'&&player.dashTime<=0&&!move.x&&!move.y&&!player.attack){player.braceTime+=dt;player.braced=player.braceTime>=player.braceDelay;}else{player.braceTime=0;player.braced=false;}
   if (player.dashTime > 0) {
     const wasDashing = player.dashTime > 0;
@@ -1846,7 +1846,7 @@ function updatePlayer(dt) {
       effects.rings.push({ x: player.x, y: player.y, radius: 10, maxRadius: 50, color: '#45e9f4', life: .2, maxLife: .2 });
     }
   } else {
-    const attackingSlow = player.attack ? .9 : 1;const sprintBoost=player.sprinting?1.42:1;
+    const attackingSlow = player.attack ? .9 : 1;const sprintBoost=player.sprinting?1.58:1;
     const targetVx = move.x * heroDef.speed * player.speedMultiplier * attackingSlow*sprintBoost;
     const targetVy = move.y * heroDef.speed * player.speedMultiplier * attackingSlow*sprintBoost;
     const accel = clamp(heroDef.acceleration * dt / Math.max(heroDef.speed, 1), 0, 1);
@@ -2289,19 +2289,10 @@ function updateEnemies(dt) {
       }
     }
 
-    for (const other of activeCombatants) {
-      if (other === enemy) continue;
-      const d = distance(enemy, other);
-      const minimum = enemy.radius + other.radius + 18;
-      if (d > 0 && d < minimum) {
-        const repel = normalize(enemy.x - other.x, enemy.y - other.y);
-        enemy.vx += repel.x * (minimum - d) * 35 * dt;
-        enemy.vy += repel.y * (minimum - d) * 35 * dt;
-      }
-    }
     enemy.x += enemy.vx * dt; enemy.y += enemy.vy * dt;
     keepInArena(enemy);
   }
+  resolveEnemyCrowding(activeCombatants,dt);
   updateEnemyProjectiles(dt);
   updateRoomMission(dt);
   const activeCount = alive.filter((enemy) => enemy.state !== 'waiting').length;
@@ -2315,6 +2306,18 @@ function updateEnemies(dt) {
   if(state==='playing'&&alive.length===0&&!volatileDanger&&!missionComplete()&&!encounter.bossActive)ui.objective.textContent=missionObjectiveText(0,0);
   if(state==='playing'&&alive.length===0&&!volatileDanger&&roomInteractable&&!roomInteractable.used&&!encounter.bossActive)ui.objective.textContent=`CLAIM YOUR ROUTE REWARD  ${roomInteractable.prompt}`;
   if(state==='playing'&&alive.length===0&&!volatileDanger&&missionComplete()&&(!roomInteractable||roomInteractable.used)&&clearDelay<0&&!encounter.bossActive)beginWaveTransition();
+}
+
+function resolveEnemyCrowding(activeCombatants,dt){
+  const bodies=activeCombatants.filter((enemy)=>!enemy.dead&&enemy.state!=='waiting'&&enemy.def.behavior!=='boss');
+  for(let pass=0;pass<2;pass++)for(let i=0;i<bodies.length;i++)for(let j=i+1;j<bodies.length;j++){
+    const a=bodies[i],b=bodies[j],dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);const angle=d>.01?Math.atan2(dy,dx):(a.id*2.3999632297+b.id*.73);const nx=Math.cos(angle),ny=Math.sin(angle);
+    const heavyA=a.def.behavior==='heavy'||a.def.behavior==='shield',heavyB=b.def.behavior==='heavy'||b.def.behavior==='shield';const minimum=(a.radius+b.radius+24)*(heavyA||heavyB?1.2:1.08);if(d>=minimum)continue;
+    const committedA=['windup','strike','slam'].includes(a.state),committedB=['windup','strike','slam'].includes(b.state);const overlap=minimum-Math.max(d,.01),settle=clamp(dt*18,.16,.62),weightA=heavyA?2.7:1,weightB=heavyB?2.7:1,total=weightA+weightB;
+    const moveA=overlap*settle*(weightB/total)*(committedA?.18:1),moveB=overlap*settle*(weightA/total)*(committedB?.18:1);a.x-=nx*moveA;a.y-=ny*moveA;b.x+=nx*moveB;b.y+=ny*moveB;
+    const closing=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;if(closing<0){const cancel=-closing*.42;a.vx-=nx*cancel*(weightB/total);a.vy-=ny*cancel*(weightB/total);b.vx+=nx*cancel*(weightA/total);b.vy+=ny*cancel*(weightA/total);}
+  }
+  for(const enemy of bodies)keepInArena(enemy);
 }
 
 function fireEnemyProjectile(enemy, direction) {
