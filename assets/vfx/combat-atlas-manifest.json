@@ -11,7 +11,8 @@
     "jadeBrawlerClaw": { "file": "claw-slash.png", "type": "enemy-attack", "drawSize": [190, 124] },
     "jadebreakerSlam": { "file": "hammer-slam.png", "type": "enemy-attack-impact", "drawSize": [358, 282] },
     "shockPawsImpact": { "file": "shock-paws-impact.png", "type": "elemental-impact", "status": "shock" },
-    "shockPawsLink": { "file": "shock-link.png", "type": "stretchable-link", "jumps": 4 }
+    "shockPawsLink": { "file": "shock-link.png", "type": "stretchable-link", "jumps": 4 },
+    "guardianSignatures": { "file": "guardian-signatures.png", "type": "signature-atlas", "layout": [3, 3], "rows": ["thousand-bell-spiral", "lunar-hunt", "oni-eruption"] }
   },
   "environment": {
     "spiritWisp": { "file": "../environment/animated/spirit-wisp.png", "type": "ambient-loop" },

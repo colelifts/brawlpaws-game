@@ -241,11 +241,23 @@ test('the persistent Codex records encountered spirits and exposes real counterp
 
 test('guardians gain a telegraphed phase-specific sealing crossfire',()=>{
   assert.match(data,/crossfire: \{ id:'crossfire'/);
-  for(const profile of ['jadeguardTanuki','moonfangKomainu','pyreclawShogun'])assert.match(data,new RegExp(`${profile}:[\\s\\S]{0,260}crossfireDamage:[\\s\\S]{0,240}'crossfire'`));
+  for(const profile of ['jadeguardTanuki','moonfangKomainu','pyreclawShogun'])assert.match(data,new RegExp(`${profile}:[\\s\\S]{0,260}crossfireDamage:[\\s\\S]{0,520}'crossfire'`));
   for(const state of ['bossWindupCrossfire','bossCrossfire'])assert.match(game,new RegExp(state));
   assert.match(game,/function fireBossCrossfire\(/);
   assert.match(game,/lineDistance<profile\.crossfireWidth\+player\.radius/);
   assert.match(game,/pattern\.id==='crossfire'/);
+});
+
+test('every guardian owns a distinct animated signature attack',()=>{
+  for(const name of ['Thousand-Bell Spiral','Lunar Hunt','Oni Eruption'])assert.match(data,new RegExp(name));
+  for(const fn of ['prepareBossSignature','resolveBossSignature','drawGridAtlasFrame'])assert.match(game,new RegExp(`function ${fn}\\(`));
+  for(const state of ['bossWindupSignature','bossSignature'])assert.match(game,new RegExp(state));
+  assert.match(game,/guardian-signatures\.png/);
+  assert.match(game,/effects\.guardianSignatures\.push/);
+  assert.match(game,/enemy\.def\.id==='jadeguardTanuki'/);
+  assert.match(game,/enemy\.def\.id==='moonfangKomainu'/);
+  assert.match(game,/enemy\.def\.id==='pyreclawShogun'/);
+  assert.match(game,/debugSystem==='signature'/);
 });
 
 test('the campaign exposes difficulty selection and persistent profile rewards',()=>{

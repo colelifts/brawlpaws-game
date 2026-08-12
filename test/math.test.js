@@ -113,12 +113,14 @@ test('authored specialist enemies expose distinct counterplay contracts',()=>{
 });
 
 test('boss profiles expose reusable timing and phase schedules',()=>{
-  assert.deepEqual(Object.keys(BOSS_PATTERNS),['sweep','slam','channel','crossfire']);
+  assert.deepEqual(Object.keys(BOSS_PATTERNS),['sweep','slam','channel','crossfire','signature']);
   assert.deepEqual(Object.keys(BOSS_PROFILES),['jadeguardTanuki','moonfangKomainu','pyreclawShogun']);
   for(const pattern of Object.values(BOSS_PATTERNS)){assert.ok(pattern.windup>0);assert.ok(pattern.resolveAt>0);assert.ok(pattern.recovery>0);}
   for(const [id,profile] of Object.entries(BOSS_PROFILES)){
     assert.equal(profile.id,id);assert.equal(Object.keys(profile.phaseNames).length,3);assert.equal(Object.keys(profile.schedules).length,3);
+    assert.ok(profile.signatureName.length>5);assert.ok(profile.signatureDescription.length>25);assert.ok(profile.signatureDamage>20);
     for(const schedule of Object.values(profile.schedules))for(const patternId of schedule)assert.ok(BOSS_PATTERNS[patternId]);
+    assert.ok(profile.schedules[2].includes('signature'));assert.ok(profile.schedules[3].includes('signature'));
   }
   assert.ok(BOSS_PROFILES.pyreclawShogun.schedules[3].length>BOSS_PROFILES.jadeguardTanuki.schedules[1].length);
 });

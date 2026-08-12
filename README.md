@@ -22,6 +22,7 @@ To play co-op, one player selects **Create Party** and shares the five-character
 ## Controls
 
 - `WASD` or arrow keys — move
+- Hold `Space` while moving — Paw Sprint; briefly run 42% faster while the sprint meter drains, then let it recover
 - `Shift` — use the selected hero's directional dash with invulnerability frames
 - Hold left mouse or `J` — fire the selected hero's ranged weapon toward the pointer
 - `E` — Undertow Well, earned at level 2; aim a violent whirlpool that drags a pack into one firing lane, holds, Soaks, slows, and crushes them before priming Foxfire Steam Bursts and empowered Shock damage. `E` also activates nearby route rewards.
@@ -49,7 +50,10 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - Deliberately modest starting Spirit Blaster damage with directional gunner poses, muzzle flash, recoil, neon projectile trails, and ranged hit reactions
 - Directional dash with i-frames, afterimages, streak particles, and cooldown UI
 - Jade Brawler enemies with pursuit, separation, telegraphed lunges, health, knockback, and death
-- Hit-stop, damage numbers, impact rings, sparks, comic attack words, and synthesized audio feedback
+- Hit-stop, damage numbers, impact rings, sparks, comic attack words, recorded combat SFX, and a soft looping score (licensed sources are listed in `assets/audio/CREDITS.md`)
+- Ability hits drive target-specific burn recoil, wet squash, and shock jitter/tint reactions instead of placing the whole effect over the enemy body
+- Grounded fade-and-rise enemy entrances, reduced normal-enemy scale, and locomotion bob/lean cycles for every enemy family and all three guardians
+- Compact illustrated upgrade cards with a dedicated nine-emblem atlas and one-line outcome summaries
 - Responsive BrawlPaws HUD, title screen, room-clear screen, and death/restart loop
 - Data definitions for the hero, weapon, enemy, and room
 - Detailed eight-direction Kitsune gunner atlas with separate idle, sprint, firing, dash, cast, hit, and death state architecture

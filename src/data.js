@@ -104,24 +104,28 @@ export const BOSS_PATTERNS = {
   sweep: { id:'sweep', name:'Guardian Sweep', windupState:'bossWindupSweep', actionState:'bossSweep', windup:.95, action:.5, resolveAt:.32, recovery:1.05, description:'A huge forward arc. Cross behind the guardian before the weapon commits.' },
   slam: { id:'slam', name:'Spirit Slam', windupState:'bossWindupSlam', actionState:'bossSlam', windup:1.25, action:.58, resolveAt:.34, recovery:1.15, description:'A full-circle impact that stuns. Leave the marked radius before the hammer lands.' },
   channel: { id:'channel', name:'Spirit Barrage', windupState:'bossChannel', actionState:'bossChannel', windup:1.45, action:1.45, resolveAt:.78, recovery:.9, description:'A projectile ritual with open lanes that change by guardian and phase.' },
-  crossfire: { id:'crossfire', name:'Sealing Crossfire', windupState:'bossWindupCrossfire', actionState:'bossCrossfire', windup:1.35, action:.62, resolveAt:.46, recovery:1.05, description:'Intersecting spirit lanes lock onto your position. Escape diagonally before they converge.' }
+  crossfire: { id:'crossfire', name:'Sealing Crossfire', windupState:'bossWindupCrossfire', actionState:'bossCrossfire', windup:1.35, action:.62, resolveAt:.46, recovery:1.05, description:'Intersecting spirit lanes lock onto your position. Escape diagonally before they converge.' },
+  signature: { id:'signature', name:'Guardian Signature', windupState:'bossWindupSignature', actionState:'bossSignature', windup:1.55, action:1.25, resolveAt:.9, recovery:1.3, description:'Each guardian reveals a unique ritual with its own warning and escape rule.' }
 };
 
 export const BOSS_PROFILES = {
   jadeguardTanuki: {
     id:'jadeguardTanuki', sweepRange:390, sweepDamage:18, slamDamage:22, radialBase:10, crossfireDamage:24, crossfireWidth:72, crossfireLanes:2,
+    signatureName:'Thousand-Bell Spiral',signatureRow:0,signatureDamage:24,signatureDescription:'Jade bells wind into a rotating projectile spiral. Read the gaps and rotate with them.',
     phaseNames:{1:'AWAKENED GUARDIAN',2:'SPIRIT FURY',3:'JADE ENRAGED'},
-    schedules:{1:['sweep','slam','channel'],2:['sweep','channel','slam','crossfire'],3:['channel','crossfire','sweep','slam','crossfire']}
+    schedules:{1:['sweep','slam','channel'],2:['signature','sweep','channel','slam','crossfire'],3:['signature','channel','crossfire','sweep','slam','signature']}
   },
   moonfangKomainu: {
     id:'moonfangKomainu', sweepRange:450, sweepDamage:22, slamDamage:27, radialBase:14, crossfireDamage:29, crossfireWidth:78, crossfireLanes:3,
+    signatureName:'Lunar Hunt',signatureRow:1,signatureDamage:31,signatureDescription:'Three moon-claw marks predict your path, then collapse in sequence. Change direction after they lock.',
     phaseNames:{1:'AWAKENED GUARDIAN',2:'MOON HUNGER',3:'HOLLOW ENRAGED'},
-    schedules:{1:['sweep','slam','channel'],2:['sweep','crossfire','slam','channel'],3:['crossfire','sweep','channel','slam','crossfire']}
+    schedules:{1:['sweep','slam','channel'],2:['signature','sweep','crossfire','slam','channel'],3:['signature','crossfire','sweep','channel','slam','signature']}
   },
   pyreclawShogun: {
     id:'pyreclawShogun', sweepRange:500, sweepDamage:28, slamDamage:32, radialBase:0, crossfireDamage:36, crossfireWidth:84, crossfireLanes:4,
+    signatureName:'Oni Eruption',signatureRow:2,signatureDamage:42,signatureDescription:'Oni seals bloom beneath your escape routes and erupt one after another. Keep moving through the open seam.',
     phaseNames:{1:'AWAKENED GUARDIAN',2:'INFERNO OATH',3:'SHOGUN UNBOUND'},
-    schedules:{1:['sweep','slam','channel'],2:['sweep','channel','crossfire','slam'],3:['crossfire','channel','sweep','crossfire','slam','channel']}
+    schedules:{1:['sweep','signature','slam','channel'],2:['signature','sweep','channel','crossfire','slam'],3:['signature','crossfire','channel','sweep','signature','slam','channel']}
   }
 };
 
