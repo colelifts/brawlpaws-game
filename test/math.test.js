@@ -40,7 +40,7 @@ test('Phase 1 definitions are internally valid', () => {
 });
 
 test('the hero roster contains distinct ranged archetypes',()=>{
-  assert.deepEqual(Object.keys(HEROES),['kitsune','bamboo','hopscotch','rusty']);
+  assert.deepEqual(Object.keys(HEROES),['kitsune','bamboo','hopscotch','rusty','zap']);
   assert.equal(HEROES.kitsune.weapon,'spiritBlaster');
   assert.equal(HEROES.bamboo.weapon,'bambooCannon');
   assert.ok(HEROES.bamboo.maxHealth>HEROES.kitsune.maxHealth);
@@ -62,6 +62,12 @@ test('the hero roster contains distinct ranged archetypes',()=>{
   assert.ok(WEAPONS.twinTrickshots.ricochets>=1);
   assert.ok(WEAPONS.twinTrickshots.ricochetRange>=400);
   assert.ok(WEAPONS.twinTrickshots.damage<WEAPONS.spiritBlaster.damage);
+  assert.equal(HEROES.zap.weapon,'arcCasters');
+  assert.equal(HEROES.zap.naturalDual,true);
+  assert.equal(WEAPONS.arcCasters.projectileType,'arc');
+  assert.equal(WEAPONS.arcCasters.baseVolleys,2);
+  assert.equal(WEAPONS.arcCasters.chainThreshold,3);
+  assert.ok(WEAPONS.arcCasters.damage<WEAPONS.spiritBlaster.damage);
 });
 
 test('the starter ability loadout is complete and data-driven', () => {

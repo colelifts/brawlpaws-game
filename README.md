@@ -1,6 +1,6 @@
 # BrawlPaws — Three-Chapter Roguelite Campaign
 
-A dependency-free playable browser roguelite with a walkable hub, permanent profile progression, three escalating chapters, branching routes, four production heroes, post-clear Ascension ranks, and three giant guardian bosses. Its 4,800×2,700 rooms include a circular live minimap for active threats, mission objectives, co-op allies, rewards, village services, and guardian chambers; players can disable it under Accessibility.
+A dependency-free playable browser roguelite with a walkable hub, permanent profile progression, three escalating chapters, branching routes, five production heroes, post-clear Ascension ranks, and three giant guardian bosses. Its 4,800×2,700 rooms include a circular live minimap for active threats, mission objectives, co-op allies, rewards, village services, and guardian chambers; players can disable it under Accessibility.
 
 ## Run it
 
@@ -73,7 +73,7 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - Eighteen escalating pre-boss combats across the campaign: Chapter I grows from 4 slow scouts to 72 enemies, Chapter II reaches 112, and Chapter III reaches a 150-enemy cataclysm before Pyreclaw
 - Every pre-boss room now carries an authored mission: eliminate a named warband, shoot and shatter curse anchors, reach and free captive spirits, or defend a damageable ward until its seal stabilizes. Mission progress is visible in the HUD, gates room completion, grants gold/XP, fails the run when a ward breaks, and persists in room-safe checkpoints.
 - Physical Sacred Springs, Spirit Vaults, and Hero Shrines selected from the route screen must be reached and activated inside combat rooms; destructible pots and crates provide optional gold and XP
-- Real level progression with rising XP thresholds, combat-pausing three-card choices, 41 upgrade definitions, repeatable ranks, Dual-Wield, hero-specific branches, piercing, critical-draw, guardian-hunter, mobility, economy, four earned weapon capstones, and four behavior-changing ability evolutions
+- Real level progression with rising XP thresholds, combat-pausing three-card choices, 45 upgrade definitions, repeatable ranks, Dual-Wield, hero-specific branches, piercing, critical-draw, conductive chaining, guardian-hunter, mobility, economy, five earned weapon capstones, and four behavior-changing ability evolutions
 - Every chapter adds a distinct escalating arena threat: Jade Bell Echoes launch radial spirit volleys, Bamboo Spore Blooms create persistent slowing damage zones, and Crimson Ember Corridors cut temporary fire lanes through the battlefield.
 - Faster enemy pursuit, shorter windups, and stronger pressure balanced against reduced player speed and starting damage
 - Six escalating Jade Grove waves: 4 teaching scouts, then 10, 18, 30, 48, and a 72-enemy siege; Bamboo and Crimson finales reach 112 and 150 enemies before difficulty, corruption, and co-op multipliers
@@ -102,6 +102,7 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - Two starting heroes with persistent title-screen and Hero Shrine selection: rapid precision gunner Kitsune and cannon-tank Bamboo
 - A third earned hero, Hopscotch, unlocks after the first complete campaign clear: a production-painted directional rabbit archer with a delayed full bow draw, visible release follow-through, piercing Moonstring arrows, and dedicated rose/cyan travel and petal-shard impact VFX
 - A fourth earned hero, Rusty, unlocks after the first Ascension clear: a production-painted directional raccoon trickshot with synchronized twin revolvers, paired recoil, dedicated cyan/gold rounds and impacts, and Bank Shot ricochets that seek another nearby enemy
+- A fifth production hero, Zap, unlocks after two full campaign clears: a yellow rabbit Techie with authored movement, paired-caster firing, ability/reaction poses, portrait, and six-frame arc VFX. Low-damage pulses build Conductive marks; a third hit visibly chains through nearby enemies, while Capacitor Bank, Chain Logic, Rapid Cycle, and Thunderhead Array create an earned late-run control build.
 - Bamboo's production-painted eight-direction movement/firing atlases, portrait, wide three-pellet Bamboo Cannon, heavier recoil and impacts, slower Iron Roll, 185 base health, damage/knockback resistance, and stationary Iron Belly brace
 - Hero-driven HUD, portraits, weapon/dash names, animation sheets, contact-shadow scale, and Twin Spirits behavior; active abilities remain locked at the start for both heroes
 - Live title-screen hero/weapon comparison with four five-pip role ratings, weapon identity tags, damage, fire rate, projectile count, and critical chance sourced directly from hero and weapon definitions
@@ -132,7 +133,7 @@ Mission QA is available at `?system=mission&mission=anchors`, `?system=mission&m
 Guardian reward QA is available at `?system=guardianReward`; combine it with `&chapter=2` for Moonfang or `&chapter=3` for Pyreclaw’s final-vow and epilogue sequence.
 Sealing Crossfire can be inspected immediately at `?system=crossfire`; combine it with `&chapter=2` or `&chapter=3` for each guardian's profile-scaled version.
 Interactive Dojo QA is available at `?system=dojo`; normal play enters it spatially from the Dojo station in Spirit Lantern Village.
-Hero QA can be forced with `?hero=kitsune`, `?hero=bamboo`, `?hero=hopscotch`, or `?hero=rusty`; combine one with `&system=dojo` to compare weapon animation, spread, draw timing, piercing, ricochets, DPS, Twin Spirits, and hit response.
+Hero QA can be forced with `?hero=kitsune`, `?hero=bamboo`, `?hero=hopscotch`, `?hero=rusty`, or `?hero=zap`; combine one with `&system=dojo` to compare weapon animation, spread, draw timing, piercing, ricochets, Conductive chains, DPS, Twin Spirits, and hit response.
 Ascension QA can be forced with `?difficulty=ascension`; the production menu unlocks it only after one full campaign clear and raises the rank after every Ascension victory.
 Jade route QA is available through `?route=1..5`; selecting a node enters the corresponding next painted room. Use `?system=room6` for the final pre-boss arena and `?boss=1` for the dedicated guardian court.
 The same checkpoints work with `?chapter=2&route=1..5` and `?chapter=3&route=1..5` for the Bamboo and Crimson room sets.

@@ -138,7 +138,7 @@ test('hero-specific upgrades create distinct gunner and tank build paths',()=>{
 });
 
 test('each hero earns a late-run weapon capstone with distinct projectile behavior',()=>{
-  for(const id of ['phaseNova','siegeLotus','moonConstellation','deadeyeCircuit']){
+  for(const id of ['phaseNova','siegeLotus','moonConstellation','deadeyeCircuit','thunderheadArray']){
     assert.match(game,new RegExp(`id:'${id}'`));
     assert.match(game,new RegExp(`${id}:'epic'`));
   }
@@ -147,6 +147,10 @@ test('each hero earns a late-run weapon capstone with distinct projectile behavi
   assert.match(game,/function triggerWeaponBlast\(/);
   assert.match(game,/function spawnMoonSplinters\(/);
   assert.match(game,/guaranteedCrit:deadeyeCircuit/);
+  assert.match(game,/function applyConductiveHit\(/);
+  assert.match(game,/const thunderheadArray=evolution==='thunderheadArray'/);
+  assert.match(game,/restored\.upgradeRanks=\{\.\.\.player\.upgradeRanks,\.\.\.saved\.upgradeRanks\}/);
+  assert.match(game,/conductiveStacks,conductiveTime,bossPhase/);
   assert.match(game,/weaponEvolution:null/);
   for(const name of ['PHASE NOVA','SIEGE LOTUS','MOON CONSTELLATION','DEADEYE CIRCUIT'])assert.match(game,new RegExp(name));
   assert.match(game,/debugSystem==='capstone'/);
@@ -232,7 +236,7 @@ test('story and secret route events present consequential branching choices',()=
 });
 
 test('title and Hero Shrine support persistent hero selection',()=>{
-  for(const hero of ['kitsune','bamboo','hopscotch','rusty'])assert.match(html,new RegExp(`data-hero="${hero}"`));
+  for(const hero of ['kitsune','bamboo','hopscotch','rusty','zap'])assert.match(html,new RegExp(`data-hero="${hero}"`));
   for(const id of ['hero-portrait','hero-name','hero-role','weapon-name','dash-name','start-hero-name'])assert.match(html,new RegExp(`id="${id}"`));
   for(const fn of ['applyHeroUi','selectHero','drawHero'])assert.match(game,new RegExp(`function ${fn}\\(`));
   assert.match(game,/selectedHero:'kitsune'/);
@@ -257,6 +261,7 @@ test('Hopscotch is an earned directional archer with a timed piercing release',(
   for(const asset of ['hopscotch-portrait.png','hopscotch-archer-alpha.png','hopscotch-fire-alpha.png','hopscotch-arrow-alpha.png'])assert.match(game+html,new RegExp(asset.replace('.','\\.')));
   assert.match(game,/unlockedHeroes:\['kitsune','bamboo'\]/);
   assert.match(game,/profile\.unlockedHeroes\.push\('hopscotch'\)/);
+  assert.match(game,/profile\.campaignClears>=2&&!profile\.unlockedHeroes\.includes\('zap'\)/);
   assert.match(game,/function releaseWeaponVolley\(/);
   assert.match(game,/weapon\.releaseDelay/);
   assert.match(game,/shot\.pierces--/);
@@ -488,7 +493,7 @@ test('crowds preserve readable bodies and sprint creates real escape space',()=>
 });
 
 test('every playable hero owns authored ability and reaction poses',()=>{
-  for(const hero of ['kitsune','bamboo','hopscotch','rusty']){
+  for(const hero of ['kitsune','bamboo','hopscotch','rusty','zap']){
     assert.match(data,new RegExp(`${hero}[\\s\\S]{0,780}stateAsset: ?'${hero}States'`));
     assert.match(game,new RegExp(`${hero}States: 'assets/characters/${hero}-states-v1\\.png'`));
   }

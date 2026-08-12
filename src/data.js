@@ -40,6 +40,17 @@ export const HEROES = {
     damageTakenMultiplier:1.03,knockbackResistance:.96,
     portrait:'assets/characters/rusty-portrait.png',moveAsset:'rusty',fireAsset:'rustyFire',stateAsset:'rustyStates',accent:'#ff9b32',
     directionMap:[2,1,0,7,6,5,4,3],unlockRequirement:'Clear one Ascension campaign.'
+  },
+  zap: {
+    id:'zap',name:'Zap',role:'Techie',maxHealth:110,
+    speed:300,acceleration:1980,drag:10.2,radius:28,
+    dashSpeed:910,dashDuration:.145,dashCooldown:.98,dashInvulnerability:.22,
+    weapon:'arcCasters',dashName:'Static Skip',passiveName:'Conductive Loop',naturalDual:true,
+    summary:'A paired arc-caster techie who marks enemies Conductive, then turns the third hit into a controlled lightning chain through the pack.',
+    ratings:{power:3,toughness:2,mobility:4,control:5},difficulty:'Technical',
+    damageTakenMultiplier:1.04,knockbackResistance:1,
+    portrait:'assets/characters/zap-portrait-v1.png',moveAsset:'zap',fireAsset:'zapFire',stateAsset:'zapStates',accent:'#39eaff',
+    unlockRequirement:'Complete two full campaigns.'
   }
 };
 
@@ -75,6 +86,15 @@ export const WEAPONS = {
     projectileRadius:8,attackDuration:.22,muzzleDistance:52,
     recoil:34,color:'#4feaff',impactColor:'#ffbe3f',projectileType:'trickshot',baseVolleys:2,ricochets:1,ricochetRange:460,
     summary:'Two synchronized spirit revolvers fire paired rounds that bank into a nearby second target.',tags:['DUAL','RICOCHET','MOBILE']
+  },
+  arcCasters: {
+    id:'arcCasters',name:'Twin Arc Casters',damage:4,fireRate:.29,
+    projectileSpeed:1040,projectileLife:1.02,range:1060,
+    knockback:165,criticalChance:.1,shots:1,spread:0,
+    projectileRadius:8,attackDuration:.2,muzzleDistance:49,
+    recoil:28,color:'#40eaff',impactColor:'#ffd43b',projectileType:'arc',baseVolleys:2,
+    chainThreshold:3,chainRange:360,chainTargets:2,chainDamage:.55,
+    summary:'Paired low-damage pulses build Conductive marks; the third hit discharges a controlled chain into nearby enemies.',tags:['DUAL','CONDUCTIVE','CHAIN']
   }
 };
 

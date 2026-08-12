@@ -57,10 +57,10 @@ const debugHero = debugParams.get('hero');
 const debugMission = debugParams.get('mission');
 
 const assets = {
-  arena: new Image(), kitsune: new Image(), kitsuneFire: new Image(), kitsuneStates: new Image(), bamboo: new Image(), bambooFire: new Image(), bambooStates: new Image(), hopscotch: new Image(), hopscotchFire: new Image(), hopscotchStates: new Image(), rusty: new Image(), rustyFire: new Image(), rustyStates: new Image(), enemies: new Image(), props: new Image(),
+  arena: new Image(), kitsune: new Image(), kitsuneFire: new Image(), kitsuneStates: new Image(), bamboo: new Image(), bambooFire: new Image(), bambooStates: new Image(), hopscotch: new Image(), hopscotchFire: new Image(), hopscotchStates: new Image(), rusty: new Image(), rustyFire: new Image(), rustyStates: new Image(), zap: new Image(), zapFire: new Image(), zapStates: new Image(), enemies: new Image(), props: new Image(),
   archerMove: new Image(), archerAttack: new Image(), raccoonAttack: new Image(), boarAttack: new Image(),
   undertowVfx: new Image(), foxfireVfx: new Image(), wildHeartVfx: new Image(),
-  blasterShotVfx: new Image(), blasterImpactVfx: new Image(), spiritArrowVfx: new Image(), spiritArrowImpactVfx: new Image(), hopscotchArrow: new Image(), trickshotVfx: new Image(),
+  blasterShotVfx: new Image(), blasterImpactVfx: new Image(), spiritArrowVfx: new Image(), spiritArrowImpactVfx: new Image(), hopscotchArrow: new Image(), trickshotVfx: new Image(), zapArcVfx: new Image(),
   burnStatusVfx: new Image(), waterImpactVfx: new Image(), clawSlashVfx: new Image(), hammerSlamVfx: new Image(),
   shockImpactVfx: new Image(), shockLinkVfx: new Image(), spiritWispVfx: new Image(), lanternFlameVfx: new Image(), waterRippleVfx: new Image(),
   jadeguardTanuki: new Image(), jadeguardTanukiMove: new Image(), bambooEnemies: new Image(), bambooEnemiesMove: new Image(), moonfangKomainu: new Image(), moonfangKomainuMove: new Image(),
@@ -81,6 +81,9 @@ const assetSources = {
   rusty: 'assets/characters/rusty-trickshot-alpha.png',
   rustyFire: 'assets/characters/rusty-fire-alpha.png',
   rustyStates: 'assets/characters/rusty-states-v1.png',
+  zap: 'assets/characters/zap-techie-v1.png',
+  zapFire: 'assets/characters/zap-fire-v1.png',
+  zapStates: 'assets/characters/zap-states-v1.png',
   enemies: 'assets/characters/enemy-roster-animated.png',
   props: 'assets/environment/jade-props.png',
   archerMove: 'assets/characters/archer-movement.png',
@@ -96,6 +99,7 @@ const assetSources = {
   spiritArrowImpactVfx: 'assets/vfx/spirit-arrow-impact.png',
   hopscotchArrow: 'assets/vfx/hopscotch-arrow-alpha.png',
   trickshotVfx: 'assets/vfx/trickshot-round-alpha.png',
+  zapArcVfx: 'assets/vfx/zap-arc-pulse-v1.png',
   burnStatusVfx: 'assets/vfx/burn-status.png',
   waterImpactVfx: 'assets/vfx/water-impact.png',
   clawSlashVfx: 'assets/vfx/claw-slash.png',
@@ -203,6 +207,7 @@ function loadProfile(){
     loaded.unlockedHeroes=Array.isArray(loaded.unlockedHeroes)?loaded.unlockedHeroes:['kitsune','bamboo'];
     loaded.contractProgress={...DEFAULT_CONTRACT_PROGRESS,...loaded.contractProgress};loaded.claimedContracts=Array.isArray(loaded.claimedContracts)?loaded.claimedContracts:[];
     if(loaded.campaignClears>0&&!loaded.unlockedHeroes.includes('hopscotch'))loaded.unlockedHeroes.push('hopscotch');
+    if(loaded.campaignClears>=2&&!loaded.unlockedHeroes.includes('zap'))loaded.unlockedHeroes.push('zap');
     loaded.ascensionRank=clamp(Math.round(Number(loaded.ascensionRank)||1),1,10);loaded.ascensionClears=Math.max(0,Math.round(Number(loaded.ascensionClears)||0));
     if(loaded.ascensionClears>0&&!loaded.unlockedHeroes.includes('rusty'))loaded.unlockedHeroes.push('rusty');
     return loaded;
@@ -254,7 +259,7 @@ function refreshProfileUi(){
   for(const button of document.querySelectorAll('[data-difficulty]')){const ascension=button.dataset.difficulty==='ascension';const unlocked=!ascension||profile.campaignClears>0||debugDifficulty==='ascension';button.classList.toggle('selected',button.dataset.difficulty===selectedDifficulty);button.disabled=!unlocked;const label=button.querySelector('small');if(ascension&&label)label.textContent=unlocked?`RANK ${profile.ascensionRank}`:'LOCKED  CLEAR 1 RUN';}
   for(const button of document.querySelectorAll('[data-hero]')){
     const id=button.dataset.hero;const unlocked=profile.unlockedHeroes.includes(id)||id===debugHero;button.classList.toggle('locked',!unlocked);button.disabled=!unlocked;
-    const label=button.querySelector('small');if(label)label.textContent=unlocked?HEROES[id].role.toUpperCase():id==='rusty'?'LOCKED  CLEAR ASCENSION':'LOCKED  CLEAR 1 RUN';
+    const label=button.querySelector('small');if(label)label.textContent=unlocked?HEROES[id].role.toUpperCase():id==='rusty'?'LOCKED  CLEAR ASCENSION':id==='zap'?'LOCKED  CLEAR 2 RUNS':'LOCKED  CLEAR 1 RUN';
   }
 }
 
@@ -430,8 +435,8 @@ function handleCoopMessage(raw){
   if(packet.type==='snapshot'&&!coopIsHost())applyCoopSnapshot(packet.payload);
 }
 function applyRemoteAction(playerId,heroId,payload={}){
-  const member=coop.members.get(playerId);const remoteWeapon=WEAPONS[HEROES[heroId]?.weapon];if(!member||!remoteWeapon||payload.kind!=='attack')return;const angle=Number(payload.facing)||0;const direction={x:Math.cos(angle),y:Math.sin(angle)};const pellets=remoteWeapon.shots||1;
-  for(let i=0;i<pellets;i++){const shotAngle=angle+(i-(pellets-1)/2)*(remoteWeapon.spread||0);effects.playerShots.push({x:member.x+direction.x*48,y:member.y+direction.y*48-7,vx:Math.cos(shotAngle)*remoteWeapon.projectileSpeed,vy:Math.sin(shotAngle)*remoteWeapon.projectileSpeed,radius:remoteWeapon.projectileRadius||9,damage:remoteWeapon.damage*.78,color:remoteWeapon.color,arrow:remoteWeapon.projectileType==='arrow',trickshot:remoteWeapon.projectileType==='trickshot',ricochets:remoteWeapon.ricochets||0,ricochetRetention:.78,pierces:remoteWeapon.pierces||0,hitIds:new Set(),life:remoteWeapon.projectileLife,maxLife:remoteWeapon.projectileLife});}
+  const member=coop.members.get(playerId);const remoteWeapon=WEAPONS[HEROES[heroId]?.weapon];if(!member||!remoteWeapon||payload.kind!=='attack')return;const angle=Number(payload.facing)||0;const direction={x:Math.cos(angle),y:Math.sin(angle)};const pellets=remoteWeapon.shots||1;const volleys=remoteWeapon.baseVolleys||1;
+  for(let volley=0;volley<volleys;volley++)for(let i=0;i<pellets;i++){const side=volleys===1?0:(volley?1:-1),shotAngle=angle+(i-(pellets-1)/2)*(remoteWeapon.spread||0)+side*.035;effects.playerShots.push({x:member.x+direction.x*48-direction.y*side*12,y:member.y+direction.y*48-7+direction.x*side*12,vx:Math.cos(shotAngle)*remoteWeapon.projectileSpeed,vy:Math.sin(shotAngle)*remoteWeapon.projectileSpeed,radius:remoteWeapon.projectileRadius||9,damage:remoteWeapon.damage*.78,color:remoteWeapon.color,arrow:remoteWeapon.projectileType==='arrow',trickshot:remoteWeapon.projectileType==='trickshot',arc:remoteWeapon.projectileType==='arc',ricochets:remoteWeapon.ricochets||0,ricochetRetention:.78,pierces:remoteWeapon.pierces||0,hitIds:new Set(),life:remoteWeapon.projectileLife,maxLife:remoteWeapon.projectileLife});}
   burst(member.x+direction.x*44,member.y+direction.y*44,remoteWeapon.impactColor,10,220,3);
 }
 function coopSignal(payload){if(coopIsHost())sendCoop('signal',{payload});}
@@ -442,7 +447,7 @@ function applyCoopSnapshot(payload){
 }
 function updateCoop(dt){
   if(!coop.connected||!player)return;coop.presenceClock-=dt;coop.snapshotClock-=dt;if(coop.presenceClock<=0){coop.presenceClock=.08;sendCoop('presence',{x:player.x,y:player.y,facing:player.facing,health:player.health,hero:selectedHeroId,state,room:room.id});}
-  if(coopIsHost()&&coop.snapshotClock<=0&&state==='playing'){coop.snapshotClock=.1;sendCoop('snapshot',{payload:{room:room.id,enemies:enemies.map(({id,type,x,y,vx,vy,facing,state,stateTime,health,maxHealth,shield,maxShield,dead,deathTime,burnTime,wetTime,shockTime,bossPhase})=>({id,type,x,y,vx,vy,facing,state,stateTime,health,maxHealth,shield,maxShield,dead,deathTime,burnTime,wetTime,shockTime,bossPhase}))}});}
+  if(coopIsHost()&&coop.snapshotClock<=0&&state==='playing'){coop.snapshotClock=.1;sendCoop('snapshot',{payload:{room:room.id,enemies:enemies.map(({id,type,x,y,vx,vy,facing,state,stateTime,health,maxHealth,shield,maxShield,dead,deathTime,burnTime,wetTime,shockTime,conductiveStacks,conductiveTime,bossPhase})=>({id,type,x,y,vx,vy,facing,state,stateTime,health,maxHealth,shield,maxShield,dead,deathTime,burnTime,wetTime,shockTime,conductiveStacks,conductiveTime,bossPhase}))}});}
 }
 
 const CORRUPTION_TIERS=[
@@ -509,6 +514,8 @@ function restorePlayerCheckpoint(saved){
   restored.abilityCooldowns={...player.abilityCooldowns,...saved.abilityCooldowns};if('riptide' in restored.abilityCooldowns){restored.abilityCooldowns.undertowWell=restored.abilityCooldowns.riptide;delete restored.abilityCooldowns.riptide;}
   restored.abilityPower={...player.abilityPower,...saved.abilityPower};if('riptide' in restored.abilityPower){restored.abilityPower.undertowWell=restored.abilityPower.riptide;delete restored.abilityPower.riptide;}
   restored.abilityEvolutions={...player.abilityEvolutions,...saved.abilityEvolutions};
+  restored.upgradeRanks={...player.upgradeRanks,...saved.upgradeRanks};
+  restored.arcChainBonus=Number(saved.arcChainBonus)||0;restored.arcChainPower=Number(saved.arcChainPower)||1;restored.arcChainRange=Number(saved.arcChainRange)||0;
   restored.synergies=new Set(Array.isArray(saved.synergies)?saved.synergies:[]);
   restored.eventHistory=new Set(Array.isArray(saved.eventHistory)?saved.eventHistory:[]);
   restored.shopPurchases=new Set(Array.isArray(saved.shopPurchases)?saved.shopPurchases:[]);
@@ -623,9 +630,9 @@ function codexStyle(entry,tab){
 function renderCodexDetail(entry,tab,unlocked){
   const style=codexStyle(entry,tab);
   codexDetail.className=`codex-detail${unlocked?'':' locked'}`;codexDetail.setAttribute('style',style);
-  if(!unlocked){const heroLock=tab==='heroes';const heroNote=entry.id==='rusty'?'Complete one full Ascension campaign to prove you can handle Rusty"s twin Trickshots.':'Defeat Pyreclaw and finish all three chapters to add this BrawlPaw to the roster.';codexDetail.innerHTML=`<div class="codex-detail-hero"><div class="codex-detail-art"></div><div><h3>${heroLock?'LOCKED BRAWLPAW':'UNRECORDED SPIRIT'}</h3><span class="codex-role">${heroLock?(entry.id==='rusty'?'ASCENSION CLEAR REQUIRED':'CAMPAIGN CLEAR REQUIRED'):'ENCOUNTER REQUIRED'}</span><p>${heroLock?(entry.unlockRequirement||'Complete a campaign challenge to unlock this hero.'):'This archive entry will reveal itself after the spirit appears in a run.'}</p></div></div><div class="codex-tip"><small>ARCHIVIST NOTE</small><b>${heroLock?heroNote:'Explore later chapters, elite routes, and guardian chambers to complete the record.'}</b></div>`;return;}
+  if(!unlocked){const heroLock=tab==='heroes';const heroNote=entry.id==='rusty'?'Complete one full Ascension campaign to prove you can handle Rusty"s twin Trickshots.':entry.id==='zap'?'Complete two full campaigns to unlock Zap and the Twin Arc Casters.':'Defeat Pyreclaw and finish all three chapters to add this BrawlPaw to the roster.';codexDetail.innerHTML=`<div class="codex-detail-hero"><div class="codex-detail-art"></div><div><h3>${heroLock?'LOCKED BRAWLPAW':'UNRECORDED SPIRIT'}</h3><span class="codex-role">${heroLock?(entry.id==='rusty'?'ASCENSION CLEAR REQUIRED':entry.id==='zap'?'TWO CAMPAIGN CLEARS REQUIRED':'CAMPAIGN CLEAR REQUIRED'):'ENCOUNTER REQUIRED'}</span><p>${heroLock?(entry.unlockRequirement||'Complete a campaign challenge to unlock this hero.'):'This archive entry will reveal itself after the spirit appears in a run.'}</p></div></div><div class="codex-tip"><small>ARCHIVIST NOTE</small><b>${heroLock?heroNote:'Explore later chapters, elite routes, and guardian chambers to complete the record.'}</b></div>`;return;}
   if(tab==='heroes'){
-    const heroWeapon=WEAPONS[entry.weapon];const capstones={kitsune:['PHASE NOVA','After Spirit Cylinder II and Phase Rounds I at level 7, every fifth volley pierces deeply and detonates the surrounding pack.'],bamboo:['SIEGE LOTUS','After Scatter Bore I and Guardian Hide I at level 7, every third blast loads a giant central shell with explosive knockback.'],hopscotch:['MOON CONSTELLATION','After Moon Piercer II and Perfect Draw I at level 7, every fourth full draw splits into two seeking moon arrows.'],rusty:['DEADEYE CIRCUIT','After Bank Shot II and Loaded Dice I at level 7, every sixth volley becomes a guaranteed critical execution chain.']};const capstone=capstones[entry.id];
+    const heroWeapon=WEAPONS[entry.weapon];const capstones={kitsune:['PHASE NOVA','After Spirit Cylinder II and Phase Rounds I at level 7, every fifth volley pierces deeply and detonates the surrounding pack.'],bamboo:['SIEGE LOTUS','After Scatter Bore I and Guardian Hide I at level 7, every third blast loads a giant central shell with explosive knockback.'],hopscotch:['MOON CONSTELLATION','After Moon Piercer II and Perfect Draw I at level 7, every fourth full draw splits into two seeking moon arrows.'],rusty:['DEADEYE CIRCUIT','After Bank Shot II and Loaded Dice I at level 7, every sixth volley becomes a guaranteed critical execution chain.'],zap:['THUNDERHEAD ARRAY','After Capacitor Bank II and Chain Logic I at level 7, every third discharge overloads and chains through the entire nearby pack.']};const capstone=capstones[entry.id];
     codexDetail.innerHTML=`<div class="codex-detail-hero"><div class="codex-detail-art"></div><div><h3>${entry.name.toUpperCase()}</h3><span class="codex-role">${entry.role.toUpperCase()} / ${entry.difficulty.toUpperCase()}</span><p>${entry.summary}</p></div></div><div class="codex-stats"><span><small>HEALTH</small><b>${entry.maxHealth}</b></span><span><small>SPEED</small><b>${entry.speed}</b></span><span><small>POWER</small><b>${entry.ratings.power}/5</b></span><span><small>CONTROL</small><b>${entry.ratings.control}/5</b></span></div><div class="codex-tip"><small>STARTING WEAPON / ${heroWeapon.name.toUpperCase()}</small><b>${heroWeapon.summary} ${heroWeapon.damage} base damage, ${(1/heroWeapon.fireRate).toFixed(1)} volleys per second.</b></div><div class="codex-tip"><small>EARNED CAPSTONE / ${capstone[0]}</small><b>${capstone[1]}</b></div>`;
     return;
   }
@@ -695,10 +702,14 @@ const UPGRADES = [
   ,{id:'ironBelly',name:'Iron Belly Mastery',icon:'BRACE',type:'BAMBOO DEFENSE',color:'#70ef8a',description:'Plant your feet faster and absorb more damage while braced.',detail:'-7% braced damage / faster brace',available:()=>selectedHeroId==='bamboo'&&player.upgradeRanks.ironBelly<3,apply:()=>{player.upgradeRanks.ironBelly++;player.braceDamageMultiplier=Math.max(.52,player.braceDamageMultiplier-.07);player.braceDelay=Math.max(.42,player.braceDelay-.1);}}
   ,{id:'scatterBore',name:'Scatter Bore',icon:'SPREAD',type:'BAMBOO CANNON',color:'#ffd13a',description:'Add another heavy pellet and amplify every hit\'s crowd-control force.',detail:'+1 pellet / +18% knockback',available:()=>selectedHeroId==='bamboo'&&player.upgradeRanks.scatterBore<2,apply:()=>{player.upgradeRanks.scatterBore++;player.bonusProjectiles++;player.knockbackMultiplier*=1.18;}}
   ,{id:'guardianHide',name:'Guardian Hide',icon:'ARMOR',type:'BAMBOO FORTIFICATION',color:'#65ef55',description:'Grow tougher without turning the opening cannon into an instant kill weapon.',detail:'+28 max HP / -5% damage taken',available:()=>selectedHeroId==='bamboo'&&player.upgradeRanks.guardianHide<3,apply:()=>{player.upgradeRanks.guardianHide++;player.maxHealth+=28;player.health+=28;player.damageTakenMultiplier*=.95;}}
+  ,{id:'capacitorBank',name:'Capacitor Bank',icon:'CHARGE',type:'ZAP TECHIE',color:'#39eaff',description:'Store more force in every Conductive discharge without making the opening pulse overpowering.',detail:'+18% chain damage / +9% weapon damage',available:()=>selectedHeroId==='zap'&&player.upgradeRanks.capacitorBank<3,apply:()=>{player.upgradeRanks.capacitorBank++;player.arcChainPower*=1.18;player.damageMultiplier*=1.09;}}
+  ,{id:'chainLogic',name:'Chain Logic',icon:'CHAIN',type:'ZAP CONTROL',color:'#ffd43b',description:'Route each discharge into one additional nearby enemy and extend its search radius.',detail:'+1 chain target / +55 range',available:()=>selectedHeroId==='zap'&&player.upgradeRanks.chainLogic<3,apply:()=>{player.upgradeRanks.chainLogic++;player.arcChainBonus++;player.arcChainRange+=55;}}
+  ,{id:'rapidCycle',name:'Rapid Cycle',icon:'RAPID',type:'ARC CASTER TUNING',color:'#62f2ff',description:'Cycle the paired arc casters faster while keeping their individual pulse damage low.',detail:'+13% fire rate',available:()=>selectedHeroId==='zap'&&player.upgradeRanks.rapidCycle<3,apply:()=>{player.upgradeRanks.rapidCycle++;player.fireRateMultiplier*=.87;}}
   ,{id:'phaseNova',name:'Phase Nova',icon:'NOVA',type:'KITSUNE CAPSTONE',color:'#d94cff',description:'Every fifth blaster volley phases through its mark and detonates spirit damage through the surrounding pack.',detail:'5th volley / piercing pack detonation',available:()=>player.level>=7&&selectedHeroId==='kitsune'&&!player.weaponEvolution&&player.upgradeRanks.spiritCylinder>=2&&player.upgradeRanks.phaseRounds>=1,apply:()=>{player.weaponEvolution='phaseNova';}}
   ,{id:'siegeLotus',name:'Siege Lotus',icon:'SIEGE',type:'BAMBOO CAPSTONE',color:'#ffd13a',description:'Every third cannon blast loads an immense spirit shell that erupts on contact and throws the whole pack outward.',detail:'3rd blast / heavy area explosion',available:()=>player.level>=7&&selectedHeroId==='bamboo'&&!player.weaponEvolution&&player.upgradeRanks.scatterBore>=1&&player.upgradeRanks.guardianHide>=1,apply:()=>{player.weaponEvolution='siegeLotus';}}
   ,{id:'moonConstellation',name:'Moon Constellation',icon:'SPLIT',type:'HOPSCOTCH CAPSTONE',color:'#ff5fbd',description:'Every fourth fully drawn arrow fractures after impact and hunts two additional enemies.',detail:'4th arrow / two seeking splinters',available:()=>player.level>=7&&selectedHeroId==='hopscotch'&&!player.weaponEvolution&&player.upgradeRanks.moonPiercer>=2&&player.upgradeRanks.perfectDraw>=1,apply:()=>{player.weaponEvolution='moonConstellation';}}
   ,{id:'deadeyeCircuit',name:'Deadeye Circuit',icon:'CHAIN',type:'RUSTY CAPSTONE',color:'#ff9b32',description:'Every sixth twin-revolver volley becomes a guaranteed critical execution chain with two additional full-force banks.',detail:'6th volley / critical ricochet chain',available:()=>player.level>=7&&selectedHeroId==='rusty'&&!player.weaponEvolution&&player.upgradeRanks.bankShot>=2&&player.upgradeRanks.loadedDice>=1,apply:()=>{player.weaponEvolution='deadeyeCircuit';}}
+  ,{id:'thunderheadArray',name:'Thunderhead Array',icon:'STORM',type:'ZAP CAPSTONE',color:'#39eaff',description:'Every third paired volley overloads its first target and immediately chains through a much larger nearby pack.',detail:'3rd volley / expanded discharge',available:()=>player.level>=7&&selectedHeroId==='zap'&&!player.weaponEvolution&&player.upgradeRanks.capacitorBank>=2&&player.upgradeRanks.chainLogic>=1,apply:()=>{player.weaponEvolution='thunderheadArray';}}
   ,{id:'abyssalMaw',name:'Abyssal Maw',icon:'VORTEX',type:'UNDERTOW EVOLUTION',color:'#35e7ff',description:'The well implodes twice, crushing its trapped pack halfway through and again at the end.',detail:'2 crushing collapses',available:()=>player.level>=9&&player.upgradeRanks.undertow>=2&&!player.abilityEvolutions.undertowWell,apply:()=>{player.abilityEvolutions.undertowWell=true;}}
   ,{id:'nineTailInferno',name:'Nine-Tail Inferno',icon:'FIRE',type:'FOXFIRE EVOLUTION',color:'#ff6a24',description:'Fire nine spirit flames. Burning enemies spread Foxfire when they fall.',detail:'9 flames / death spreads burn',available:()=>player.level>=9&&player.upgradeRanks.hungryFlame>=2&&!player.abilityEvolutions.foxfireVolley,apply:()=>{player.abilityEvolutions.foxfireVolley=true;}}
   ,{id:'guardianBloom',name:'Guardian Bloom',icon:'HEART',type:'WILD HEART EVOLUTION',color:'#68ef50',description:'When Wild Heart ends, a life-draining bloom blasts the nearby pack and restores health per target.',detail:'Expiry blast / life drain',available:()=>player.level>=9&&player.upgradeRanks.heartBloom>=2&&!player.abilityEvolutions.wildHeart,apply:()=>{player.abilityEvolutions.wildHeart=true;}}
@@ -774,7 +785,8 @@ const UPGRADE_RARITIES={
   spiritRounds:'common',quickPaws:'common',vitality:'common',undertow:'rare',hungryFlame:'rare',heartBloom:'rare',stormHeart:'epic',
   wardbreaker:'common',spiritHunter:'rare',spiritCatalyst:'rare',pressureChamber:'epic',headhunter:'rare',keenEye:'common',
   spiritCylinder:'common',phaseRounds:'epic',foxstepMastery:'rare',ironBelly:'rare',scatterBore:'epic',guardianHide:'rare',
-  phaseNova:'epic',siegeLotus:'epic',moonConstellation:'epic',deadeyeCircuit:'epic',abyssalMaw:'epic',nineTailInferno:'epic',guardianBloom:'epic',heavensVerdict:'epic'
+  capacitorBank:'rare',chainLogic:'rare',rapidCycle:'common',
+  phaseNova:'epic',siegeLotus:'epic',moonConstellation:'epic',deadeyeCircuit:'epic',thunderheadArray:'epic',abyssalMaw:'epic',nineTailInferno:'epic',guardianBloom:'epic',heavensVerdict:'epic'
 };
 const RARITY_STYLES={common:{name:'COMMON',color:'#a9b4c3',weight:56},rare:{name:'RARE',color:'#39e8ff',weight:32},epic:{name:'EPIC',color:'#e04cff',weight:12}};
 const SYNERGIES=[
@@ -907,7 +919,7 @@ function renderHubUpgrade(upgrade){
   const rank=profile[upgrade.id]||0;const maxed=rank>=upgrade.max;const cost=maxed?0:upgrade.cost(rank);const affordable=profile.spiritShards>=cost;
   hubUpgradeGrid.innerHTML=`<button class="hub-upgrade-card" style="--hub:${upgrade.color}" data-hub-buy ${maxed||!affordable?'disabled':''}><strong>${upgrade.name}</strong><em>RANK ${rank} / ${upgrade.max}</em><p>${upgrade.description}</p><b>${maxed?'MAXIMUM RANK':`  ${cost}`}</b></button><div class="hub-upgrade-card" style="--hub:#78658a"><strong>NEXT RUN</strong><em>PERMANENT LEGACY</em><p>These bonuses do not unlock active abilities. Undertow Well, Foxfire Volley, Wild Heart, and Shock Paws must still be earned at levels 2, 4, 6, and 8.</p><b>  ${profile.spiritShards} AVAILABLE</b></div>`;
   if(upgrade.id==='vitalityRank'){
-    hubUpgradeGrid.insertAdjacentHTML('beforeend',Object.values(HEROES).map((hero)=>{const unlocked=profile.unlockedHeroes.includes(hero.id)||hero.id===debugHero;const lockCallout=hero.id==='rusty'?'CLEAR ASCENSION TO UNLOCK':'DEFEAT PYRECLAW TO UNLOCK';return `<button class="hub-upgrade-card hub-hero-card ${hero.id===selectedHeroId?'selected':''}" style="--hub:${hero.accent}" data-hub-hero="${hero.id}" ${unlocked?'':'disabled'}><strong>${unlocked?hero.name.toUpperCase():'??? LOCKED'}</strong><em>${hero.role.toUpperCase()}  ${hero.passiveName.toUpperCase()}</em><p>${unlocked?`${WEAPONS[hero.weapon].name}. ${hero.summary}`:(hero.unlockRequirement||'Complete the campaign to unlock.')}</p><b>${unlocked?(hero.id===selectedHeroId?'ACTIVE BRAWLPAW':'SWITCH HERO'):lockCallout}</b></button>`;}).join(''));
+    hubUpgradeGrid.insertAdjacentHTML('beforeend',Object.values(HEROES).map((hero)=>{const unlocked=profile.unlockedHeroes.includes(hero.id)||hero.id===debugHero;const lockCallout=hero.id==='rusty'?'CLEAR ASCENSION TO UNLOCK':hero.id==='zap'?'CLEAR 2 CAMPAIGNS TO UNLOCK':'DEFEAT PYRECLAW TO UNLOCK';return `<button class="hub-upgrade-card hub-hero-card ${hero.id===selectedHeroId?'selected':''}" style="--hub:${hero.accent}" data-hub-hero="${hero.id}" ${unlocked?'':'disabled'}><strong>${unlocked?hero.name.toUpperCase():'??? LOCKED'}</strong><em>${hero.role.toUpperCase()}  ${hero.passiveName.toUpperCase()}</em><p>${unlocked?`${WEAPONS[hero.weapon].name}. ${hero.summary}`:(hero.unlockRequirement||'Complete the campaign to unlock.')}</p><b>${unlocked?(hero.id===selectedHeroId?'ACTIVE BRAWLPAW':'SWITCH HERO'):lockCallout}</b></button>`;}).join(''));
     for(const button of hubUpgradeGrid.querySelectorAll('[data-hub-hero]'))button.addEventListener('click',()=>selectHero(button.dataset.hubHero,{returnToHub:true}));
   }
   hubUpgradeGrid.querySelector('[data-hub-buy]')?.addEventListener('click',()=>buyHubUpgrade(upgrade));
@@ -1002,10 +1014,10 @@ function resetGame() {
     rerolls:1+(contractClaimed('sealRunner')?1:0),paidRerolls:0,synergies:new Set(),eventHistory:new Set(),shotsFired:0,
     abilityPower: { undertowWell: 1+profile.attunementRank*.04, foxfireVolley:(1+profile.attunementRank*.04)*(contractClaimed('foxfireHunt')?1.06:1), wildHeart: 1+profile.attunementRank*.04, shockPaws: 1+profile.attunementRank*.04 },
     abilityEvolutions:{undertowWell:false,foxfireVolley:false,wildHeart:false,shockPaws:false},
-    upgradeRanks:{spiritRounds:0,quickPaws:0,vitality:0,undertow:0,hungryFlame:0,heartBloom:0,stormHeart:0,wardbreaker:0,spiritHunter:0,spiritCatalyst:0,pressureChamber:0,headhunter:0,keenEye:0,moonPiercer:0,perfectDraw:0,glassFang:0,spiritMomentum:0,guardianHunter:0,deepReserves:0,bankShot:0,loadedDice:0,quickdraw:0,spiritCylinder:0,phaseRounds:0,foxstepMastery:0,ironBelly:0,scatterBore:0,guardianHide:0},
+    upgradeRanks:{spiritRounds:0,quickPaws:0,vitality:0,undertow:0,hungryFlame:0,heartBloom:0,stormHeart:0,wardbreaker:0,spiritHunter:0,spiritCatalyst:0,pressureChamber:0,headhunter:0,keenEye:0,moonPiercer:0,perfectDraw:0,glassFang:0,spiritMomentum:0,guardianHunter:0,deepReserves:0,bankShot:0,loadedDice:0,quickdraw:0,spiritCylinder:0,phaseRounds:0,foxstepMastery:0,ironBelly:0,scatterBore:0,guardianHide:0,capacitorBank:0,chainLogic:0,rapidCycle:0},
     heartBonus: 0, stormBonus: 0,guardianBlessings:[],endingVow:null,victoryShardBonus:0,
     gold:legacyGold,goldMultiplier:1,relics:[],shopPurchases:new Set(),killHeal:0,damageTakenMultiplier:heroDef.damageTakenMultiplier,speedMultiplier:1,dashCooldownMultiplier:1,
-    knockbackResistance:heroDef.knockbackResistance,knockbackMultiplier:1,braceTime:0,braceDelay:.72,braceDamageMultiplier:.8,braced:false,shieldDamageMultiplier:1,eliteDamageMultiplier:contractClaimed('eliteBreakers')?1.08:1,guardianDamageMultiplier:contractClaimed('guardianOath')?1.08:1,eliteGoldMultiplier:1,eliteKillHeal:0,statusDurationMultiplier:1,bonusProjectiles:0,bonusPierces:0,bonusRicochets:0,ricochetDamageRetention:.78,critBonus:0,critDamageMultiplier:1,weaponEvolution:null,
+    knockbackResistance:heroDef.knockbackResistance,knockbackMultiplier:1,braceTime:0,braceDelay:.72,braceDamageMultiplier:.8,braced:false,shieldDamageMultiplier:1,eliteDamageMultiplier:contractClaimed('eliteBreakers')?1.08:1,guardianDamageMultiplier:contractClaimed('guardianOath')?1.08:1,eliteGoldMultiplier:1,eliteKillHeal:0,statusDurationMultiplier:1,bonusProjectiles:0,bonusPierces:0,bonusRicochets:0,ricochetDamageRetention:.78,critBonus:0,critDamageMultiplier:1,arcChainBonus:0,arcChainPower:1,arcChainRange:0,weaponEvolution:null,
     wildHeartTime: 0, ultimateFlash: 0, castTime: 0, castAbility: null,
     hitCount: 0, maxCombo: 0, comboDrop: 0, dashes: 0, hurtTime: 0, stunTime: 0,
     level: 1, xp: 0, xpToNext: 48
@@ -1062,7 +1074,7 @@ function makeEnemy(spawn, index) {
     health:maxHealth,maxHealth,shield:maxShield,maxShield,guardCooldown:0,eliteId:eliteDef?.id||null,eliteDef,eliteRewardScale:eliteDef?.rewardScale||1,splitDepth:spawn.splitDepth||0,
     facing: Math.PI / 2, state: spawn.delay > 0 ? 'waiting' : 'enter', stateTime: spawn.delay || spawnDuration, spawnDuration,cooldown: 1.2 + index * .16,
     flash: 0, stagger: 0, dead: false, deathTime: 0, hitPlayer: false, bob: Math.random() * Math.PI * 2,
-    burnTime: 0, burnTick: 0, wetTime: 0, shockTime: 0, huntTime: 0,abilityReactTime:0,abilityReactType:'',abilityReactSeed:Math.random()*20,
+    burnTime: 0, burnTick: 0, wetTime: 0, shockTime: 0, huntTime: 0,conductiveStacks:0,conductiveTime:0,abilityReactTime:0,abilityReactType:'',abilityReactSeed:Math.random()*20,
     orbitAngle: Math.atan2(spawn.y - room.playerSpawn.y, spawn.x - room.playerSpawn.x),
     orbitRadius: definition.behavior === 'ranged' ? 430 : definition.behavior === 'summoner' ? 480 : definition.behavior === 'bomber' ? 390 : definition.behavior === 'assassin' ? 250 : definition.behavior === 'heavy' || definition.behavior === 'shield' ? 105 : definition.behavior === 'boss' ? 260 : definition.behavior === 'basic' ? 86 : 180 + (index % 2) * 34,
     orbitDrift: index % 2 ? 1 : -1, spawnIndex: index, shotSide: index % 2 ? 1 : -1,
@@ -1454,7 +1466,7 @@ function rarityForUpgrade(upgrade){return UPGRADE_RARITIES[upgrade.id]||'common'
 function upgradeOfferClass(upgrade){
   if(upgrade.id.startsWith('unlock'))return 'NEW ABILITY';
   if(['abyssalMaw','nineTailInferno','guardianBloom','heavensVerdict'].includes(upgrade.id))return 'ABILITY EVOLUTION';
-  if(['phaseNova','siegeLotus','moonConstellation','deadeyeCircuit'].includes(upgrade.id))return 'WEAPON CAPSTONE';
+  if(['phaseNova','siegeLotus','moonConstellation','deadeyeCircuit','thunderheadArray'].includes(upgrade.id))return 'WEAPON CAPSTONE';
   if(upgrade.id==='dualWield')return 'NEW WEAPON MODE';
   const rank=player.upgradeRanks[upgrade.id];return Number.isFinite(rank)?`RANK ${rank+1}`:'BUILD PIVOT';
 }
@@ -1471,10 +1483,11 @@ function upgradeComparison(upgrade){
     spiritMomentum:()=>`${percent(player.speedMultiplier)} SPEED  →  ${percent(player.speedMultiplier*1.1)}`,guardianHunter:()=>`${percent(player.guardianDamageMultiplier)}  →  ${percent(player.guardianDamageMultiplier*1.22)}`,deepReserves:()=>`${player.gold} GOLD  →  ${player.gold+35} GOLD`,
     bankShot:()=>`+${player.bonusRicochets} BANKS  →  +${player.bonusRicochets+1}`,loadedDice:()=>`${percent(weapon.critChance+player.critBonus)}  →  ${percent(weapon.critChance+player.critBonus+.07)}`,quickdraw:()=>`${percent(1/player.fireRateMultiplier)}  →  ${percent(1/(player.fireRateMultiplier*.87))}`,
     spiritCylinder:()=>`${percent(player.damageMultiplier)} POWER  →  ${percent(player.damageMultiplier*1.09)}`,phaseRounds:()=>`+${player.bonusPierces} PIERCE  →  +${player.bonusPierces+1}`,foxstepMastery:()=>`${percent(player.speedMultiplier)} SPEED  →  ${percent(player.speedMultiplier*1.08)}`,
-    ironBelly:()=>`${percent(player.braceDamageMultiplier)} BRACED  →  ${percent(Math.max(.52,player.braceDamageMultiplier-.07))}`,scatterBore:()=>`+${player.bonusProjectiles} PELLETS  →  +${player.bonusProjectiles+1}`,guardianHide:()=>`${player.maxHealth} HP  →  ${player.maxHealth+28} HP`
+    ironBelly:()=>`${percent(player.braceDamageMultiplier)} BRACED  →  ${percent(Math.max(.52,player.braceDamageMultiplier-.07))}`,scatterBore:()=>`+${player.bonusProjectiles} PELLETS  →  +${player.bonusProjectiles+1}`,guardianHide:()=>`${player.maxHealth} HP  →  ${player.maxHealth+28} HP`,
+    capacitorBank:()=>`${percent(player.arcChainPower)} CHAIN  →  ${percent(player.arcChainPower*1.18)} CHAIN`,chainLogic:()=>`${2+player.arcChainBonus} TARGETS  →  ${3+player.arcChainBonus} TARGETS`,rapidCycle:()=>`${percent(1/player.fireRateMultiplier)} RATE  →  ${percent(1/(player.fireRateMultiplier*.87))} RATE`
   };
   if(comparisons[upgrade.id])return comparisons[upgrade.id]();
-  if(['phaseNova','siegeLotus','moonConstellation','deadeyeCircuit'].includes(upgrade.id))return `BASE WEAPON  →  ${upgrade.name.toUpperCase()}`;
+  if(['phaseNova','siegeLotus','moonConstellation','deadeyeCircuit','thunderheadArray'].includes(upgrade.id))return `BASE WEAPON  →  ${upgrade.name.toUpperCase()}`;
   if(['abyssalMaw','nineTailInferno','guardianBloom','heavensVerdict'].includes(upgrade.id))return `BASE TECHNIQUE  →  ${upgrade.name.toUpperCase()}`;
   return upgrade.detail.toUpperCase();
 }
@@ -1519,8 +1532,8 @@ function renderUpgradeChoices(){
 
 function upgradeIconFrame(upgrade){
   if(upgrade.id==='unlockUndertow'||upgrade.type.includes('UNDERTOW'))return 0;if(upgrade.id==='unlockFoxfire'||upgrade.type.includes('FOXFIRE'))return 1;if(upgrade.id==='unlockHeart'||upgrade.type.includes('HEART'))return 2;if(upgrade.id==='unlockShock'||upgrade.type.includes('ULTIMATE'))return 3;
-  if(upgrade.id==='dualWield')return 4;if(['spiritRounds','quickPaws','quickdraw','spiritCylinder'].includes(upgrade.id))return 5;if(['wardbreaker','ironBelly','guardianHide','vitality','glassFang'].includes(upgrade.id))return 6;if(['keenEye','perfectDraw','loadedDice','spiritHunter'].includes(upgrade.id))return 7;
-  if(['guardianHunter','headhunter'].includes(upgrade.id)||upgrade.type.includes('CAPSTONE')||upgrade.type.includes('EVOLUTION'))return 8;if(['spiritMomentum','foxstepMastery'].includes(upgrade.id))return 9;if(upgrade.id==='deepReserves')return 10;if(['moonPiercer','phaseRounds'].includes(upgrade.id))return 11;if(['bankShot','deadeyeCircuit'].includes(upgrade.id))return 12;if(['perfectDraw','moonConstellation'].includes(upgrade.id))return 13;if(['pressureChamber','scatterBore','siegeLotus'].includes(upgrade.id))return 14;return 15;
+  if(upgrade.id==='dualWield')return 4;if(['spiritRounds','quickPaws','quickdraw','spiritCylinder','rapidCycle','capacitorBank'].includes(upgrade.id))return 5;if(['wardbreaker','ironBelly','guardianHide','vitality','glassFang'].includes(upgrade.id))return 6;if(['keenEye','perfectDraw','loadedDice','spiritHunter'].includes(upgrade.id))return 7;
+  if(['guardianHunter','headhunter'].includes(upgrade.id)||upgrade.type.includes('CAPSTONE')||upgrade.type.includes('EVOLUTION'))return 8;if(['spiritMomentum','foxstepMastery'].includes(upgrade.id))return 9;if(upgrade.id==='deepReserves')return 10;if(['moonPiercer','phaseRounds'].includes(upgrade.id))return 11;if(['bankShot','deadeyeCircuit','chainLogic','thunderheadArray'].includes(upgrade.id))return 12;if(['perfectDraw','moonConstellation'].includes(upgrade.id))return 13;if(['pressureChamber','scatterBore','siegeLotus'].includes(upgrade.id))return 14;return 15;
 }
 
 function rerollUpgrades(){
@@ -1561,7 +1574,7 @@ function resolveSynergies(){
 }
 
 function refreshSynergyHud(){
-  const active=SYNERGIES.filter((synergy)=>player.synergies.has(synergy.id));const capstones={phaseNova:{name:'PHASE NOVA',color:'#d94cff'},siegeLotus:{name:'SIEGE LOTUS',color:'#ffd13a'},moonConstellation:{name:'MOON CONSTELLATION',color:'#ff5fbd'},deadeyeCircuit:{name:'DEADEYE CIRCUIT',color:'#ff9b32'}};const capstone=capstones[player.weaponEvolution];
+  const active=SYNERGIES.filter((synergy)=>player.synergies.has(synergy.id));const capstones={phaseNova:{name:'PHASE NOVA',color:'#d94cff'},siegeLotus:{name:'SIEGE LOTUS',color:'#ffd13a'},moonConstellation:{name:'MOON CONSTELLATION',color:'#ff5fbd'},deadeyeCircuit:{name:'DEADEYE CIRCUIT',color:'#ff9b32'},thunderheadArray:{name:'THUNDERHEAD ARRAY',color:'#39eaff'}};const capstone=capstones[player.weaponEvolution];
   const key=`${active.map((synergy)=>synergy.id).join('|')}|${player.weaponEvolution||''}`;if(ui.synergyStrip.dataset.key===key)return;ui.synergyStrip.dataset.key=key;
   ui.synergyStrip.innerHTML=`${capstone?`<span class="synergy-badge capstone" style="--synergy:${capstone.color}" title="Hero weapon capstone active">${capstone.name}</span>`:''}${active.map((synergy)=>`<span class="synergy-badge" style="--synergy:${synergy.color}" title="${synergy.description}">${synergy.name}</span>`).join('')}`;
 }
@@ -1595,7 +1608,7 @@ function begin() {
   }
   if(debugSystem==='elites'){player.maxHealth=320;player.health=320;player.damageMultiplier=1.8;player.unlockedAbilities.add('foxfireVolley');startWave(1,{nodeType:'elite',healthScale:1.08,speedScale:1.04,damageScale:1.04,rewardScale:2});return;}
   if(debugSystem==='specialists'){startSpecialistShowcase();return;}
-  if(debugSystem==='capstone'){player.level=10;player.maxHealth=1200;player.health=1200;player.damageMultiplier=2.4;player.weaponEvolution=selectedHeroId==='kitsune'?'phaseNova':selectedHeroId==='bamboo'?'siegeLotus':selectedHeroId==='hopscotch'?'moonConstellation':'deadeyeCircuit';player.bonusPierces=selectedHeroId==='hopscotch'?2:player.bonusPierces;player.bonusRicochets=selectedHeroId==='rusty'?2:player.bonusRicochets;refreshSynergyHud();startWave(4);return;}
+  if(debugSystem==='capstone'){player.level=10;player.maxHealth=1200;player.health=1200;player.damageMultiplier=2.4;player.weaponEvolution=selectedHeroId==='kitsune'?'phaseNova':selectedHeroId==='bamboo'?'siegeLotus':selectedHeroId==='hopscotch'?'moonConstellation':selectedHeroId==='rusty'?'deadeyeCircuit':'thunderheadArray';player.bonusPierces=selectedHeroId==='hopscotch'?2:player.bonusPierces;player.bonusRicochets=selectedHeroId==='rusty'?2:player.bonusRicochets;player.arcChainBonus=selectedHeroId==='zap'?3:player.arcChainBonus;refreshSynergyHud();startWave(4);return;}
   if(debugSystem==='room6'){player.level=10;player.maxHealth=1400;player.health=1400;startWave(5);return;}
   if(debugSystem==='pressure'){player.maxHealth=900;player.health=900;player.unlockedAbilities.add('undertowWell');startWave(Math.min(4,chapter.waves.length-1));encounter.biomePressureClock=.35;return;}
   if(debugSystem==='evolutions'){player.level=12;player.maxHealth=1200;player.health=1200;player.damageMultiplier=1.35;for(const id of Object.keys(ABILITIES))player.unlockedAbilities.add(id);for(const id of Object.keys(player.abilityEvolutions))player.abilityEvolutions[id]=true;player.stormBonus=1;refreshSynergyHud();startWave(Math.min(4,chapter.waves.length-1));return;}
@@ -1630,6 +1643,7 @@ function endGame(won) {
   if(won){
     profile.campaignClears++;const rank={spirited:1,ferocious:2,nightmare:3,ascension:4};if((rank[selectedDifficulty]||0)>(rank[profile.bestDifficulty]||0))profile.bestDifficulty=selectedDifficulty;
     if(!profile.unlockedHeroes.includes('hopscotch')){profile.unlockedHeroes.push('hopscotch');unlockedNames.push('HOPSCOTCH');}
+    if(profile.campaignClears>=2&&!profile.unlockedHeroes.includes('zap')){profile.unlockedHeroes.push('zap');unlockedNames.push('ZAP');}
     if(selectedDifficulty==='ascension'){profile.ascensionClears++;profile.ascensionRank=Math.min(10,(profile.ascensionRank||1)+1);if(!profile.unlockedHeroes.includes('rusty')){profile.unlockedHeroes.push('rusty');unlockedNames.push('RUSTY');}}
   }
   saveProfile();refreshProfileUi();
@@ -1726,7 +1740,7 @@ function releaseWeaponVolley() {
   const muzzleDistance=weapon.muzzleDistance||48;
   const muzzle = { x: player.x + direction.x * muzzleDistance, y: player.y + direction.y * muzzleDistance - 7 };
   player.shotsFired++;const burningVolley=player.synergies.has('twinCinders')&&player.shotsFired%8===0;
-  const evolution=player.weaponEvolution;const phaseNova=evolution==='phaseNova'&&player.shotsFired%5===0;const siegeLotus=evolution==='siegeLotus'&&player.shotsFired%3===0;const moonConstellation=evolution==='moonConstellation'&&player.shotsFired%4===0;const deadeyeCircuit=evolution==='deadeyeCircuit'&&player.shotsFired%6===0;
+  const evolution=player.weaponEvolution;const phaseNova=evolution==='phaseNova'&&player.shotsFired%5===0;const siegeLotus=evolution==='siegeLotus'&&player.shotsFired%3===0;const moonConstellation=evolution==='moonConstellation'&&player.shotsFired%4===0;const deadeyeCircuit=evolution==='deadeyeCircuit'&&player.shotsFired%6===0;const thunderheadArray=evolution==='thunderheadArray'&&player.shotsFired%3===0;
   const volleyCount=weapon.baseVolleys||(player.dualWield?2:1);const pelletCount=(weapon.shots||1)+player.bonusProjectiles;const echoPenalty=(player.dualWield&&!weapon.baseVolleys) ? .8 : 1;
   for(let volley=0;volley<volleyCount;volley++){
     const volleySide=volleyCount===1?0:(volley?1:-1);
@@ -1737,16 +1751,16 @@ function releaseWeaponVolley() {
       const shotDirection={x:Math.cos(angle),y:Math.sin(angle)};
       const sideX=-direction.y*volleySide*12,sideY=direction.x*volleySide*12;
       const shotMuzzle={x:muzzle.x+sideX,y:muzzle.y+sideY};
-      const arrow=weapon.projectileType==='arrow',trickshot=weapon.projectileType==='trickshot';
-      effects.playerShots.push({x:shotMuzzle.x,y:shotMuzzle.y,vx:shotDirection.x*weapon.projectileSpeed,vy:shotDirection.y*weapon.projectileSpeed,radius:(weapon.projectileRadius||9)*(siegeShell?1.75:1),damage:weapon.damage*player.damageMultiplier*echoPenalty*(siegeShell?1.7:1),color:phaseNova?'#d94cff':siegeShell?'#ffd13a':moonConstellation?'#ff5fbd':deadeyeCircuit?'#ff9b32':burningVolley?'#ff8a2a':weapon.color,ignite:burningVolley,arrow,trickshot,phaseNova,siegeLotus:siegeShell,moonConstellation,deadeyeCircuit,guaranteedCrit:deadeyeCircuit,ricochets:(weapon.ricochets||0)+player.bonusRicochets+(deadeyeCircuit?2:0),ricochetRange:(weapon.ricochetRange||0)+(deadeyeCircuit?220:0),ricochetRetention:deadeyeCircuit?1:player.ricochetDamageRetention,pierces:(weapon.pierces||0)+player.bonusPierces+(phaseNova?4:0),hitIds:new Set(),life:weapon.projectileLife,maxLife:weapon.projectileLife});
-      effects.spriteEffects.push({asset:arrow?'hopscotchArrow':trickshot?'trickshotVfx':'blasterImpactVfx',fixedFrame:arrow||trickshot?0:undefined,x:shotMuzzle.x,y:shotMuzzle.y,width:arrow?92:trickshot?76:selectedHeroId==='bamboo'?82:68,height:arrow?52:trickshot?76:selectedHeroId==='bamboo'?70:58,life:.16,maxLife:.16,rotation:angle,glow:weapon.impactColor});
+      const arrow=weapon.projectileType==='arrow',trickshot=weapon.projectileType==='trickshot',arc=weapon.projectileType==='arc';
+      effects.playerShots.push({x:shotMuzzle.x,y:shotMuzzle.y,vx:shotDirection.x*weapon.projectileSpeed,vy:shotDirection.y*weapon.projectileSpeed,radius:(weapon.projectileRadius||9)*(siegeShell?1.75:1),damage:weapon.damage*player.damageMultiplier*echoPenalty*(siegeShell?1.7:thunderheadArray?1.12:1),color:phaseNova?'#d94cff':siegeShell?'#ffd13a':moonConstellation?'#ff5fbd':deadeyeCircuit?'#ff9b32':thunderheadArray?'#fff177':burningVolley?'#ff8a2a':weapon.color,ignite:burningVolley,arrow,trickshot,arc,phaseNova,siegeLotus:siegeShell,moonConstellation,deadeyeCircuit,thunderheadArray:thunderheadArray&&volley===0&&pellet===0,guaranteedCrit:deadeyeCircuit,ricochets:(weapon.ricochets||0)+player.bonusRicochets+(deadeyeCircuit?2:0),ricochetRange:(weapon.ricochetRange||0)+(deadeyeCircuit?220:0),ricochetRetention:deadeyeCircuit?1:player.ricochetDamageRetention,pierces:(weapon.pierces||0)+player.bonusPierces+(phaseNova?4:0),hitIds:new Set(),life:weapon.projectileLife,maxLife:weapon.projectileLife});
+      effects.spriteEffects.push({asset:arrow?'hopscotchArrow':trickshot?'trickshotVfx':arc?'zapArcVfx':'blasterImpactVfx',fixedFrame:arrow||trickshot||arc?0:undefined,x:shotMuzzle.x,y:shotMuzzle.y,width:arrow?92:trickshot?76:arc?82:selectedHeroId==='bamboo'?82:68,height:arrow?52:trickshot?76:arc?68:selectedHeroId==='bamboo'?70:58,life:.16,maxLife:.16,rotation:angle,glow:weapon.impactColor});
     }
   }
-  if(phaseNova||siegeLotus||moonConstellation||deadeyeCircuit){const label=phaseNova?'PHASE NOVA!':siegeLotus?'SIEGE LOTUS!':moonConstellation?'MOON CONSTELLATION!':'DEADEYE CIRCUIT!';const color=phaseNova?'#d94cff':siegeLotus?'#ffd13a':moonConstellation?'#ff5fbd':'#ff9b32';spawnWord(player.x,player.y-86,label,color);effects.rings.push({x:player.x,y:player.y,radius:18,maxRadius:115,color,life:.42,maxLife:.42});}
+  if(phaseNova||siegeLotus||moonConstellation||deadeyeCircuit||thunderheadArray){const label=phaseNova?'PHASE NOVA!':siegeLotus?'SIEGE LOTUS!':moonConstellation?'MOON CONSTELLATION!':deadeyeCircuit?'DEADEYE CIRCUIT!':'THUNDERHEAD!';const color=phaseNova?'#d94cff':siegeLotus?'#ffd13a':moonConstellation?'#ff5fbd':deadeyeCircuit?'#ff9b32':'#39eaff';spawnWord(player.x,player.y-86,label,color);effects.rings.push({x:player.x,y:player.y,radius:18,maxRadius:115,color,life:.42,maxLife:.42});}
   burst(muzzle.x,muzzle.y,weapon.impactColor,selectedHeroId==='bamboo'?22:selectedHeroId==='rusty'?20:14,selectedHeroId==='bamboo'?330:selectedHeroId==='rusty'?300:260,selectedHeroId==='bamboo'?5:3);
   player.vx-=direction.x*(weapon.recoil||42);player.vy-=direction.y*(weapon.recoil||42);
   camera.kick=Math.max(camera.kick,selectedHeroId==='bamboo'?15:selectedHeroId==='hopscotch'?7:selectedHeroId==='rusty'?11:9);camera.shake=Math.max(camera.shake,selectedHeroId==='bamboo'?4.5:selectedHeroId==='hopscotch'?2:selectedHeroId==='rusty'?3:2.5);
-  playSfx(selectedHeroId==='hopscotch'?'arrow':selectedHeroId==='bamboo'?'slice':'blaster',selectedHeroId==='bamboo'?.42:.3,selectedHeroId==='rusty'?1.12:1);
+  playSfx(selectedHeroId==='hopscotch'?'arrow':selectedHeroId==='bamboo'?'slice':selectedHeroId==='zap'?'lightning':'blaster',selectedHeroId==='bamboo'?.42:selectedHeroId==='zap'?.24:.3,selectedHeroId==='rusty'?1.12:selectedHeroId==='zap'?1.32:1);
 }
 
 function aimDirection() {
@@ -1908,15 +1922,26 @@ function hitEnemyWithShot(enemy, shot) {
   comboUiTimer = .65; hitStop = Math.max(hitStop, critical ? .05 : .026); camera.shake = Math.max(camera.shake, critical ? 6 : 3);
   const impactX = shot.x, impactY = shot.y - 8;
   const impactColor=critical?'#ffd52d':shot.color||weapon.impactColor;burst(impactX, impactY, impactColor, critical ? 16 : 9, critical ? 370 : 260, critical ? 5 : 3);
-  effects.spriteEffects.push({asset:shot.arrow?'hopscotchArrow':shot.trickshot?'trickshotVfx':'blasterImpactVfx',fixedFrame:shot.arrow?(critical?4:3):shot.trickshot?(critical?5:4):undefined,x:impactX,y:impactY,width:shot.trickshot?(critical?170:138):critical?190:148,height:shot.trickshot?(critical?170:138):critical?155:122,life:.4,maxLife:.4,rotation:Math.atan2(shot.vy,shot.vx),glow:impactColor});
+  effects.spriteEffects.push({asset:shot.arrow?'hopscotchArrow':shot.trickshot?'trickshotVfx':shot.arc?'zapArcVfx':'blasterImpactVfx',fixedFrame:shot.arrow?(critical?4:3):shot.trickshot?(critical?5:4):shot.arc?(critical?5:4):undefined,x:impactX,y:impactY,width:shot.trickshot?(critical?170:138):shot.arc?(critical?176:142):critical?190:148,height:shot.trickshot?(critical?170:138):shot.arc?(critical?150:120):critical?155:122,life:.4,maxLife:.4,rotation:Math.atan2(shot.vy,shot.vx),glow:impactColor});
   effects.numbers.push({ x: enemy.x, y: enemy.y - 34, vx: (Math.random() - .5) * 45, vy: -95, text:resolved.shieldDamage&&!resolved.healthDamage?String(Math.round(resolved.total)):String(damage),color:resolved.shieldDamage?'#9aff8b':critical?'#ffd833':'#fff8ed',life:.75,maxLife:.75,size:critical?32:23 });
   if(shot.ignite){applyEnemyStatus(enemy,'burn',2.8,.72);effects.spriteEffects.push({asset:'burnStatusVfx',x:enemy.x,y:enemy.y-8,width:160,height:132,life:.36,maxLife:.36,glow:'#ff7428'});spawnWord(enemy.x,enemy.y-56,'CINDER ROUND!','#ff8a2a');}
   if(shot.phaseNova&&!shot.phaseDetonated){shot.phaseDetonated=true;triggerWeaponBlast(enemy,shot,'#d94cff',165,.62,'PHASE BURST!');}
   if(shot.siegeLotus)triggerWeaponBlast(enemy,shot,'#ffd13a',230,.82,'SIEGE BLOOM!');
   if(shot.moonConstellation&&!shot.splitSpawned){shot.splitSpawned=true;spawnMoonSplinters(enemy,shot);}
+  if(shot.arc)applyConductiveHit(enemy,shot,direction);
   if (critical || enemy.health <= 0) spawnWord(impactX, impactY - 42, enemy.health <= 0 ? 'CRASH!!' : 'ZAP!!', critical ? '#ffd938' : '#39eaff');
   playSfx(critical||isBoss?'heavyImpact':'impact',critical?.3:isBoss?.27:.16,critical?.9:isBoss?.78:1.08);
   if (enemy.health <= 0) killEnemy(enemy, direction);
+}
+
+function applyConductiveHit(source,shot,direction){
+  if(source.dead||source.health<=0)return;source.conductiveStacks=(source.conductiveStacks||0)+1;source.conductiveTime=4.2;source.abilityReactType='shock';source.abilityReactTime=Math.max(source.abilityReactTime||0,.3);
+  const threshold=weapon.chainThreshold||3;if(source.conductiveStacks<threshold&&!shot.thunderheadArray){spawnWord(source.x,source.y-62,`${source.conductiveStacks} / ${threshold}`,'#39eaff');return;}
+  source.conductiveStacks=0;source.conductiveTime=0;const color=shot.thunderheadArray?'#fff177':'#39eaff';const range=(weapon.chainRange||360)+(player.arcChainRange||0)+(shot.thunderheadArray?150:0);const limit=(weapon.chainTargets||2)+(player.arcChainBonus||0)+(shot.thunderheadArray?4:0);
+  const targets=enemies.filter((enemy)=>enemy!==source&&!enemy.dead&&enemy.state!=='waiting'&&distance(source,enemy)<=range+enemy.radius).sort((a,b)=>distance(source,a)-distance(source,b)).slice(0,limit);
+  let previous=source;const chainDamage=Math.max(1,Math.round(shot.damage*(weapon.chainDamage||.55)*(player.arcChainPower||1)*(shot.thunderheadArray?1.35:1)));
+  for(const target of targets){const linkDirection=normalize(target.x-previous.x,target.y-previous.y);effects.shockLinks.push({x1:previous.x,y1:previous.y-18,x2:target.x,y2:target.y-18,color,life:.34,maxLife:.34});effects.spriteEffects.push({asset:'zapArcVfx',fixedFrame:5,x:target.x,y:target.y-12,width:170,height:144,life:.42,maxLife:.42,rotation:Math.atan2(linkDirection.y,linkDirection.x),glow:color});target.abilityReactType='shock';target.abilityReactTime=Math.max(target.abilityReactTime||0,.48);damageEnemyFromAbility(target,chainDamage,115,linkDirection,color,null);previous=target;}
+  effects.rings.push({x:source.x,y:source.y,radius:12,maxRadius:shot.thunderheadArray?190:112,color,life:.4,maxLife:.4});burst(source.x,source.y-12,color,shot.thunderheadArray?30:18,shot.thunderheadArray?520:350,5);spawnWord(source.x,source.y-78,shot.thunderheadArray?'THUNDERHEAD!':'CONDUCTIVE! ',color);camera.shake=Math.max(camera.shake,shot.thunderheadArray?9:5);playSfx('lightning',shot.thunderheadArray?.38:.24,shot.thunderheadArray?.78:1.14);
 }
 
 function triggerWeaponBlast(source,shot,color,radius,damageScale,label){
@@ -2211,6 +2236,7 @@ function updateEnemies(dt) {
     enemy.wetTime = Math.max(0, enemy.wetTime - dt);
     enemy.shockTime = Math.max(0, enemy.shockTime - dt);
     enemy.huntTime = Math.max(0, (enemy.huntTime||0) - dt);
+    enemy.conductiveTime=Math.max(0,(enemy.conductiveTime||0)-dt);if(enemy.conductiveTime<=0)enemy.conductiveStacks=0;
     if(definition.behavior==='shield'&&enemy.shield<=0&&enemy.maxShield>0){enemy.guardCooldown=Math.max(0,enemy.guardCooldown-dt);if(enemy.guardCooldown<=0){enemy.shield=enemy.maxShield;spawnWord(enemy.x,enemy.y-84,'GUARD RESTORED!','#ff6a48');effects.rings.push({x:enemy.x,y:enemy.y,radius:24,maxRadius:118,color:definition.color,life:.42,maxLife:.42});}}
     if(enemy.practice&&!dojoState.aggressive){enemy.state='practice';enemy.stateTime=99;enemy.vx*=Math.exp(-12*dt);enemy.vy*=Math.exp(-12*dt);enemy.facing=approachAngle(enemy.facing,Math.atan2(player.y-enemy.y,player.x-enemy.x),clamp(dt*7,0,1));continue;}
     if(definition.behavior==='boss'){updateBoss(enemy,dt);continue;}
@@ -2883,8 +2909,8 @@ function drawHero(entity, alpha = 1, afterimage = false) {
     rotation = -Math.cos(entity.facing) * Math.sin(p * Math.PI) * .06;
   }
   if (!authoredState&&stateName === 'hit') rotation = Math.sin(time * 45) * .08;
-  const bamboo=selectedHeroId==='bamboo';const hopscotch=selectedHeroId==='hopscotch';const rusty=selectedHeroId==='rusty';const baseH=bamboo?(firing?142:136):hopscotch?(firing?126:122):rusty?(firing?124:120):(firing?112:108);const h=authoredState?(bamboo?154:hopscotch?142:rusty?140:136):baseH;const w=h*(sw/sh);
-  drawContactShadow(entity.x,entity.y+(bamboo?15:hopscotch||rusty?13:12),entity.dashTime>0?(bamboo?16:hopscotch||rusty?12:13):(bamboo?24:hopscotch?18:rusty?19:19),entity.dashTime>0?(bamboo?4.4:3.5):(bamboo?6.4:hopscotch?5:rusty?5.2:5.5),.34*alpha);
+  const bamboo=selectedHeroId==='bamboo';const hopscotch=selectedHeroId==='hopscotch';const rusty=selectedHeroId==='rusty';const zap=selectedHeroId==='zap';const baseH=bamboo?(firing?142:136):hopscotch?(firing?126:122):rusty?(firing?124:120):zap?(firing?126:122):(firing?112:108);const h=authoredState?(bamboo?154:hopscotch?142:rusty?140:zap?142:136):baseH;const w=h*(sw/sh);
+  drawContactShadow(entity.x,entity.y+(bamboo?15:hopscotch||rusty||zap?13:12),entity.dashTime>0?(bamboo?16:hopscotch||rusty||zap?12:13):(bamboo?24:hopscotch?18:rusty?19:zap?18:19),entity.dashTime>0?(bamboo?4.4:3.5):(bamboo?6.4:hopscotch?5:rusty?5.2:zap?4.8:5.5),.34*alpha);
   if (!afterimage && entity.wildHeartTime > 0) {
     const pulse = .2 + Math.sin(time * 7) * .035;
     if (!drawAtlasFrame(assets.wildHeartVfx, 5, entity.x, entity.y + 5, 104, 78, 0, pulse, '#62f05f')) {
@@ -2922,11 +2948,12 @@ function drawEnemyStatusBack(enemy,width=135,height=105){
   if(enemy.dead)return;if(enemy.burnTime>0)drawAtlasFrame(assets.burnStatusVfx,Math.floor(performance.now()/90+enemy.id)%6,enemy.x,enemy.y+4,width,height,0,.42,'#ff6828');
   if(enemy.wetTime>0)drawAtlasFrame(assets.waterImpactVfx,5,enemy.x,enemy.y+13,width*.82,height*.5,0,.32,'#35e7ff');
   if(enemy.shockTime>0)drawAtlasFrame(assets.shockImpactVfx,4,enemy.x,enemy.y+2,width*.92,height*.72,0,clamp(enemy.shockTime/.55,0,1)*.38,'#d94cff');
+  if(enemy.conductiveStacks>0)drawAtlasFrame(assets.zapArcVfx,enemy.conductiveStacks>1?1:0,enemy.x,enemy.y-4,width*.72,height*.62,0,.28+enemy.conductiveStacks*.08,'#39eaff');
 }
 
 function drawCoopPlayer(member){
   const remoteHero=HEROES[member.hero]||HEROES.kitsune;const sheet=assets[remoteHero.moveAsset];if(!sheet?.complete||!sheet.naturalWidth)return;
-  const rawDirection=directionIndex(member.facing||0),direction=remoteHero.directionMap?.[rawDirection]??rawDirection;const sw=sheet.naturalWidth/4,sh=sheet.naturalHeight/4;const sx=(direction%4)*sw,sy=Math.floor(direction/4)*sh;const h=member.hero==='bamboo'?136:member.hero==='hopscotch'?122:member.hero==='rusty'?120:108,w=h*(sw/sh);
+  const rawDirection=directionIndex(member.facing||0),direction=remoteHero.directionMap?.[rawDirection]??rawDirection;const sw=sheet.naturalWidth/4,sh=sheet.naturalHeight/4;const sx=(direction%4)*sw,sy=Math.floor(direction/4)*sh;const h=member.hero==='bamboo'?136:member.hero==='hopscotch'?122:member.hero==='rusty'?120:member.hero==='zap'?122:108,w=h*(sw/sh);
   drawContactShadow(member.x,member.y+13,member.hero==='bamboo'?24:19,member.hero==='bamboo'?6.4:5.3,.3);ctx.save();ctx.translate(member.x,member.y);ctx.shadowColor=remoteHero.accent;ctx.shadowBlur=13;ctx.drawImage(sheet,sx,sy,sw,sh,-w/2,-h*.82,w,h);ctx.restore();ctx.save();ctx.translate(member.x,member.y-h*.96);ctx.textAlign='center';ctx.font='900 10px Inter,sans-serif';ctx.lineWidth=4;ctx.strokeStyle='#070812';ctx.strokeText(member.name||remoteHero.name,0,0);ctx.fillStyle=remoteHero.accent;ctx.fillText(member.name||remoteHero.name,0,0);ctx.restore();
 }
 
@@ -3121,9 +3148,9 @@ function drawEffects() {
     const p=1-hazard.life/hazard.maxLife;if(hazard.type==='bomb')drawAtlasFrame(assets.specialEnemyVfx,p<.58?2:3,hazard.x,hazard.y-34,116+p*34,116+p*34,0,.96,hazard.color);ctx.save();ctx.translate(hazard.x,hazard.y);ctx.scale(1,.56);ctx.shadowColor=hazard.color;ctx.shadowBlur=22;ctx.fillStyle=`${hazard.color}${Math.round((.08+p*.13)*255).toString(16).padStart(2,'0')}`;ctx.strokeStyle=hazard.color;ctx.lineWidth=5+p*6;ctx.setLineDash([24,11,5,10]);ctx.lineDashOffset=-performance.now()/28;ctx.beginPath();ctx.arc(0,0,hazard.radius*(.45+p*.55),0,Math.PI*2);ctx.fill();ctx.stroke();ctx.setLineDash([]);for(let i=0;i<8;i++){ctx.save();ctx.rotate(i*Math.PI/4+p*1.3);ctx.fillStyle=hazard.color;ctx.beginPath();ctx.moveTo(hazard.radius-8,0);ctx.lineTo(hazard.radius-31,-9);ctx.lineTo(hazard.radius-31,9);ctx.closePath();ctx.fill();ctx.restore();}ctx.restore();
   }
   for (const shot of effects.playerShots) {
-    const angle=Math.atan2(shot.vy,shot.vx);const frame=shot.arrow||shot.trickshot?Math.floor(performance.now()/65)%3:2+Math.floor(performance.now()/65)%3;
+    const angle=Math.atan2(shot.vy,shot.vx);const frame=shot.arrow||shot.trickshot?Math.floor(performance.now()/65)%3:shot.arc?2+Math.floor(performance.now()/80)%2:2+Math.floor(performance.now()/65)%3;
     const scale=shot.radius>=12?1.24:1;
-    const shotAsset=shot.arrow?assets.hopscotchArrow:shot.trickshot?assets.trickshotVfx:assets.blasterShotVfx;const shotWidth=shot.arrow?168:shot.trickshot?116:112;const shotHeight=shot.arrow?72:shot.trickshot?92:70;
+    const shotAsset=shot.arrow?assets.hopscotchArrow:shot.trickshot?assets.trickshotVfx:shot.arc?assets.zapArcVfx:assets.blasterShotVfx;const shotWidth=shot.arrow?168:shot.trickshot?116:shot.arc?132:112;const shotHeight=shot.arrow?72:shot.trickshot?92:shot.arc?82:70;
     if(!drawAtlasFrame(shotAsset,frame,shot.x,shot.y,shotWidth*scale,shotHeight*scale,angle,clamp(shot.life/.12,0,1),shot.color||'#42ecff')){
       ctx.save();ctx.translate(shot.x,shot.y);ctx.rotate(angle);ctx.fillStyle='#fff';ctx.fillRect(-22,-5,44,10);ctx.restore();
     }

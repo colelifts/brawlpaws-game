@@ -14,7 +14,7 @@ The current Visual Combat Prototype V2 provides the first quality gate:
 - A 4800×2700 Jade Grove room with a quiet opening beat and enemy arrivals spread across the first 17 seconds
 - Jadebreaker's slow planted hammer slam with a large warning radius and a unique player-stun consequence
 - Spirit Blaster primary fire and Fox Step at level one; Undertow Well, Foxfire Volley, Wild Heart, and Shock Paws are earned during the run
-- Rising XP thresholds, a combat-pausing three-card level-up screen, 37 upgrade choices, repeatable ranks, Dual-Wield, hero-specific build paths, piercing, critical-draw mastery, and four earned weapon capstones
+- Rising XP thresholds, a combat-pausing three-card level-up screen, 45 upgrade choices, repeatable ranks, Dual-Wield, hero-specific build paths, piercing, critical-draw mastery, conductive chaining, and five earned weapon capstones
 - Dedicated six-frame travel, impact, enemy-attack, elemental-status, and ambient-environment atlases
 - Animated lantern flames, drifting spirit wisps, water ripples, moving petals, and swaying environment props
 - Gameplay HUD, title screen, level-up flow, two chapter story scenes, chapter clear, defeat, and restart loop
@@ -50,6 +50,7 @@ The current Visual Combat Prototype V2 provides the first quality gate:
 - Full active runs now have versioned, room-safe continuation snapshots that restore hero, difficulty, build, unlocks, relics, currency, chapter, story/route state, and elapsed time
 - Title and in-run pause flows now expose persistent accessibility controls for screen shake, full-screen flashes, damage numbers, and ambient scenery motion
 - Rusty is the fourth production hero and second earned roster unlock: a directional raccoon trickshot with portrait, 16-cell movement and double-gun attack sheets, inherent twin-revolver volleys, target-seeking Bank Shot ricochets, dedicated cyan/gold projectile VFX, and three hero-specific upgrade tracks
+- Zap is the fifth production hero and a two-campaign earned unlock: a directional rabbit Techie with portrait, movement, paired-caster attack, authored ability/reaction atlases, and dedicated arc VFX. Its low opening damage builds Conductive marks, the third hit chains into nearby bodies with individual shock reactions, and three focused upgrades lead into Thunderhead Array rather than another dash mechanic.
 - Ascension is the post-clear difficulty ladder: ten persistent ranks compound enemy health, pursuit speed, damage, pack size, spawn cadence, and shard rewards; its first clear unlocks Rusty
 
 This build is the combat laboratory. New systems should be integrated into it only after they can meet the same visual-readability bar.
@@ -84,7 +85,7 @@ Every milestone is reviewed against the supplied gameplay, loadout, hub, hero-ro
 - Contact shadows reduced to soft ellipses directly under the feet
 - Muzzle flashes, trails, impact stars, elemental colors, comic words, XP shards, and enemy death bursts
 - Recorded Mixkit audio layers now cover weapons, dash, light/heavy impacts, enemy strikes, elemental abilities, healing, upgrades, boss slams, and soft background music; independent music/SFX controls and anti-stacking mix limits keep large armies clean
-- All four playable heroes now own production-painted eight-pose state atlases: distinct Undertow, Foxfire, Wild Heart, and Shock Paws casts plus authored hit recoil, stun, defeat, and victory silhouettes. These frames are routed from live combat state and preserve the existing eight-direction primary-fire sheets.
+- All five playable heroes now own production-painted eight-pose state atlases: distinct Undertow, Foxfire, Wild Heart, and Shock Paws casts plus authored hit recoil, stun, defeat, and victory silhouettes. These frames are routed from live combat state and preserve the existing eight-direction primary-fire sheets.
 
 **Exit gate:** screenshots and live motion plausibly belong to the same game as the concept art. No attack can look like a static sprite sliding into a target.
 
@@ -113,7 +114,7 @@ Next ability work:
 - XP thresholds, level progression, and combat pause during selection are playable
 - Three-card level-up presentation, weighted Common/Rare/Epic rarity, keyboard/mouse selection, one free reroll, escalating gold rerolls, and a recovery skip are playable. Every offer now labels its role/rank, states the concise effect, compares the live current and resulting stat, and previews any immediately unlocked synergy.
 - All three chapters now carry four checkpoint-safe narrative beats—opening, post-seal-two revelation, post-seal-four escalation, and guardian confrontation—with visible seal progress and a concise next objective
-- 41 meaningful upgrade definitions now cover four hero weapon capstones, four ability evolutions, weapon evolution, four ability unlocks, hero-specific mastery, damage, speed, health, per-ability ranks, shield breaking, elite and guardian hunting, critical mastery, piercing, economy, and bonus projectiles
+- 45 meaningful upgrade definitions now cover five hero weapon capstones, four ability evolutions, weapon evolution, four ability unlocks, hero-specific mastery, damage, speed, health, per-ability ranks, shield breaking, elite and guardian hunting, critical mastery, piercing, Conductive chaining, economy, and bonus projectiles
 - Twelve functional relics: Lucky Coin, Spirit Mask, Thunder Seal, Blood Vial, Dragon Scale, Rainbow Feather, Ward Bell, Oni Contract, Moon Pearl, Phoenix Plume, River Mirror, and Guardian Fang
 - Four automatic recipe synergies are playable and visible in the HUD: Steam Burst, Storm Current, Guardian Tempest, and Twin Cinders
 - Gold, spirit shards, keys, hero tokens, loot tables, pickup bursts, and reward summaries
