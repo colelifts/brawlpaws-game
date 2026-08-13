@@ -482,7 +482,7 @@ test('host-authoritative enemies target and damage every living party member',()
   for(const fn of ['combatTargets','enemyTarget','hurtCombatTarget'])assert.match(game,new RegExp(`function ${fn}\\(`));
   assert.match(game,/packet\.type==='damage'&&packet\.payload\?\.targetId===coop\.id/);
   assert.match(game,/coop\.connected&&!coopIsHost\(\)&&!coop\.applyingDamage/);
-  assert.match(game,/const target=enemyTarget\(enemy\),toPlayer/);
+  assert.match(game,/const target=enemyTarget\(enemy\);if\(!target\)/);
   assert.match(game,/hurtCombatTarget\(target,Math\.round\(definition\.contactDamage/);
   assert.match(game,/for\(const combatant of combatTargets\(\)\)/);
   assert.match(game,/prepareBossSignature\(enemy,profile,target\)/);
@@ -497,6 +497,17 @@ test('online party members earn shared rewards while keeping individual combat b
   assert.match(game,/pellets=\(remoteWeapon\.shots\|\|1\)\+clamp\(Math\.round\(build\.bonusProjectiles\|\|0\),0,5\)/);
   assert.match(game,/expedition:roadValue/);
   assert.match(game,/if\(!coop\.connected\|\|!coopIsHost\(\)\)gainXp/);
+});
+
+test('co-op defeat uses synchronized ally revives and a full-party wipe',()=>{
+  for(const fn of ['partyCombatants','downLocalPlayer','reviveLocalPlayer','nearestDownedAlly','updatePartyRevive'])assert.match(game,new RegExp(`function ${fn}\\(`));
+  assert.match(game,/HOLD \$\{keyLabel\(bound\('interact'\)\)\} TO REVIVE/);
+  assert.match(game,/sendCoop\('revive'/);
+  assert.match(game,/packet\.type==='revive'/);
+  assert.match(game,/party\.every\(\(member\)=>member\.downed\|\|member\.health<=0\)/);
+  assert.match(game,/payload\.kind==='partyWipe'/);
+  assert.match(game,/member\.downed\|\|member\.health<=0/);
+  assert.match(game,/debugSystem==='coopRevive'/);
 });
 
 test('specialist enemies use dedicated animation and attack assets',()=>{

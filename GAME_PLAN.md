@@ -131,6 +131,7 @@ Next ability work:
 - Online party combat now transmits authored weapon timing, ability anticipation/release, live aim, movement cadence, and the resulting shared projectiles/status effects. Remote allies use their own directional fire and state atlases instead of appearing as non-combat moving avatars.
 - Host-authoritative enemy targeting now treats every living party member as a valid combatant. Standard attacks, specialist blinks/bombs, projectiles, guardian sweeps, slams, crossfires, and signatures select and damage remote allies through the same invulnerability and status contract; guests reject duplicate local damage prediction.
 - Shared online progression now awards each ally host-issued kill gold, XP, and elite road resources while retaining individual level-up drafts. Guest shots transmit a bounded build signature so damage, extra projectiles, critical chance, pierce, and ricochet choices remain mechanically real under host authority.
+- Co-op defeat is party-based: a fallen BrawlPaw becomes untargetable and can be revived in-world by an ally holding interact nearby. Revive progress is visible above the body, health restoration is synchronized, and the expedition only ends when the entire connected party is down.
 
 **Exit gate:** abilities are mechanically distinct, readable at game scale, aim correctly in eight directions, and display clear cooldown states.
 
