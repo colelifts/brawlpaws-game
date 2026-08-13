@@ -219,7 +219,7 @@ test('World I exploration earns permanent cartographer milestones and realm seal
 });
 
 test('route cards travel to real neighboring regions and preserve the destination through detours',()=>{
-  assert.match(game,/function routeDestinations\(/);assert.match(game,/expeditionNeighbors\(room\.id\)/);assert.match(game,/destination:neighbors\[index\]/);
+  assert.match(game,/function routeDestinations\(/);assert.match(game,/expeditionNeighbors\(room\.id\)/);assert.match(game,/neighbors\.map\(\(destination,index\)=>\(\{\.\.\.baseChoices\[index\],destination\}\)\)/);
   assert.doesNotMatch(game,/new Set\(\[\.\.\.direct,\.\.\.available\]\)/);
   for(const copy of ['UNCHARTED','route-destination','route-threat','resumeRegion:pendingRouteDestination','kind:\'routeChoice\''])assert.match(game,new RegExp(copy));
   assert.match(game,/activateRoom\(pendingRouteDestination/);assert.match(game,/checkpoint\.kind===\'routeChoice\'/);assert.match(game,/ROOMS\[checkpoint\.destination\]/);
@@ -251,9 +251,20 @@ test('each chapter has checkpoint-safe mid-run story continuity',()=>{
   for(const chapterId of ['jadeChapter','bambooChapter','crimsonChapter'])assert.match(game,new RegExp(`${chapterId}:\\{accent:[\\s\\S]{0,4000}interlude2:[\\s\\S]{0,4000}interlude4:`));
   assert.match(game,/encounter\.wave===1\)showStory\('interlude2'\)/);
   assert.match(game,/encounter\.wave===3\)showStory\('interlude4'\)/);
-  assert.match(game,/interlude2'\)openRoute\(2\)/);
-  assert.match(game,/interlude4'\)openRoute\(4\)/);
+  assert.match(game,/interlude2'\)preparePhysicalRoute\(2\)/);
+  assert.match(game,/interlude4'\)preparePhysicalRoute\(4\)/);
   for(const id of ['story-progress','story-objective'])assert.match(html,new RegExp(`id="${id}"`));
+});
+
+test('cleared encounters branch through physical in-world spirit roads',()=>{
+  for(const helper of ['buildRouteChoices','routeGateLayout','preparePhysicalRoute','updatePhysicalRoute','drawPhysicalRouteGates','commitRouteChoice'])assert.match(game,new RegExp(`function ${helper}\\(`));
+  assert.match(game,/encounter\.awaitingRouteChoice=true/);
+  assert.match(game,/drawPhysicalRouteGates\(\)/);
+  assert.match(game,/if\(choice\.extract\)extractExpedition\(\{fromWorld:true\}\)/);
+  assert.match(game,/FOLLOW THE HOST TO THE NEXT ROAD/);
+  assert.match(game,/kind:'route',nextWave/);
+  assert.match(game,/return neighbors\.map/);
+  assert.match(game,/if\(ordered\.length\)return ordered\.slice\(0,count\)/);
 });
 
 test('the Mission Board tracks and rewards persistent campaign contracts',()=>{

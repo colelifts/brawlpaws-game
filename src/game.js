@@ -573,7 +573,7 @@ function applyRemoteAction(playerId,heroId,payload={}){
   burst(member.x+direction.x*44,member.y+direction.y*44,remoteWeapon.impactColor,10,220,3);
 }
 function coopSignal(payload){if(coopIsHost())sendCoop('signal',{payload});}
-function applyCoopSignal(payload){if(!payload)return;coop.applyingSignal=true;if(payload.kind==='wave'){setChapter(payload.chapter);startWave(payload.wave,{nodeType:payload.nodeType||'combat'});}else if(payload.kind==='boss'){setChapter(payload.chapter);spawnBoss();}coop.applyingSignal=false;}
+function applyCoopSignal(payload){if(!payload)return;coop.applyingSignal=true;if(payload.kind==='wave'){setChapter(payload.chapter);startWave(payload.wave,{...(payload.modifiers||{}),nodeType:payload.nodeType||'combat',resumeRegion:payload.room});}else if(payload.kind==='boss'){setChapter(payload.chapter);spawnBoss();}coop.applyingSignal=false;}
 function applyCoopSnapshot(payload){
   if(!payload||payload.room!==room.id)return;for(const saved of payload.enemies||[]){let enemy=enemies.find((candidate)=>candidate.id===saved.id);if(!enemy){enemy=makeEnemy({type:saved.type,x:saved.x,y:saved.y,delay:0,healthScale:1,speedScale:1,damageScale:1},enemies.length);enemy.id=saved.id;enemies.push(enemy);}Object.assign(enemy,saved);enemy.def=ENEMIES[enemy.type];}
   const ids=new Set((payload.enemies||[]).map((enemy)=>enemy.id));for(const enemy of enemies)if(!ids.has(enemy.id))enemy.dead=true;
@@ -625,7 +625,7 @@ function checkpointLabel(snapshot){
   if(point.kind==='boss')return `CHAPTER ${snapshot.chapterIndex+1}  GUARDIAN`;
   if(point.kind==='endlessDecision')return `ENDLESS ROAD ${snapshot.endlessRoad?.stage||1}  BANK OR CONTINUE`;
   if(point.kind==='guardianReward')return `CHAPTER ${snapshot.chapterIndex+1}  GUARDIAN REWARD`;
-  if(point.kind==='route')return `CHAPTER ${snapshot.chapterIndex+1}  CHOOSE WAVE ${point.nextWave+1}`;
+  if(point.kind==='route')return `CHAPTER ${snapshot.chapterIndex+1}  SPIRIT ROAD JUNCTION`;
   if(point.kind==='routeChoice')return `${ROOMS[point.destination]?.name.toUpperCase()||'CHOSEN REGION'}  ${point.nodeId==='shop'?'MARKET':'EVENT'}`;
   if(point.kind==='wave')return `CHAPTER ${snapshot.chapterIndex+1}  WAVE ${point.wave+1}`;
   return `CHAPTER ${snapshot.chapterIndex+1}  ${savedChapter.name.toUpperCase()}`;
@@ -672,7 +672,7 @@ function resumeSavedRun(){
   if(point.kind==='boss'){if(point.endlessStage)spawnBoss({restoring:true,endlessStage:point.endlessStage});else spawnBoss({restoring:true});}
   else if(point.kind==='endlessDecision')openEndlessRoadDecision({resume:true});
   else if(point.kind==='guardianReward')openGuardianReward(point.guardianId);
-  else if(point.kind==='route'){if(point.region&&ROOMS[point.region])activateRoom(point.region,{reposition:true});openRoute(point.nextWave);}
+  else if(point.kind==='route'){if(point.region&&ROOMS[point.region])activateRoom(point.region,{reposition:true});preparePhysicalRoute(point.nextWave,{restoring:true});}
   else if(point.kind==='routeChoice'){pendingRouteWave=point.nextWave;pendingRouteDestination=point.destination;if(point.region&&ROOMS[point.region])activateRoom(point.region,{reposition:true});if(point.nodeId==='shop')openShop();else openRouteEvent(point.nodeId);}
   else if(point.kind==='wave')startWave(point.wave,{...(point.modifiers||{}),resumeRegion:point.region});
   else showStory(['intro','interlude2','interlude4','boss','epilogue'].includes(point.beat)?point.beat:'intro');
@@ -1484,7 +1484,7 @@ function showStory(beat) {
 
 function continueStory() {
   storyScreen.classList.remove('active');
-  if(encounter.storyBeat==='epilogue')openEndlessRoadDecision({campaignVictory:true});else if(encounter.storyBeat==='boss')spawnBoss();else if(encounter.storyBeat==='interlude2')openRoute(2);else if(encounter.storyBeat==='interlude4')openRoute(4);else if(chapterIndex===0&&!profile.tutorialComplete){startWave(0);showTutorialLesson(clamp(profile.tutorialStep||0,0,TUTORIAL_LESSONS.length-1));}else startWave(0);
+  if(encounter.storyBeat==='epilogue')openEndlessRoadDecision({campaignVictory:true});else if(encounter.storyBeat==='boss')spawnBoss();else if(encounter.storyBeat==='interlude2')preparePhysicalRoute(2);else if(encounter.storyBeat==='interlude4')preparePhysicalRoute(4);else if(chapterIndex===0&&!profile.tutorialComplete){startWave(0);showTutorialLesson(clamp(profile.tutorialStep||0,0,TUTORIAL_LESSONS.length-1));}else startWave(0);
 }
 
 const TUTORIAL_LESSONS=[
@@ -1539,7 +1539,7 @@ function startWave(index,modifiers={}) {
   const difficulty=activeDifficulty();
   Object.values(effects).forEach((list)=>list.splice(0));const requestedNodeType=modifiers.nodeType||'combat',targetRegion=modifiers.resumeRegion&&ROOMS[modifiers.resumeRegion]?modifiers.resumeRegion:roomForWave(index,requestedNodeType);activateRoom(targetRegion,{reposition:true,announce:true,waveIndex:index,subtitle:wave.name.toUpperCase()});
   if(player.maxSpiritShield>0)applyPlayerStatus('shield',14,player.maxSpiritShield);
-  encounter.wave=index; encounter.waveTime=0;encounter.transitioning=false; encounter.bossActive=false;encounter.endlessStage=Number(modifiers.endlessStage)||0;encounter.nodeType=modifiers.nodeType||'combat';encounter.modifiers={...modifiers};encounter.regionThreat=expeditionThreat(room.id);encounter.biomePressureClock=biomePressureInterval(index)*.72;encounter.biomePressureCount=0;encounter.warpackClock=(CHAPTER_WARPACKS[chapter.id]?.interval||18)*.78;encounter.warpackCount=0;corruptionDirector=createCorruptionDirector(index,modifiers.corruption);const corruption=corruptionTier();encounter.rewardScale=(modifiers.rewardScale||1)*difficulty.rewardScale*corruption.reward;enemies=[];state='playing';roomInteractable=null;spawnRoomDestructibles(index,modifiers.brokenProps||[]);spawnRoomMission(wave.mission,modifiers.missionState);refreshCorruptionHud({surge:corruptionDirector.tier>=2});
+  encounter.wave=index; encounter.waveTime=0;encounter.transitioning=false;encounter.awaitingGate=false;encounter.awaitingRouteChoice=false;encounter.routeGateChoices=[];encounter.routeGateLock=0;encounter.bossActive=false;encounter.endlessStage=Number(modifiers.endlessStage)||0;encounter.nodeType=modifiers.nodeType||'combat';encounter.modifiers={...modifiers};encounter.regionThreat=expeditionThreat(room.id);encounter.biomePressureClock=biomePressureInterval(index)*.72;encounter.biomePressureCount=0;encounter.warpackClock=(CHAPTER_WARPACKS[chapter.id]?.interval||18)*.78;encounter.warpackCount=0;corruptionDirector=createCorruptionDirector(index,modifiers.corruption);const corruption=corruptionTier();encounter.rewardScale=(modifiers.rewardScale||1)*difficulty.rewardScale*corruption.reward;enemies=[];state='playing';roomInteractable=null;spawnRoomDestructibles(index,modifiers.brokenProps||[]);spawnRoomMission(wave.mission,modifiers.missionState);refreshCorruptionHud({surge:corruptionDirector.tier>=2});
   if(PHYSICAL_ROUTE_NODES.has(encounter.nodeType)){spawnRoomInteractable(encounter.nodeType);if(modifiers.interactableUsed)roomInteractable.used=true;}
   ui.waveLabel.textContent=encounter.endlessStage?`ENDLESS ROAD ${encounter.endlessStage}  ${chapter.name.toUpperCase()}`:`CHAPTER ${chapterIndex+1}  WAVE ${index+1} / ${chapter.waves.length}`;
   const eliteNode=encounter.nodeType==='elite'||encounter.nodeType?.includes('Elite');ui.roomState.textContent=eliteNode?`MUTATED  ${wave.name.toUpperCase()}`:wave.name.toUpperCase();ui.roomState.style.color=eliteNode?'#f13b8c':index>=2?'#ff7448':'#ff38b5';
@@ -1555,7 +1555,7 @@ function startWave(index,modifiers={}) {
   spawnWord(player.x,player.y-110,`WAVE ${index+1}!`,index>=2?'#ff6a43':'#56edff');
   if(roomMission?.type!=='eliminate')setTimeout(()=>{if(state==='playing'&&roomMission)spawnWord(player.x,player.y-145,roomMission.title,roomMission.color);},420);
   effects.rings.push({x:player.x,y:player.y,radius:18,maxRadius:170,color:index>=2?'#ff5d42':'#45eaff',life:.7,maxLife:.7});
-  encounter.modifiers.missionState=serializeMissionState();encounter.modifiers.corruption=serializeCorruptionDirector();saveRunCheckpoint({kind:'wave',wave:index,modifiers:encounter.modifiers});if(!coop.applyingSignal)coopSignal({kind:'wave',chapter:chapterIndex,wave:index,nodeType:encounter.nodeType});
+  encounter.modifiers.missionState=serializeMissionState();encounter.modifiers.corruption=serializeCorruptionDirector();saveRunCheckpoint({kind:'wave',wave:index,modifiers:encounter.modifiers});if(!coop.applyingSignal)coopSignal({kind:'wave',chapter:chapterIndex,wave:index,nodeType:encounter.nodeType,room:room.id,modifiers:encounter.modifiers});
 }
 
 function biomePressureInterval(waveIndex=encounter?.wave||0){const pressure=chapter.pressure;if(!pressure)return 999;return Math.max(pressure.minInterval,pressure.baseInterval-waveIndex*.82-(selectedDifficulty==='nightmare'?.65:selectedDifficulty==='ascension'?1.05:0));}
@@ -1626,14 +1626,17 @@ function beginWaveTransition() {
   if(encounter.transitioning)return;
   recordContractProgress('sealRunner');
   if(!(player.clearedRegions instanceof Set))player.clearedRegions=new Set(player.clearedRegions||[]);player.clearedRegions.add(room.id);
-  encounter.transitioning=true;encounter.awaitingGate=room.mapRuntime==='phaser-tiled'&&Boolean(layeredMapRuntime.forwardGate());encounter.transitionTime=encounter.awaitingGate?0:2.4;
-  ui.roomState.textContent='SEAL BROKEN';ui.roomState.style.color='#65ef4f';ui.objective.textContent=encounter.awaitingGate?'THE NORTH GATE IS OPEN  ·  CONTINUE FORWARD':'THE CURSE GROWS STRONGER';
+  const nextWave=encounter.wave+1,storyGate=encounter.wave===1||encounter.wave===3||nextWave>=chapter.waves.length;
+  encounter.transitioning=true;encounter.awaitingGate=storyGate&&room.mapRuntime==='phaser-tiled'&&Boolean(layeredMapRuntime.forwardGate());encounter.transitionTime=encounter.awaitingGate?0:storyGate?2.4:0;
+  ui.roomState.textContent='SEAL BROKEN';ui.roomState.style.color='#65ef4f';ui.objective.textContent=encounter.awaitingGate?'THE NORTH GATE IS OPEN  ·  CONTINUE FORWARD':storyGate?'THE CURSE GROWS STRONGER':'CHOOSE A SPIRIT ROAD IN THE WORLD';
   player.health=Math.min(player.maxHealth,player.health+12);
-  spawnWord(player.x,player.y-110,encounter.awaitingGate?'GATE OPEN!':'WAVE CLEAR!','#65ef80');
+  spawnWord(player.x,player.y-110,encounter.awaitingGate?'GATE OPEN!':storyGate?'WAVE CLEAR!':'THREE ROADS OPEN!','#65ef80');
+  if(!storyGate)preparePhysicalRoute(nextWave);
 }
 
 function updateEncounter(dt) {
   if (!encounter.transitioning) return;
+  if(encounter.awaitingRouteChoice){updatePhysicalRoute(dt);return;}
   if(encounter.awaitingGate){
     const exit=layeredMapRuntime.exitAt(player);if(!exit)return;encounter.awaitingGate=false;encounter.transitionTime=.45;player.vx=0;player.vy=0;player.invulnerable=Math.max(player.invulnerable,.9);spawnWord(player.x,player.y-100,'PATH FOUND!','#45efff');
   }
@@ -1643,12 +1646,43 @@ function updateEncounter(dt) {
   if(encounter.endlessStage){completeEndlessStage();return;}
   if(encounter.wave===1)showStory('interlude2');
   else if(encounter.wave===3)showStory('interlude4');
-  else if(encounter.wave+1<chapter.waves.length) openRoute(encounter.wave+1);
+  else if(encounter.wave+1<chapter.waves.length) preparePhysicalRoute(encounter.wave+1);
   else showStory('boss');
 }
 
+function buildRouteChoices(nextWave){
+  const baseChoices=ROUTE_SETS[(nextWave-1)%ROUTE_SETS.length],neighbors=routeDestinations(nextWave,baseChoices.length);
+  return neighbors.map((destination,index)=>({...baseChoices[index],destination}));
+}
+
+function routeGateLayout(count=3){
+  const gate=room.mapRuntime==='phaser-tiled'?layeredMapRuntime.forwardGate():null,b=room.combatBounds;
+  const centerX=gate?gate.x+gate.width/2:b.x,centerY=gate?gate.y+gate.height+235:b.y-b.radiusY*.58;
+  const spacing=Math.min(360,Math.max(285,(gate?.width||620)*.58));
+  if(count<=1)return [{x:centerX+spacing,y:centerY+25}];
+  if(count===2)return [{x:centerX-spacing,y:centerY+20},{x:centerX+spacing,y:centerY+20}];
+  return [{x:centerX-spacing,y:centerY+45},{x:centerX,y:centerY-35},{x:centerX+spacing,y:centerY+45}];
+}
+
+function preparePhysicalRoute(nextWave,{restoring=false}={}){
+  pendingRouteWave=nextWave;pendingRouteDestination=null;currentRouteChoices=buildRouteChoices(nextWave);state='playing';routeScreen.classList.remove('active');
+  const positions=routeGateLayout(currentRouteChoices.length);encounter.transitioning=true;encounter.awaitingGate=false;encounter.awaitingRouteChoice=true;encounter.transitionTime=0;encounter.routeGateLock=restoring?.35:.75;
+  encounter.routeGateChoices=currentRouteChoices.map((node,index)=>({...node,...positions[index],radius:68,index,threat:expeditionThreat(node.destination),loot:expeditionLoot(node.destination,index+nextWave*11)}));
+  const canExtract=(player.clearedRegions?.size||0)>=3;if(canExtract){const forward=layeredMapRuntime.forwardGate(),centerX=forward?forward.x+forward.width/2:room.combatBounds.x,centerY=forward?forward.y+forward.height+560:room.combatBounds.y-room.combatBounds.radiusY*.35;encounter.routeGateChoices.push({id:'extract',name:'Extraction Lantern',tag:'BANK ALL ROAD SHARDS',color:'#6cff91',x:centerX,y:centerY,radius:62,index:3,extract:true});}
+  ui.roomState.textContent='SPIRIT ROADS OPEN';ui.roomState.style.color='#45efff';ui.objective.textContent=coop.connected&&!coopIsHost()?'FOLLOW THE HOST TO THE NEXT ROAD':'WALK INTO A SPIRIT ROAD  ·  M OPENS WORLD MAP';
+  if(!restoring){spawnWord(player.x,player.y-105,'CHOOSE YOUR ROAD','#45efff');playSfx('upgrade',.18,.94);}saveRunCheckpoint({kind:'route',nextWave});
+}
+
+function updatePhysicalRoute(dt){
+  encounter.routeGateLock=Math.max(0,(encounter.routeGateLock||0)-dt);if(encounter.routeGateLock>0)return;
+  const choices=encounter.routeGateChoices||[];let nearest=null,nearestDistance=Infinity;
+  for(const choice of choices){const d=distance(player,choice);if(d<nearestDistance){nearest=choice;nearestDistance=d;}if(d<=choice.radius+player.radius*.72){if(coop.connected&&!coopIsHost()){spawnWord(player.x,player.y-78,'HOST CHOOSES THE ROAD','#9cf4ff');encounter.routeGateLock=1;return;}encounter.awaitingRouteChoice=false;encounter.routeGateChoices=[];player.vx=0;player.vy=0;if(choice.extract)extractExpedition({fromWorld:true});else commitRouteChoice(choice);return;}}
+  if(nearest&&nearestDistance<340)ui.objective.textContent=nearest.extract?`ENTER TO EXTRACT  ·  BANK ${player.expeditionShards||0} SHARDS`:`${nearest.name.toUpperCase()}  ·  ${ROOMS[nearest.destination]?.name.toUpperCase()||'SPIRIT ROAD'}`;
+  else ui.objective.textContent=coop.connected&&!coopIsHost()?'FOLLOW THE HOST TO THE NEXT ROAD':'WALK INTO A SPIRIT ROAD  ·  M OPENS WORLD MAP';
+}
+
 function openRoute(nextWave){
-  pendingRouteWave=nextWave;pendingRouteDestination=null;state='route';routeScreen.classList.add('active');const baseChoices=ROUTE_SETS[(nextWave-1)%ROUTE_SETS.length],neighbors=routeDestinations(nextWave,baseChoices.length);currentRouteChoices=baseChoices.map((choice,index)=>({...choice,destination:neighbors[index]}));
+  pendingRouteWave=nextWave;pendingRouteDestination=null;state='route';routeScreen.classList.add('active');currentRouteChoices=buildRouteChoices(nextWave);
   ui.routeBiome.textContent=`${room.name.toUpperCase()}  BRANCHING ROUTE`;
   ui.routeProgress.innerHTML=[...Array(chapter.waves.length).keys(),'boss'].map((step,index)=>`<span class="route-step ${index<nextWave?'cleared':index===nextWave?'current':''} ${step==='boss'?'boss':''}">${step==='boss'?'BOSS':index+1}</span>`).join('');
   routeGrid.innerHTML=currentRouteChoices.map((node,index)=>{const destination=expeditionNode(node.destination),threat=expeditionThreat(node.destination),loot=expeditionLoot(node.destination,index+nextWave*11),known=player.discoveredRegions.has(node.destination);return `<button class="route-card ${node.id==='elite'?'elite':''}" style="--node:${node.color};--destination:${destination?.color||node.color}" data-route-index="${index}"><span class="choice-art node-icon" data-choice-art="${routeArtFrame(node.id)}" aria-hidden="true"></span><small class="route-destination">${known?'CHARTED':'UNCHARTED'} · ${ROOMS[node.destination]?.name.toUpperCase()||'SPIRIT ROAD'}</small><strong>${node.name}</strong><em>${node.tag}</em><span class="route-copy">${node.description}</span><b class="route-threat" style="color:${threat.color}">${threat.name} · ${loot.name} LOOT</b></button>`;}).join('');
@@ -1659,7 +1693,8 @@ function openRoute(nextWave){
 function routeDestinations(nextWave,count=3){
   const direct=expeditionNeighbors(room.id).filter((roomId)=>expeditionNode(roomId)?.chapterIndex===chapterIndex&&!player.clearedRegions.has(roomId));
   const ordered=[...new Set(direct)].sort((a,b)=>{const aNode=expeditionNode(a),bNode=expeditionNode(b),aForward=aNode.order>=nextWave?0:1,bForward=bNode.order>=nextWave?0:1;return aForward-bForward||Math.abs(aNode.order-nextWave)-Math.abs(bNode.order-nextWave)||aNode.order-bNode.order;});
-  const chapterWorld=EXPEDITION_WORLD.chapters[chapterIndex],fallback=ordered[0]||chapterWorld.rooms[Math.min(nextWave,chapterWorld.rooms.length-1)];while(ordered.length<count)ordered.push(fallback);return ordered.slice(0,count);
+  if(ordered.length)return ordered.slice(0,count);
+  const chapterWorld=EXPEDITION_WORLD.chapters[chapterIndex],fallback=[...chapterWorld.rooms,...chapterWorld.branches].filter((roomId)=>roomId!==room.id&&!player.clearedRegions.has(roomId)).sort((a,b)=>Math.abs(expeditionNode(a).order-nextWave)-Math.abs(expeditionNode(b).order-nextWave));return fallback.slice(0,1);
 }
 
 function routeArtFrame(id){return ({combat:8,event:14,elite:9,shop:11,treasure:12,secret:14,shrine:13,heal:10}[id]??8);}
@@ -1670,12 +1705,17 @@ function refreshRouteSummary(){
   const seals=player.clearedRegions?.size||0,canExtract=seals>=3;ui.routeHealth.textContent=`HP ${Math.ceil(player.health)} / ${player.maxHealth}`;ui.routeGold.textContent=`GOLD ${player.gold}`;ui.routeRelics.textContent=`${player.expeditionShards||0} ROAD SHARDS AT RISK`;ui.routeExtract.disabled=!canExtract;ui.routeExtract.textContent=canExtract?'EXTRACT TO VILLAGE · BANK ALL':`EXTRACTION LOCKED · ${3-seals} REGION${3-seals===1?'':'S'} LEFT`;
 }
 
-function extractExpedition(){
-  if(state!=='route'||(player.clearedRegions?.size||0)<3)return;routeScreen.classList.remove('active');const extracted=Math.max(0,Math.round(player.expeditionShards||0));profile.spiritShards+=extracted;profile.expeditionsExtracted=(profile.expeditionsExtracted||0)+1;profile.highestLevel=Math.max(profile.highestLevel,player.level);const mastery=bankMasteryProgress();saveProfile();refreshProfileUi();runActive=false;clearRunCheckpoint();player.expeditionShards=0;state='won';ui.resultKicker.textContent='EXTRACTION LANTERN ANSWERED';ui.resultTitle.textContent='EXPEDITION EXTRACTED!';ui.resultCopy.textContent=`You returned from ${ROOMS[room.id]?.name||'the Spirit Road'} with every carried shard. ${profile.worldDiscoveries.length} of ${EXPEDITION_WORLD.nodes.length} landmarks are permanently charted.`;ui.resultTime.textContent=formatTime(runTime);ui.resultCombo.textContent=String(player.maxCombo);ui.resultThirdLabel.textContent='MASTERY';ui.resultDashes.textContent=`+${mastery.xp} XP`;ui.resultReward.textContent=`+${extracted} SPIRIT SHARDS  ${profile.spiritShards} TOTAL`;resultScreen.classList.add('active');playSfx('upgrade',.48,.82);
+function extractExpedition({fromWorld=false}={}){
+  if((state!=='route'&&!fromWorld)||(player.clearedRegions?.size||0)<3)return;routeScreen.classList.remove('active');encounter.awaitingRouteChoice=false;encounter.routeGateChoices=[];const extracted=Math.max(0,Math.round(player.expeditionShards||0));profile.spiritShards+=extracted;profile.expeditionsExtracted=(profile.expeditionsExtracted||0)+1;profile.highestLevel=Math.max(profile.highestLevel,player.level);const mastery=bankMasteryProgress();saveProfile();refreshProfileUi();runActive=false;clearRunCheckpoint();player.expeditionShards=0;state='won';ui.resultKicker.textContent='EXTRACTION LANTERN ANSWERED';ui.resultTitle.textContent='EXPEDITION EXTRACTED!';ui.resultCopy.textContent=`You returned from ${ROOMS[room.id]?.name||'the Spirit Road'} with every carried shard. ${profile.worldDiscoveries.length} of ${EXPEDITION_WORLD.nodes.length} landmarks are permanently charted.`;ui.resultTime.textContent=formatTime(runTime);ui.resultCombo.textContent=String(player.maxCombo);ui.resultThirdLabel.textContent='MASTERY';ui.resultDashes.textContent=`+${mastery.xp} XP`;ui.resultReward.textContent=`+${extracted} SPIRIT SHARDS  ${profile.spiritShards} TOTAL`;resultScreen.classList.add('active');playSfx('upgrade',.48,.82);
 }
 
 function selectRoute(index){
   if(state!=='route')return;const node=currentRouteChoices[index];if(!node)return;pendingRouteDestination=node.destination;routeScreen.classList.remove('active');
+  commitRouteChoice(node);
+}
+
+function commitRouteChoice(node){
+  if(!node)return;pendingRouteDestination=node.destination;encounter.awaitingRouteChoice=false;encounter.routeGateChoices=[];encounter.transitioning=false;
   if(node.id==='elite')startWave(pendingRouteWave,{nodeType:'elite',resumeRegion:pendingRouteDestination,healthScale:1.28,speedScale:1.18,damageScale:1.22,rewardScale:2});
   else if(PHYSICAL_ROUTE_NODES.has(node.id))startWave(pendingRouteWave,{nodeType:node.id,resumeRegion:pendingRouteDestination,rewardScale:1.08});
   else if(node.id==='shop'){saveRunCheckpoint({kind:'routeChoice',nextWave:pendingRouteWave,nodeId:node.id,destination:pendingRouteDestination});openShop();}
@@ -2114,6 +2154,9 @@ function begin() {
   if(debugSystem==='mapGate'){
     player.maxHealth=900;player.health=900;startWave(0);setTimeout(()=>{for(const enemy of enemies)enemy.dead=true;beginWaveTransition();const gate=layeredMapRuntime.forwardGate();if(gate){gate.sealed=false;player.x=gate.x+gate.width/2;player.y=gate.y+gate.height/2;camera.x=player.x;camera.y=player.y;}},300);
     return;
+  }
+  if(debugSystem==='physicalRoute'){
+    player.maxHealth=900;player.health=900;player.clearedRegions=new Set(['jadeCourtyard']);activateRoom('jadeMoonbridge',{reposition:true});encounter.wave=1;preparePhysicalRoute(2);if(debugParams.has('autowalk'))setTimeout(()=>{const choice=encounter.routeGateChoices?.[0];if(choice){player.x=choice.x;player.y=choice.y;camera.x=player.x;camera.y=player.y;}},650);return;
   }
   if(debugSystem==='bambooRoute'){setChapter(1);player.maxHealth=1600;player.health=1600;startWave(2,{nodeType:['elite','shrine','event'].includes(debugParams.get('node'))?debugParams.get('node'):'elite'});return;}
   if(debugSystem==='crimsonRoute'){setChapter(2);player.maxHealth=2400;player.health=2400;startWave(3,{nodeType:['elite','shrine','event'].includes(debugParams.get('node'))?debugParams.get('node'):'elite'});return;}
@@ -3352,6 +3395,15 @@ function drawArenaBackdrop(screen){
   ctx.drawImage(assets.arena,x/room.width*assets.arena.naturalWidth,y/room.height*assets.arena.naturalHeight,width/room.width*assets.arena.naturalWidth,height/room.height*assets.arena.naturalHeight,x,y,width,height);
 }
 
+function drawPhysicalRouteGates(){
+  if(!encounter?.awaitingRouteChoice||!encounter.routeGateChoices?.length)return;const time=performance.now()/1000;
+  ctx.save();for(const gate of encounter.routeGateChoices){const near=distance(player,gate)<340,pulse=.5+Math.sin(time*3.2+gate.index)*.5,color=gate.color||'#45efff',radius=gate.radius||66;
+    ctx.save();ctx.translate(gate.x,gate.y);ctx.scale(1,.58);const glow=ctx.createRadialGradient(0,0,8,0,0,radius*1.45);glow.addColorStop(0,`${color}55`);glow.addColorStop(.58,`${color}1f`);glow.addColorStop(1,`${color}00`);ctx.fillStyle=glow;ctx.beginPath();ctx.arc(0,0,radius*1.45,0,Math.PI*2);ctx.fill();ctx.strokeStyle=`${color}${near?'ee':'a8'}`;ctx.lineWidth=near?7:4;ctx.setLineDash([18,10]);ctx.lineDashOffset=-time*42;ctx.beginPath();ctx.arc(0,0,radius+8+pulse*4,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.strokeStyle=`${color}72`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,radius*.68-pulse*3,0,Math.PI*2);ctx.stroke();ctx.restore();
+    ctx.save();ctx.translate(gate.x,gate.y-16);ctx.shadowColor=color;ctx.shadowBlur=near?22:12;ctx.fillStyle=color;ctx.font='900 20px Bangers, Impact, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(gate.extract?'⇧':gate.icon||'◆',0,0);ctx.restore();
+    const labelY=gate.y+(gate.index===1?112:126);ctx.save();ctx.translate(gate.x,labelY);ctx.textAlign='center';ctx.shadowColor='#000';ctx.shadowBlur=8;ctx.fillStyle='rgba(5,6,15,.88)';ctx.strokeStyle=`${color}${near?'dd':'78'}`;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(-112,-32,224,64,10);ctx.fill();ctx.stroke();ctx.shadowBlur=0;ctx.fillStyle=near?'#fff':'#e9e6f0';ctx.font='900 15px Bangers, Impact, sans-serif';ctx.fillText(gate.name.toUpperCase(),0,-8);ctx.fillStyle=color;ctx.font='800 9px Inter, sans-serif';const destination=gate.extract?`BANK ${player.expeditionShards||0} SHARDS`:(ROOMS[gate.destination]?.name||'Spirit Road').toUpperCase();ctx.fillText(destination,0,13);ctx.restore();
+  }ctx.restore();
+}
+
 function draw(screen) {
   ctx.setTransform(screen.dpr, 0, 0, screen.dpr, 0, 0);
   ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -3395,6 +3447,7 @@ function draw(screen) {
   if(room.id==='jadeCourtyard')for (const prop of props.filter((item) => item.foreground)) drawProp(prop, .94);
   if(room.mapRuntime==='phaser-tiled')for(const object of layeredMapRuntime.worldObjects('Foreground / Occlusion'))drawTiledMapObject(object,.94);
   drawForegroundHaze();
+  drawPhysicalRouteGates();
   drawEffects(true);
   if(player?.ultimateFlash>0&&profile.settings.flashIntensity>0){ctx.setTransform(screen.dpr,0,0,screen.dpr,0,0);const a=clamp(player.ultimateFlash/.16,0,1)*profile.settings.flashIntensity;const flash=ctx.createRadialGradient(screen.width/2,screen.height/2,20,screen.width/2,screen.height/2,screen.width*.7);flash.addColorStop(0,`rgba(255,214,126,${a*.42})`);flash.addColorStop(.45,`rgba(201,53,255,${a*.26})`);flash.addColorStop(1,'rgba(82,10,122,0)');ctx.fillStyle=flash;ctx.fillRect(0,0,screen.width,screen.height);}
   drawMinimap();
@@ -3453,6 +3506,7 @@ function drawMinimap(){
   }else{
     const activeEnemies=enemies.filter((enemy)=>enemy.state!=='waiting'&&!enemy.dead&&enemy.deathTime<=0);
     for(const enemy of activeEnemies){const boss=enemy.def.behavior==='boss';drawMinimapMarker(map,enemy,boss?'#ffcf3d':enemy.eliteDef?.color||'#ff466d',boss?7:enemy.eliteDef?4.2:2.6,boss?'diamond':'dot');}
+    for(const gate of encounter.routeGateChoices||[])drawMinimapMarker(map,gate,gate.color||'#45efff',gate.extract?5.5:4.5,'diamond');
     for(const actor of roomMission?.actors||[])if(!actor.broken&&!actor.released)drawMinimapMarker(map,actor,roomMission.color||'#55efff',4.2,'diamond');
     if(roomMission?.ward&&!roomMission.complete)drawMinimapMarker(map,roomMission.ward,roomMission.color||'#55efff',5.2,'diamond');
     if(roomInteractable&&!roomInteractable.used)drawMinimapMarker(map,roomInteractable,roomInteractable.color||'#ffd142',5,'diamond');
