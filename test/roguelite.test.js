@@ -642,6 +642,17 @@ test('hero mastery and the post-Tsukiko endless road persist without overpowerin
   assert.match(game,/masteryXpEarned/);
 });
 
+test('the village portal gates a finite twelve-region World II expedition',()=>{
+  for(const fn of ['renderExpeditionWorldSelect','startWorldTwo','worldTwoPressure','completeWorldTwo'])assert.match(game,new RegExp(`function ${fn}\\(`));
+  assert.match(game,/const WORLD_TWO_LENGTH=12/);
+  assert.match(game,/profile\.worldsCompleted\.includes\(EXPEDITION_WORLD\.id\)/);
+  assert.match(game,/profile\.worldsCompleted\.push\(WORLD_TWO_ID\)/);
+  assert.match(game,/endlessRoad\.worldTwo&&endlessRoad\.stage>=WORLD_TWO_LENGTH/);
+  assert.match(game,/REGION \$\{next\} \/ \$\{WORLD_TWO_LENGTH\}/);
+  assert.match(game,/WORLD II CONQUERED!/);
+  assert.match(game,/prompt:'CHOOSE EXPEDITION'/);
+});
+
 test('post-rank-50 mastery becomes visible prestige instead of more permanent power',()=>{
   assert.match(game,/Math\.min\(MASTERY_POWER_CAP,rank\)/);assert.match(game,/function drawMasteryCrest\(/);assert.match(game,/function masteryCrestCards\(/);assert.match(game,/data-mastery-crest/);
 });

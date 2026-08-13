@@ -12,6 +12,8 @@ Treasure and relic events open a three-card Relic Draft with authored art, exact
 
 The campaign now has one persistent 60-region Spirit Road topology spanning all six realms. Press `M` during exploration to open its expedition map; discovered and cleared regions persist in run checkpoints, and connected co-op players report their global world positions. Mouse aim owns body facing independently from movement, so strafing or retreating never flips a firing pose away from its target.
 
+Defeating Tsukiko permanently unlocks **World II: Hollow Moon Ascension** at the physical village portal. It is a separate finite twelve-region expedition that resets run power, raises pressure and rewards each region, places guardian gates at regions 6 and 12, preserves the extract-or-risk decision between fights, and records its clear independently from World I. The original uncapped Endless Road remains available after a World I victory for players who want to keep the exact winning build.
+
 ## Run it
 
 ```powershell
