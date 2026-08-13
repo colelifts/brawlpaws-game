@@ -334,9 +334,13 @@ test('branching exits grow authored traversal roads through the live terrain',()
   assert.match(game,/filter:'hue-rotate\(118deg\)/);
   assert.match(game,/spiritRoads:\s*'assets\/environment\/spirit-roads-v1\.png'/);
   assert.match(game,/drawImage\(assets\.spiritRoads/);
-  assert.match(game,/function beginRouteTravel\(choice\)/);
+  assert.match(game,/function beginRouteTravel\(choice,\{remote=false\}=\{\}\)/);
   assert.match(game,/function updateRouteTravel\(dt\)/);
   assert.match(game,/travel\.elapsed\/travel\.duration/);
+  assert.match(game,/kind:'routeTravel',room:room\.id,nextWave:pendingRouteWave/);
+  assert.match(game,/beginRouteTravel\(payload\.choice,\{remote:true\}\)/);
+  assert.match(game,/if\(travel\.remote\)\{ui\.objective\.textContent='HOST IS OPENING THE NEXT REGION';return;\}/);
+  assert.match(game,/encounter\.routeCameraTarget=null;encounter\.routeTravel=null/);
 });
 
 test('Tiled cutscene triggers launch saved one-time world dialogue',()=>{
