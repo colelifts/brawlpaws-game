@@ -18,6 +18,7 @@ test('legacy profiles migrate to the current schema without losing progression',
   assert.equal(profile.settings.sfxVolume,.85);
   assert.deepEqual(profile.realmSeals,[]);
   assert.deepEqual(profile.claimedExpeditionMilestones,[]);
+  assert.equal(profile.keyBindings.attack,'j');
 });
 
 test('profile sanitization rejects invalid ids and clamps untrusted values',()=>{
@@ -30,6 +31,7 @@ test('profile sanitization rejects invalid ids and clamps untrusted values',()=>
   assert.deepEqual(profile.worldDiscoveries,['jadeCourtyard']);
   assert.equal(profile.settings.masterVolume,1);
   assert.equal(profile.settings.screenShake,1);
+  assert.equal(profile.keyBindings.dash,'shift');
 });
 
 test('save archives round trip and reject incompatible data',()=>{
@@ -49,4 +51,9 @@ test('settings expose visible export, import, and guarded reset controls',()=>{
   for(const fn of ['exportProfileSave','importProfileText','requestProfileReset'])assert.match(game,new RegExp(`function ${fn}\\(`));
   assert.match(game,/resetSaveConfirmUntil=now\+5000/);
   assert.match(game,/localStorage\.removeItem\(RUN_KEY\)/);
+});
+
+test('settings expose persistent remapping and controller input contracts',()=>{
+  for(const id of ['binding-grid','binding-status','reset-bindings'])assert.match(html,new RegExp(`id="${id}"`));
+  assert.match(game,/function pollGamepad\(/);assert.match(game,/function renderBindingControls\(/);assert.match(game,/input\.gamepad\.aim\.magnitude/);assert.match(game,/const actionOwnsFacing = input\.gamepad\.aim\.magnitude/);
 });

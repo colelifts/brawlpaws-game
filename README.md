@@ -48,6 +48,8 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - `R` — restart from a result screen
 - `Esc` — pause active exploration or combat
 - `O` — open persistent accessibility settings
+- Keyboard commands can be rebound from Settings. Bindings persist with the profile and are included in save export/import.
+- Controller: left stick moves, right stick aims independently, `RT` fires, `LT` dashes, `LB` Undertow/interacts, `X` Foxfire, `RB` Wild Heart, `Y` Shock Paws, left-stick click sprints, Menu pauses, and View opens the expedition map. D-pad/stick plus `A`/`B` navigates menus.
 
 ## Save and accessibility
 
@@ -55,6 +57,7 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - **Continue Run** restores the selected hero, difficulty, build, ability unlocks, relics, resources, chapter, and room. Combat restarts from the room boundary so enemy and projectile state is always safe.
 - Screen shake and combat flashes support full, reduced, and off modes. Damage numbers and ambient scenery motion can be toggled independently.
 - Settings persist locally and can be changed from the title or while the game is paused.
+- Profile v4 adds explicit legacy migration, guarded reset, JSON export/import, persistent remapping, and controller preferences without invalidating older saves.
 
 ## Included in this visual correction pass
 

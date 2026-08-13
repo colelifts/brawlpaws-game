@@ -77,8 +77,9 @@ test('ranged facing is independent from locomotion so strafing cannot flip the s
   assert.match(game,/aimFacing:\s*-Math\.PI\s*\/\s*2/);
   assert.match(game,/moveFacing:\s*-Math\.PI\s*\/\s*2/);
   assert.match(game,/const actionOwnsFacing =/);
-  assert.match(game,/const actionOwnsFacing = input\.pointer\.active/);
-  assert.match(game,/if \(input\.pointer\.active\) updatePointerAim/);
+  assert.match(game,/const actionOwnsFacing = input\.gamepad\.aim\.magnitude/);
+  assert.match(game,/else if \(input\.pointer\.active\) updatePointerAim/);
+  assert.match(game,/setActionFacing\(aim,input\.gamepad\.held\.has\('attack'\)/);
   assert.match(game,/if \(actionOwnsFacing && Number\.isFinite\(player\.aimFacing\)\) player\.facing = player\.aimFacing/);
   assert.match(game,/player\.moveFacing = Math\.atan2\(move\.y, move\.x\)/);
   assert.doesNotMatch(game,/else if \(!player\.attack\) \{\s*player\.facing = approachAngle\(player\.facing, Math\.atan2\(move\.y, move\.x\)/);

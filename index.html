@@ -74,13 +74,13 @@
       <section class="synergy-strip" id="synergy-strip" aria-label="Active build synergies"></section>
 
       <section class="ability-dock">
-        <div class="ability weapon ready"><span class="icon blaster-icon"></span><b id="weapon-name">SPIRIT BLASTER</b><kbd>LMB</kbd></div>
-        <div class="ability tide locked" id="undertow-card" title="Aim a whirlpool into a pack. It drags enemies together, Soaks and slows them, then crushes the center."><span class="icon undertow-icon"></span><b>UNDERTOW WELL</b><kbd>E</kbd><i id="undertow-cooldown"></i><small>LEVEL 2</small></div>
-        <div class="ability flame locked" id="flame-card"><span class="icon flame-icon"></span><b>FOXFIRE VOLLEY</b><kbd>C</kbd><i id="flame-cooldown"></i></div>
-        <div class="ability heart locked" id="heart-card"><span class="icon heart-icon"></span><b>WILD HEART</b><kbd>F</kbd><i id="heart-cooldown"></i></div>
-        <div class="ability ultimate locked" id="ultimate-card"><span class="icon ultimate-icon"></span><b>SHOCK PAWS</b><kbd>Q</kbd><i id="ultimate-cooldown"></i></div>
-        <div class="sprint-card" id="sprint-card"><span>RUN</span><b>PAW SPRINT</b><kbd>SPACE</kbd><i id="sprint-fill"></i></div>
-        <div class="dash-orb ready" id="dash-card"><span>➤</span><b id="dash-name">FOX STEP</b><kbd>SHIFT</kbd><i id="dash-cooldown"></i></div>
+        <div class="ability weapon ready"><span class="icon blaster-icon"></span><b id="weapon-name">SPIRIT BLASTER</b><kbd data-bind-label="attack">LMB / J</kbd></div>
+        <div class="ability tide locked" id="undertow-card" title="Aim a whirlpool into a pack. It drags enemies together, Soaks and slows them, then crushes the center."><span class="icon undertow-icon"></span><b>UNDERTOW WELL</b><kbd data-bind-label="undertow">E</kbd><i id="undertow-cooldown"></i><small>LEVEL 2</small></div>
+        <div class="ability flame locked" id="flame-card"><span class="icon flame-icon"></span><b>FOXFIRE VOLLEY</b><kbd data-bind-label="foxfire">C</kbd><i id="flame-cooldown"></i></div>
+        <div class="ability heart locked" id="heart-card"><span class="icon heart-icon"></span><b>WILD HEART</b><kbd data-bind-label="wildHeart">F</kbd><i id="heart-cooldown"></i></div>
+        <div class="ability ultimate locked" id="ultimate-card"><span class="icon ultimate-icon"></span><b>SHOCK PAWS</b><kbd data-bind-label="ultimate">Q</kbd><i id="ultimate-cooldown"></i></div>
+        <div class="sprint-card" id="sprint-card"><span>RUN</span><b>PAW SPRINT</b><kbd data-bind-label="sprint">SPACE</kbd><i id="sprint-fill"></i></div>
+        <div class="dash-orb ready" id="dash-card"><span>➤</span><b id="dash-name">FOX STEP</b><kbd data-bind-label="dash">SHIFT</kbd><i id="dash-cooldown"></i></div>
       </section>
     </div>
 
@@ -246,6 +246,11 @@
           <article class="setting-row audio-setting-row">
             <div><strong>UI &amp; REWARDS</strong><p>Menu confirmations, upgrades, discoveries, and rewards.</p></div>
             <label class="audio-slider"><input type="range" min="0" max="1" step="0.01" data-audio-setting="uiVolume"><output data-audio-output="uiVolume">70%</output></label>
+          </article>
+          <article class="control-binding-row">
+            <header><div><strong>CONTROLS</strong><p>Click a command, then press a key. Controller uses left stick to move, right stick to aim, RT to fire, and face/shoulder buttons for abilities.</p></div><span id="binding-status" role="status">KEYBOARD + CONTROLLER READY</span></header>
+            <div id="binding-grid" class="binding-grid" aria-label="Keyboard bindings"></div>
+            <button id="reset-bindings" type="button">RESTORE DEFAULT CONTROLS</button>
           </article>
           <article class="save-data-row">
             <header><div><strong>CAMPAIGN SAVE</strong><p id="save-data-summary">PROFILE V3 · STORED ON THIS DEVICE</p></div><span id="save-data-status" role="status">READY</span></header>
@@ -413,6 +418,6 @@
     <div id="loading">AWAKENING THE GROVE…</div>
   </main>
   <script src="vendor/phaser-3.90.0.min.js"></script>
-    <script type="module" src="src/game.js?v=20260813-combat5"></script>
+    <script type="module" src="src/game.js?v=20260813-controls1"></script>
 </body>
 </html>

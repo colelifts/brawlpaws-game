@@ -2,7 +2,8 @@ import { clamp, lerp, normalize, distance, approachAngle, encounterActiveLimit, 
 import { HEROES, WEAPONS, ABILITIES, STATUS_EFFECTS, ELITE_MODIFIERS, BOSS_PATTERNS, BOSS_PROFILES, ENEMIES, ENCOUNTERS, ROOMS, DIFFICULTIES } from './data.js?v=20260813-expedition6';
 import { createLayeredMapRuntime } from './map-runtime.js?v=20260813-expedition6';
 import { EXPEDITION_WORLD, EXPEDITION_MILESTONES, expeditionNode, expeditionNeighbors, expeditionWorldPosition, expeditionProgress, expeditionRealmProgress, expeditionThreat, expeditionLoot } from './expedition-world.js?v=20260813-world3';
-import { PROFILE_VERSION, DEFAULT_SETTINGS, DEFAULT_CONTRACT_PROGRESS, createDefaultProfile, defaultHeroMastery, sanitizeProfile, createSaveArchive, parseSaveArchive } from './profile.js?v=20260813-save3';
+import { PROFILE_VERSION, DEFAULT_SETTINGS, DEFAULT_CONTRACT_PROGRESS, createDefaultProfile, defaultHeroMastery, sanitizeProfile, createSaveArchive, parseSaveArchive } from './profile.js?v=20260813-save4';
+import { DEFAULT_BINDINGS, BINDING_LABELS, keyLabel, gamepadActions } from './controls.js?v=20260813-controls1';
 
 const canvas = document.querySelector('#game');
 const ctx = canvas.getContext('2d', { alpha: true });
@@ -387,7 +388,10 @@ function selectDifficulty(id){
   selectedDifficulty=id;profile.lastDifficulty=id;saveProfile();refreshProfileUi();
 }
 
-const input = { keys: new Set(), pressed: new Set(), pointer: { x: 0, y: 0, active: false }, attack: false, attackHeld: false };
+const input = { keys: new Set(), pressed: new Set(), pointer: { x: 0, y: 0, active: false }, attack: false, attackHeld: false, gamepad:{index:null,held:new Set(),pressed:new Set(),move:{x:0,y:0,magnitude:0},aim:{x:0,y:0,magnitude:0}} };
+const bound=(action)=>profile.keyBindings?.[action]||DEFAULT_BINDINGS[action];
+const keyHeld=(action)=>input.keys.has(bound(action));
+const keyPressed=(action)=>input.pressed.has(bound(action));
 const camera = { x: room.playerSpawn.x, y: room.playerSpawn.y, zoom: 1, shake: 0, kick: 0 };
 const effects = { particles: [], afterimages: [], numbers: [], words: [], rings: [], shards: [], projectiles: [], playerShots: [], vortices: [], shockStorms: [], flameBolts: [], fireTrails: [], blooms: [], spriteEffects: [], shockLinks: [], stars: [], enemyHazards: [], guardianSignatures: [], biomePressures: [] };
 const combatWordCooldowns=new Map();
@@ -689,7 +693,18 @@ function refreshSettingsUi(){
   }
   for(const slider of settingsScreen.querySelectorAll('[data-audio-setting]')){const key=slider.dataset.audioSetting;slider.value=profile.settings[key];const output=settingsScreen.querySelector(`[data-audio-output="${key}"]`);if(output)output.value=`${Math.round(profile.settings[key]*100)}%`;}
   const summary=document.querySelector('#save-data-summary');if(summary)summary.textContent=`PROFILE V${PROFILE_VERSION} · ${profile.worldDiscoveries.length}/${EXPEDITION_WORLD.nodes.length} LANDMARKS · ${profile.spiritShards} BANKED SHARDS`;
+  renderBindingControls();
 }
+
+let bindingCapture=null;
+function renderBindingControls(){
+  const grid=document.querySelector('#binding-grid');if(!grid)return;const counts=new Map();for(const key of Object.values(profile.keyBindings))counts.set(key,(counts.get(key)||0)+1);
+  grid.innerHTML=Object.keys(BINDING_LABELS).map((action)=>`<button type="button" data-bind-action="${action}" class="${bindingCapture===action?'listening':''} ${counts.get(bound(action))>1&&!['interact','undertow'].includes(action)?'conflict':''}"><span>${BINDING_LABELS[action]}</span><b>${bindingCapture===action?'PRESS KEY':keyLabel(bound(action))}</b></button>`).join('');
+  for(const button of grid.querySelectorAll('[data-bind-action]'))button.addEventListener('click',()=>{bindingCapture=button.dataset.bindAction;document.querySelector('#binding-status').textContent=`PRESS A KEY FOR ${BINDING_LABELS[bindingCapture]}`;renderBindingControls();});
+  for(const label of document.querySelectorAll('[data-bind-label]')){const action=label.dataset.bindLabel;label.textContent=action==='attack'?`LMB / ${keyLabel(bound(action))}`:keyLabel(bound(action));}
+}
+function setBinding(action,key){if(!BINDING_LABELS[action])return;profile.keyBindings[action]=key;bindingCapture=null;saveProfile();document.querySelector('#binding-status').textContent=`${BINDING_LABELS[action]} · ${keyLabel(key)}`;refreshSettingsUi();}
+function resetBindings(){profile.keyBindings={...DEFAULT_BINDINGS};bindingCapture=null;saveProfile();document.querySelector('#binding-status').textContent='DEFAULT CONTROLS RESTORED';refreshSettingsUi();}
 
 function openSettings(returnState=state){
   if(state==='settings')return;settingsReturnState=returnState;state='settings';settingsScreen.classList.add('active');refreshSettingsUi();input.keys.clear();input.attackHeld=false;
@@ -1272,8 +1287,8 @@ function updateDojo(dt){
 }
 
 function updateHub(dt){
-  updatePlayer(dt);const nearby=nearestHubStation();ui.objective.textContent=nearby?`${nearby.station.name}  PRESS E TO ${nearby.station.id==='portal'?'START RUN':'INTERACT'}`:'VISIT A SERVICE OR ENTER THE PORTAL';
-  if((input.pressed.has('e')||input.pressed.has('enter'))&&nearby){if(nearby.station.id==='portal')startCampaign();else if(nearby.station.id==='dojo')enterDojo();else openHubStation(nearby.station);}
+  updatePlayer(dt);const nearby=nearestHubStation();ui.objective.textContent=nearby?`${nearby.station.name}  PRESS ${keyLabel(bound('interact'))} TO ${nearby.station.id==='portal'?'START RUN':'INTERACT'}`:'VISIT A SERVICE OR ENTER THE PORTAL';
+  if((keyPressed('interact')||input.pressed.has('enter')||input.gamepad.pressed.has('confirm'))&&nearby){if(nearby.station.id==='portal')startCampaign();else if(nearby.station.id==='dojo')enterDojo();else openHubStation(nearby.station);}
 }
 
 function setChapter(index) {
@@ -2203,9 +2218,8 @@ function playSfx(id,volume=.35,rate=1,cooldown){
 }
 
 function movementVector() {
-  const x = (input.keys.has('d') || input.keys.has('arrowright') ? 1 : 0) - (input.keys.has('a') || input.keys.has('arrowleft') ? 1 : 0);
-  const y = (input.keys.has('s') || input.keys.has('arrowdown') ? 1 : 0) - (input.keys.has('w') || input.keys.has('arrowup') ? 1 : 0);
-  return normalize(x, y);
+  const keyboardX=(keyHeld('moveRight')||input.keys.has('arrowright')?1:0)-(keyHeld('moveLeft')||input.keys.has('arrowleft')?1:0),keyboardY=(keyHeld('moveDown')||input.keys.has('arrowdown')?1:0)-(keyHeld('moveUp')||input.keys.has('arrowup')?1:0);
+  if(keyboardX||keyboardY)return normalize(keyboardX,keyboardY);return {x:input.gamepad.move.x,y:input.gamepad.move.y};
 }
 
 function pointerWorld() {
@@ -2311,6 +2325,7 @@ function spawnHunterSeekers(source,damage){
 }
 
 function aimDirection() {
+  if(input.gamepad.aim.magnitude>0)return {x:input.gamepad.aim.x/input.gamepad.aim.magnitude,y:input.gamepad.aim.y/input.gamepad.aim.magnitude};
   if (input.pointer.active) {
     const target = pointerWorld(); const direction = normalize(target.x-player.x,target.y-player.y);
     if (direction.x || direction.y) return direction;
@@ -2389,21 +2404,23 @@ function updatePlayer(dt) {
     return;
   }
 
-  if (input.pressed.has('shift')) startDash();
-  if (input.pressed.has('e')) {if(!useMissionInteraction()&&!useRoomInteractable())useAbility('undertowWell');}
-  if (input.pressed.has('c')) useAbility('foxfireVolley');
-  if (input.pressed.has('f')) useAbility('wildHeart');
-  if (input.pressed.has('q')) useAbility('shockPaws');
-  if (input.attack || input.attackHeld || input.keys.has('j') || input.pressed.has('j') || input.pressed.has('enter')) requestAttack();
+  if(input.gamepad.aim.magnitude>.18)setActionFacing(aimDirection(),input.gamepad.held.has('attack'));
+  if (keyPressed('dash')||input.gamepad.pressed.has('dash')) startDash();
+  if (keyPressed('undertow')||input.gamepad.pressed.has('undertow')) {if(!useMissionInteraction()&&!useRoomInteractable())useAbility('undertowWell');}
+  if (keyPressed('foxfire')||input.gamepad.pressed.has('foxfire')) useAbility('foxfireVolley');
+  if (keyPressed('wildHeart')||input.gamepad.pressed.has('wildHeart')) useAbility('wildHeart');
+  if (keyPressed('ultimate')||input.gamepad.pressed.has('ultimate')) useAbility('shockPaws');
+  if (input.attack || input.attackHeld || keyHeld('attack') || keyPressed('attack') || input.gamepad.held.has('attack')) requestAttack();
 
   const move = movementVector();
   if (move.x || move.y) player.moveFacing = Math.atan2(move.y, move.x);
   // Twin-stick rule: movement controls translation; a live mouse aim controls body facing.
   // This prevents alternating left/right frames when moving opposite the firing direction.
-  if (input.pointer.active) updatePointerAim(input.attackHeld || Boolean(player.attack) || player.castTime > 0);
-  const actionOwnsFacing = input.pointer.active || (player.aimLockTime || 0) > 0 || input.attackHeld || Boolean(player.attack) || player.castTime > 0;
+  if(input.gamepad.aim.magnitude>.18){const aim=aimDirection();setActionFacing(aim,input.gamepad.held.has('attack')||Boolean(player.attack));}
+  else if (input.pointer.active) updatePointerAim(input.attackHeld || Boolean(player.attack) || player.castTime > 0);
+  const actionOwnsFacing = input.gamepad.aim.magnitude>.18||input.pointer.active || (player.aimLockTime || 0) > 0 || input.attackHeld || Boolean(player.attack) || player.castTime > 0;
   if (actionOwnsFacing && Number.isFinite(player.aimFacing)) player.facing = player.aimFacing;
-  const wantsSprint=input.keys.has(' ')&&Boolean(move.x||move.y)&&!player.attack&&player.castTime<=0&&player.dashTime<=0;
+  const wantsSprint=(keyHeld('sprint')||input.gamepad.held.has('sprint'))&&Boolean(move.x||move.y)&&!player.attack&&player.castTime<=0&&player.dashTime<=0;
   player.sprinting=wantsSprint&&player.sprint>2;
   player.sprint=clamp(player.sprint+(player.sprinting?-27:28)*dt,0,100);
   if(player.curseTime>0&&player.sprinting){player.curseTime=Math.max(0,player.curseTime-dt*2.65);if(player.curseTime<=0){player.curseMultiplier=1;spawnWord(player.x,player.y-82,'CURSE CLEANSED!','#8ff8ff');effects.rings.push({x:player.x,y:player.y,radius:72,maxRadius:18,color:'#8ff8ff',life:.38,maxLife:.38});}}
@@ -4037,8 +4054,27 @@ function easeOutBack(x) {
 }
 
 let lastDrawTime=0,lastFrameMetric=performance.now();const frameDurations=[];
+function controllerUiCandidates(){
+  const active=[...document.querySelectorAll('.overlay.active,#start-screen.active')].find((element)=>getComputedStyle(element).display!=='none');
+  return active?[...active.querySelectorAll('button:not([disabled]),input:not([disabled])')].filter((element)=>!element.hidden&&element.offsetParent!==null):[];
+}
+function controllerMenuInput(){
+  const {pressed}=input.gamepad;if(!pressed.size)return;
+  if(pressed.has('pause')){if(['playing','hub','dojo'].includes(state))pauseGame();else if(state==='paused')resumeGame();return;}
+  if(pressed.has('worldMap')){if(state==='worldMap')closeWorldMap();else if(['playing','hub','dojo'].includes(state))openWorldMap();return;}
+  const candidates=controllerUiCandidates();
+  if(candidates.length&&(pressed.has('navLeft')||pressed.has('navUp')||pressed.has('navRight')||pressed.has('navDown'))){const current=Math.max(0,candidates.indexOf(document.activeElement)),direction=pressed.has('navLeft')||pressed.has('navUp')?-1:1;candidates[(current+direction+candidates.length)%candidates.length].focus({preventScroll:true});}
+  if(candidates.length&&pressed.has('confirm')){const target=candidates.includes(document.activeElement)?document.activeElement:candidates[0];target.focus({preventScroll:true});target.click();return;}
+  if(pressed.has('cancel')){if(state==='settings')closeSettings();else if(state==='codex')closeCodex();else if(state==='worldMap')closeWorldMap();else if(state==='paused')resumeGame();else if(state==='shop')leaveShop();else if(state==='hubMenu')closeHubMenu();else if(['playing','hub','dojo'].includes(state))pauseGame();}
+}
+function pollGamepad(){
+  const pads=typeof navigator.getGamepads==='function'?[...navigator.getGamepads()].filter(Boolean):[],gamepad=pads.find((pad)=>pad.index===input.gamepad.index)||pads[0];
+  if(!gamepad){input.gamepad={index:null,held:new Set(),pressed:new Set(),move:{x:0,y:0,magnitude:0},aim:{x:0,y:0,magnitude:0}};return;}
+  const next=gamepadActions(gamepad,input.gamepad.held);input.gamepad={index:gamepad.index,...next};document.documentElement.dataset.inputDevice='controller';if(next.aim.magnitude>.12)input.pointer.active=false;controllerMenuInput();
+}
 function frame(now) {
   scrollShellToOrigin();
+  pollGamepad();
   const screen = resize();
   const dt = Math.min((now - lastTime) / 1000, .033);
   lastTime = now;
@@ -4056,16 +4092,18 @@ window.__BRAWLPAWS_QA__=()=>({state,room:room.id,player:player&&{x:player.x,y:pl
 window.addEventListener('resize', ()=>{lastDrawTime=0;resize();});
 window.addEventListener('keydown', (event) => {
   const key = event.key.toLowerCase();
-  if(state==='worldMap'&&(key==='m'||key==='escape')){closeWorldMap();event.preventDefault();return;}
+  document.documentElement.dataset.inputDevice='keyboard';
+  if(bindingCapture){if(key==='escape'){bindingCapture=null;document.querySelector('#binding-status').textContent='BINDING CANCELLED';renderBindingControls();}else if(key!=='tab')setBinding(bindingCapture,key);event.preventDefault();return;}
+  if(state==='worldMap'&&(key===bound('worldMap')||key==='escape')){closeWorldMap();event.preventDefault();return;}
   if(state==='endlessDecision'&&(key==='enter'||key===' ')){startEndlessStage();event.preventDefault();return;}
   if(state==='endlessDecision'&&key==='escape'){finishEndlessRoad();event.preventDefault();return;}
-  if(key==='m'&&['playing','hub','dojo'].includes(state)){openWorldMap();event.preventDefault();return;}
+  if(key===bound('worldMap')&&['playing','hub','dojo'].includes(state)){openWorldMap();event.preventDefault();return;}
   if(key==='f3'){const active=layeredMapRuntime.toggleDebug();if(player)spawnWord(player.x,player.y-90,active?'MAP DEBUG ON':'MAP DEBUG OFF',active?'#45f4ff':'#9ea1ad');event.preventDefault();return;}
-  if(state==='settings'&&(key==='escape'||key==='o')){closeSettings();event.preventDefault();return;}
+  if(state==='settings'&&(key==='escape'||key===bound('settings'))){closeSettings();event.preventDefault();return;}
   if(state==='paused'&&key==='escape'){resumeGame();event.preventDefault();return;}
-  if(key==='o'&&['preview','hub','playing','dojo','paused'].includes(state)){openSettings(state);event.preventDefault();return;}
-  if(state==='codex'&&(key==='escape'||key==='k')){closeCodex();event.preventDefault();return;}
-  if(key==='k'&&['preview','hub','playing','dojo'].includes(state)){openCodex(state==='preview'?'heroes':'enemies');event.preventDefault();return;}
+  if(key===bound('settings')&&['preview','hub','playing','dojo','paused'].includes(state)){openSettings(state);event.preventDefault();return;}
+  if(state==='codex'&&(key==='escape'||key===bound('codex'))){closeCodex();event.preventDefault();return;}
+  if(key===bound('codex')&&['preview','hub','playing','dojo'].includes(state)){openCodex(state==='preview'?'heroes':'enemies');event.preventDefault();return;}
   if(state==='hubMenu'&&(key==='escape'||key==='enter')){closeHubMenu();event.preventDefault();return;}
   if(state==='story'&&key==='enter'){tutorialActive?.phase==='explain'?startTutorialLesson():continueStory();event.preventDefault();return;}
   if(state==='route'&&['1','2','3'].includes(key)){selectRoute(Number(key)-1);event.preventDefault();return;}
@@ -4085,8 +4123,10 @@ window.addEventListener('keydown', (event) => {
 });
 window.addEventListener('keyup', (event) => input.keys.delete(event.key.toLowerCase()));
 window.addEventListener('blur', () => { input.keys.clear(); input.attackHeld = false;if(['playing','dojo'].includes(state))pauseGame(); });
+window.addEventListener('gamepadconnected',(event)=>{input.gamepad.index=event.gamepad.index;document.documentElement.dataset.inputDevice='controller';const status=document.querySelector('#binding-status');if(status)status.textContent=`CONTROLLER CONNECTED · ${event.gamepad.id.slice(0,32).toUpperCase()}`;});
+window.addEventListener('gamepaddisconnected',(event)=>{if(input.gamepad.index===event.gamepad.index)input.gamepad.index=null;const status=document.querySelector('#binding-status');if(status)status.textContent='CONTROLLER DISCONNECTED · KEYBOARD READY';});
 canvas.addEventListener('pointermove', (event) => {
-  const rect = canvas.getBoundingClientRect(); input.pointer.x = event.clientX - rect.left; input.pointer.y = event.clientY - rect.top; input.pointer.active = true;
+  const rect = canvas.getBoundingClientRect(); input.pointer.x = event.clientX - rect.left; input.pointer.y = event.clientY - rect.top; input.pointer.active = true;document.documentElement.dataset.inputDevice='mouse';
 });
 canvas.addEventListener('pointerdown', (event) => { if (event.button === 0) { const rect=canvas.getBoundingClientRect();input.pointer.x=event.clientX-rect.left;input.pointer.y=event.clientY-rect.top;input.pointer.active=true;input.attack = true; input.attackHeld = true; ensureAudio();requestAttack(); } });
 window.addEventListener('pointerup', (event) => { if (event.button === 0) input.attackHeld = false; });
@@ -4107,6 +4147,7 @@ document.querySelector('#export-save').addEventListener('click',exportProfileSav
 document.querySelector('#import-save').addEventListener('click',()=>importProfileText(document.querySelector('#save-data-text').value));
 document.querySelector('#import-save-file').addEventListener('change',async(event)=>{const file=event.target.files?.[0];if(!file)return;try{const text=await file.text();document.querySelector('#save-data-text').value=text;importProfileText(text);}catch{saveDataStatus('SAVE FILE COULD NOT BE READ','error');}finally{event.target.value='';}});
 document.querySelector('#reset-save').addEventListener('click',requestProfileReset);
+document.querySelector('#reset-bindings').addEventListener('click',resetBindings);
 document.querySelector('#close-codex').addEventListener('click',closeCodex);
 document.querySelector('#world-map-button').addEventListener('click',openWorldMap);
 document.querySelector('#close-world-map').addEventListener('click',closeWorldMap);

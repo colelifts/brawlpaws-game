@@ -204,8 +204,8 @@ Initial upgrade set:
 
 ## Phase 8 — Permanent progression and save (baseline playable)
 
-- Versioned local profile key with safe defaults and additive field loading is playable; explicit schema migrations remain next
-- Persist settings, spirit shards, unlocks, hub ranks, discoveries, Ascension state, and five campaign-contract progress/claim records; broader hero mastery, weapon collections, cosmetics, and explicit save-management tools remain expansion work
+- Versioned profile v4 includes explicit v1→v4 migrations, untrusted-data sanitization, guarded reset, and portable JSON export/import
+- Persist settings, key bindings, spirit shards, unlocks, hub ranks, discoveries, realm seals, expedition milestones, Ascension state, hero mastery, weapon collections, and campaign-contract progress/claim records; cosmetics remain expansion work
 - Separate resumable-run snapshot with room seed, route, build, health, currency, and active room
 - Death rewards progress without making permanent power invalidate combat mastery
 - Corruption recovery and explicit reset/export/import options
@@ -219,7 +219,7 @@ Initial upgrade set:
 - Play/loadout screen with hero, weapon, starting ability, charms, relics, biome, difficulty, and run summary
 - In-run HUD, pause, codex, minimap, objective tracker, shop, level-up, route selection, death, victory, and results
 - Brush-edged dark panels, neon borders, illustrated cards, controller/keyboard prompts, and accessibility settings
-- Options for screen shake, flashes, damage numbers, color assistance, hold/toggle fire, and remapping
+- Keyboard remapping plus twin-stick controller combat/menu navigation is playable and profile-persistent; remaining options are color assistance and hold/toggle fire
 
 **Exit gate:** every screen matches the concept's visual hierarchy, remains usable at supported resolutions, and can be navigated with mouse/keyboard and controller.
 
