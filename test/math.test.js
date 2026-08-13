@@ -62,10 +62,10 @@ test('Phase 1 definitions are internally valid', () => {
   assert.ok(WEAPONS.spiritBlaster.fireRate < .25);
   assert.ok(WEAPONS.spiritBlaster.range > 900);
   assert.ok(ROOMS.jadeCourtyard.enemySpawns.length >= 5);
-  assert.equal(ROOMS.jadeCourtyard.enemySpawns.length, 7);
-  assert.deepEqual([...new Set(ROOMS.jadeCourtyard.enemySpawns.map((spawn) => spawn.type))].sort(), ['armoredBoar', 'groveMinion', 'jadeBrawler', 'spiritArcher']);
-  assert.ok(ROOMS.jadeCourtyard.width >= 3400);
-  assert.ok(Math.max(...ROOMS.jadeCourtyard.enemySpawns.map((spawn) => spawn.delay || 0)) >= 15);
+  assert.equal(ROOMS.jadeCourtyard.mapRuntime,'phaser-tiled');
+  assert.match(ROOMS.jadeCourtyard.map,/shrine-courtyard\.json$/);
+  assert.deepEqual([...new Set(ROOMS.jadeCourtyard.enemySpawns.map((spawn) => spawn.type))].sort(), ['groveMinion', 'spiritArcher']);
+  assert.ok(ROOMS.jadeCourtyard.width >= 6144);
   assert.ok(ENEMIES.groveMinion.speed < ENEMIES.jadeBrawler.speed);
   assert.ok(ENEMIES.armoredBoar.slamRadius > ENEMIES.armoredBoar.attackRange / 2);
   assert.ok(ENEMIES.armoredBoar.stunDuration >= 1);
@@ -210,7 +210,7 @@ test('Jade Grove progresses through six authored waves and a separate guardian c
   assert.equal(chapter.bossRoom,'jadeGuardianApproach');
   assert.ok(!chapter.rooms.includes(chapter.bossRoom));
   for(const roomId of chapter.rooms){
-    const room=ROOMS[roomId];assert.ok(room);assert.equal(room.width,4800);assert.equal(room.height,2700);assert.ok(room.combatBounds.radiusX>=1450);assert.ok(room.combatBounds.radiusY>=750);
+    const room=ROOMS[roomId];assert.ok(room);assert.ok(room.width>=4800);assert.ok(room.height>=2700);assert.ok(room.combatBounds.radiusX>=1450);assert.ok(room.combatBounds.radiusY>=750);
   }
   assert.match(ROOMS.jadeMoonbridge.background,/jade-moonbridge\.png$/);
   assert.match(ROOMS.jadeRootGarden.background,/jade-root-garden\.png$/);

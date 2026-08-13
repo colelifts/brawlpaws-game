@@ -8,6 +8,8 @@ const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const game=readFileSync(new URL('../src/game.js',import.meta.url),'utf8');
 const data=readFileSync(new URL('../src/data.js',import.meta.url),'utf8');
 const styles=readFileSync(new URL('../styles.css',import.meta.url),'utf8');
+const mapRuntime=readFileSync(new URL('../src/map-runtime.js',import.meta.url),'utf8');
+const shrineMap=JSON.parse(readFileSync(new URL('../assets/maps/jade-grove/shrine-courtyard.json',import.meta.url),'utf8'));
 
 test('the run includes route and shop interaction surfaces',()=>{
   for(const id of ['route-screen','route-grid','shop-screen','shop-grid','gold-token'])assert.match(html,new RegExp(`id="${id}"`));
@@ -66,6 +68,28 @@ test('combat presentation uses licensed recordings and whole-body hit reactions'
   assert.match(game,/playSfx\('stomp'/);
   assert.match(game,/const lastSfxAt=new Map\(\)/);
   assert.doesNotMatch(game,/createOscillator|function playTone/);
+});
+
+test('ranged facing is independent from locomotion so strafing cannot flip the shooter',()=>{
+  assert.match(game,/aimFacing:\s*-Math\.PI\s*\/\s*2/);
+  assert.match(game,/moveFacing:\s*-Math\.PI\s*\/\s*2/);
+  assert.match(game,/const actionOwnsFacing =/);
+  assert.match(game,/if \(actionOwnsFacing && Number\.isFinite\(player\.aimFacing\)\) player\.facing = player\.aimFacing/);
+  assert.match(game,/player\.moveFacing = Math\.atan2\(move\.y, move\.x\)/);
+  assert.doesNotMatch(game,/else if \(!player\.attack\) \{\s*player\.facing = approachAngle\(player\.facing, Math\.atan2\(move\.y, move\.x\)/);
+});
+
+test('Shrine Courtyard is a real Phaser and Tiled layered map vertical slice',()=>{
+  assert.match(html,/phaser-3\.90\.0\.min\.js/);
+  assert.match(html,/id="phaser-map"/);
+  for(const name of ['Ground','Ground Detail','Walls','Props Below Player','Collision','Props / Interactive','Doors / Gates','Enemy Spawns','Player Spawn','Triggers','Foreground / Occlusion','VFX Anchors'])assert.ok(shrineMap.layers.some((layer)=>layer.name===name),`missing ${name}`);
+  assert.match(mapRuntime,/tilemapTiledJSON\('shrine-courtyard'/);
+  assert.match(mapRuntime,/resolveCollision\(entity\)/);
+  assert.match(mapRuntime,/setCombatSealed\(sealed\)/);
+  assert.match(game,/room\.mapRuntime==='phaser-tiled'/);
+  assert.match(game,/key==='f3'/);
+  assert.equal(shrineMap.width*shrineMap.tilewidth,6144);
+  assert.equal(shrineMap.height*shrineMap.tileheight,3840);
 });
 
 test('Chrome performance, adaptive audio, and readable choice art are production-wired',()=>{
@@ -495,7 +519,8 @@ test('every campaign wave advances into its own production-painted combat locati
   for(const [chapter,rooms] of Object.entries(chapterRooms)){
     assert.match(data,new RegExp(`id:\\s*'${chapter}'[\\s\\S]{0,260}rooms:\\s*\\[${rooms.map(room=>`'${room}'`).join(',')}\\]`));
     for(const room of rooms){
-      assert.match(data,new RegExp(`${room}:\\s*\\{[\\s\\S]{0,360}width:\\s*4800[\\s\\S]{0,80}height:\\s*2700`));
+      if(room==='jadeCourtyard')assert.match(data,/jadeCourtyard:\s*\{[\s\S]{0,360}width:\s*6144[\s\S]{0,80}height:\s*3840/);
+      else assert.match(data,new RegExp(`${room}:\\s*\\{[\\s\\S]{0,360}width:\\s*4800[\\s\\S]{0,80}height:\\s*2700`));
       assert.match(data,new RegExp(`${room}:\\s*\\{[\\s\\S]{0,1600}combatBounds:`));
     }
   }

@@ -518,19 +518,18 @@ export const ROOMS = {
     combatBounds:{x:2400,y:1450,radiusX:1640,radiusY:820}
   },
   jadeCourtyard: {
-    id: 'jadeCourtyard', name: 'Jade Grove Ruins', width: 4800, height: 2700,
+    id: 'jadeCourtyard', name: 'Shrine Courtyard', width: 6144, height: 3840,
+    map: 'assets/maps/jade-grove/shrine-courtyard.json', mapRuntime:'phaser-tiled',
     background: 'assets/environment/jade-grove-arena.png',
-    playerSpawn: { x: 2400, y: 1540 },
+    playerSpawn: { x: 3072, y: 2460 },
     enemySpawns: [
-      { x: 2050, y: 1160, type: 'groveMinion', delay: 1.2 },
-      { x: 2760, y: 1150, type: 'groveMinion', delay: 3.2 },
-      { x: 1740, y: 1580, type: 'groveMinion', delay: 6 },
-      { x: 3070, y: 1620, type: 'jadeBrawler', delay: 8.5 },
-      { x: 1550, y: 900, type: 'spiritArcher', delay: 11.5 },
-      { x: 3270, y: 920, type: 'spiritArcher', delay: 14 },
-      { x: 2400, y: 660, type: 'armoredBoar', delay: 17 }
+      { x: 1450, y: 1460, type: 'groveMinion', delay: .6 },
+      { x: 4690, y: 1460, type: 'groveMinion', delay: 1.6 },
+      { x: 1660, y: 2130, type: 'groveMinion', delay: 2.6 },
+      { x: 4480, y: 2130, type: 'groveMinion', delay: 3.6 },
+      { x: 3072, y: 1260, type: 'spiritArcher', delay: 6 }
     ],
-    combatBounds: { x: 2400, y: 1420, radiusX: 1900, radiusY: 1040 }
+    combatBounds: { x: 3072, y: 1940, radiusX: 2750, radiusY: 1650 }
   },
   jadeMoonbridge: {
     id:'jadeMoonbridge', name:'Moonbridge Crossing', width:4800, height:2700,

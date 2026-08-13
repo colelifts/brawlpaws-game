@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="256" viewBox="0 0 1536 256">
+  <defs>
+    <linearGradient id="stone" x2="0" y2="1"><stop stop-color="#30404d"/><stop offset="1" stop-color="#182331"/></linearGradient>
+    <linearGradient id="moss" x2="1" y2="1"><stop stop-color="#38484a"/><stop offset="1" stop-color="#172f2d"/></linearGradient>
+    <linearGradient id="wall" x2="0" y2="1"><stop stop-color="#27374a"/><stop offset=".55" stop-color="#101929"/><stop offset="1" stop-color="#090e1a"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <pattern id="speckle" width="37" height="31" patternUnits="userSpaceOnUse"><circle cx="7" cy="9" r="1.5" fill="#6b7f7c" opacity=".25"/><circle cx="29" cy="23" r="1" fill="#0a1019" opacity=".8"/></pattern>
+  </defs>
+  <g stroke="#0b121d" stroke-width="5">
+    <g transform="translate(0)"><rect width="256" height="256" fill="url(#stone)"/><path d="M0 62h256M0 127h256M0 193h256M45 0v62m69-62v62m78-62v62M19 62v65m67-65v65m73-65v65m65-65v65M49 127v66m75-66v66m69-66v66M17 193v63m67-63v63m79-63v63m65-63v63" stroke="#4a5967" stroke-width="2" opacity=".46"/><path d="M37 47l12-14 16 9m80 37 14 10 8-19m-115 99 19-13 14 15m90 51 13-18 17 8" fill="none" stroke="#101925" stroke-width="4"/><rect width="256" height="256" fill="url(#speckle)" stroke="none"/></g>
+    <g transform="translate(256)"><rect width="256" height="256" fill="url(#moss)"/><path d="M0 61h256M0 126h256M0 192h256M44 0v61m72-61v61m77-61v61M20 61v65m68-65v65m72-65v65m66-65v65M48 126v66m77-66v66m70-66v66M16 192v64m69-64v64m78-64v64m65-64v64" stroke="#59676c" stroke-width="2" opacity=".4"/><path d="M0 214q55-44 99 0t157-23M0 31q42 31 81 4" fill="none" stroke="#1a604a" stroke-width="10" opacity=".55"/></g>
+    <g transform="translate(512)"><rect width="256" height="256" fill="#24283a"/><circle cx="128" cy="128" r="91" fill="none" stroke="#4b4a62" stroke-width="8"/><circle cx="128" cy="128" r="56" fill="none" stroke="#3ee8e0" stroke-width="4" opacity=".2"/><path d="M128 39l17 60 58-23-45 43 51 34-62-12-3 62-20-59-57 26 43-46-53-31 63 9z" fill="#192b34" stroke="#5e6074" stroke-width="4"/></g>
+    <g transform="translate(768)"><rect width="256" height="256" fill="url(#stone)"/><path d="M0 62h256M0 128h256M0 193h256M43 0v62m73-62v62m77-62v62M21 62v66m68-66v66m72-66v66m66-66v66M48 128v65m77-65v65m70-65v65M17 193v63m69-63v63m77-63v63m65-63v63" stroke="#445363" stroke-width="2" opacity=".4"/><path d="M16 55l55 18 28-39 35 67 68-36 37 24M42 207l67-45 27 25 59-75" fill="none" stroke="#0d1620" stroke-width="7"/><path d="M18 217q62-62 112 6t110-37" fill="none" stroke="#23634c" stroke-width="13" opacity=".65"/></g>
+    <g transform="translate(1024)"><rect x="3" y="3" width="250" height="250" rx="13" fill="url(#wall)"/><path d="M8 58h240M8 126h240M8 198h240M67 8v50m117-50v50M41 58v68m122-68v68m-75 0v72m113-72v72m-135 0v50m113-50v50" stroke="#4b5969" stroke-width="5" opacity=".55"/><path d="M12 16h232" stroke="#a4773e" stroke-width="7" opacity=".4"/></g>
+    <g transform="translate(1280)"><rect x="3" y="3" width="250" height="250" rx="13" fill="#101626"/><path d="M25 225L128 24l103 201z" fill="#20153a" stroke="#522c6e" stroke-width="7"/><circle cx="128" cy="145" r="42" fill="none" stroke="#a94cff" stroke-width="9" opacity=".7" filter="url(#glow)"/><path d="M128 92l18 35 39 6-28 28 7 39-36-18-36 18 7-39-28-28 39-6z" fill="#43e8dc" opacity=".55"/></g>
+  </g>
+</svg>

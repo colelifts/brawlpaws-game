@@ -1,0 +1,101 @@
+const REQUIRED_LAYERS=['Ground','Ground Detail','Walls','Props Below Player','Collision','Props / Interactive','Doors / Gates','Enemy Spawns','Player Spawn','Triggers','Foreground / Occlusion','VFX Anchors'];
+
+const objectProperties=(object)=>Object.fromEntries((object.properties||[]).map((entry)=>[entry.name,entry.value]));
+
+export class ShrineCourtyardRuntime {
+  constructor(parentId='phaser-map'){
+    this.parentId=parentId;this.ready=false;this.debug=false;this.mapData=null;this.layers={};this.objects={};this.collision=[];this.gates=[];this.scene=null;this.game=null;
+    this.start();
+  }
+
+  start(){
+    const Phaser=window.Phaser;if(!Phaser){console.error('Phaser 3 runtime is unavailable.');return;}
+    const runtime=this;
+    class ShrineScene extends Phaser.Scene{
+      constructor(){super('ShrineCourtyard');}
+      preload(){
+        this.load.tilemapTiledJSON('shrine-courtyard','assets/maps/jade-grove/shrine-courtyard.json');
+        this.load.image('jade-ground','assets/tilesets/jade-grove/jade-ground.svg');
+        this.load.image('jade-props','assets/environment/jade-props.png');
+        this.load.spritesheet('spirit-wisp','assets/environment/animated/spirit-wisp.png',{frameWidth:512,frameHeight:512});
+        this.load.spritesheet('lantern-flame','assets/environment/animated/lantern-flame.png',{frameWidth:512,frameHeight:512});
+      }
+      create(){runtime.build(this);}
+    }
+    this.game=new Phaser.Game({type:Phaser.AUTO,parent:this.parentId,transparent:true,width:window.innerWidth,height:window.innerHeight,pixelArt:false,antialias:true,roundPixels:false,render:{powerPreference:'high-performance',antialias:true},physics:{default:'arcade',arcade:{debug:false}},scene:[ShrineScene],audio:{noAudio:true},banner:false});
+  }
+
+  build(scene){
+    this.scene=scene;const map=scene.make.tilemap({key:'shrine-courtyard'});this.mapData=scene.cache.tilemap.get('shrine-courtyard').data;
+    const missing=REQUIRED_LAYERS.filter((name)=>!this.mapData.layers.some((layer)=>layer.name===name));if(missing.length)throw new Error(`Shrine Courtyard is missing Tiled layers: ${missing.join(', ')}`);
+    const tiles=map.addTilesetImage('jade-ground','jade-ground',256,256,0,0);
+    for(const [name,depth] of [['Ground',-3000],['Ground Detail',-2900],['Walls',-2400]]){
+      const layer=map.createLayer(name,tiles,0,0);layer.setDepth(depth);this.layers[name]=layer;
+    }
+    for(const layerName of REQUIRED_LAYERS.filter((name)=>!['Ground','Ground Detail','Walls'].includes(name))){
+      const source=map.getObjectLayer(layerName);this.objects[layerName]=(source?.objects||[]).map((object)=>({...object,properties:objectProperties(object)}));
+    }
+    this.collision=this.objects.Collision.map((object)=>({id:object.name,x:object.x,y:object.y,width:object.width,height:object.height,active:true}));
+    this.gates=this.objects['Doors / Gates'].map((object)=>({...object,sealed:object.properties.state==='combat-sealed'}));
+    this.createLowProps(scene);this.createGateArt(scene);this.createAmbient(scene);this.createDebug(scene);
+    scene.cameras.main.setBounds(0,0,map.widthInPixels,map.heightInPixels);scene.physics.world.setBounds(0,0,map.widthInPixels,map.heightInPixels);
+    this.ready=true;window.dispatchEvent(new CustomEvent('brawlpaws-map-ready',{detail:{runtime:this}}));
+  }
+
+  createLowProps(scene){
+    for(const object of this.objects['Props Below Player']){
+      const p=object.properties,sprite=scene.add.image(object.x,object.y,'jade-props').setOrigin(.5,p.originY??1).setCrop(p.cropX,p.cropY,p.cropW,p.cropH).setScale(p.scale??1).setDepth(-1200+object.y*.01);
+      sprite.setData('mapObject',object.name);
+    }
+  }
+
+  createGateArt(scene){
+    for(const gate of this.gates){
+      const cx=gate.x+gate.width/2,foot=gate.y+gate.height+100;
+      gate.sprite=scene.add.image(cx,foot,'jade-props').setOrigin(.5,.82).setCrop(690,520,380,430).setScale(1.38).setDepth(-850+foot*.01);
+      gate.seal=scene.add.graphics().setDepth(-700+foot*.01).setBlendMode('ADD');gate.cx=cx;gate.foot=foot;
+    }
+  }
+
+  createAmbient(scene){
+    scene.anims.create({key:'map-wisp',frames:scene.anims.generateFrameNumbers('spirit-wisp',{start:0,end:5}),frameRate:8,repeat:-1});
+    scene.anims.create({key:'map-flame',frames:scene.anims.generateFrameNumbers('lantern-flame',{start:0,end:5}),frameRate:9,repeat:-1});
+    for(const anchor of this.objects['VFX Anchors']){
+      const p=anchor.properties;if(p.effect==='spiritWisp')scene.add.sprite(anchor.x,anchor.y,'spirit-wisp').setDisplaySize(150,150).setAlpha(.58).setBlendMode('ADD').setDepth(-1000+anchor.y*.01).play('map-wisp');
+      if(p.effect==='lanternGlow')scene.add.sprite(anchor.x,anchor.y,'lantern-flame').setDisplaySize(260,210).setAlpha(.42).setBlendMode('ADD').setDepth(-1000+anchor.y*.01).play('map-flame');
+    }
+  }
+
+  createDebug(scene){
+    this.debugGraphics=scene.add.graphics().setDepth(100000).setVisible(false);
+  }
+
+  update({cameraX,cameraY,zoom,width,height,sealed,active=true}){
+    const host=document.getElementById(this.parentId);if(host)host.style.visibility=active?'visible':'hidden';
+    if(!this.ready||!active)return;const camera=this.scene.cameras.main;if(camera.width!==width||camera.height!==height)this.game.scale.resize(width,height);camera.setZoom(zoom);camera.centerOn(cameraX,cameraY);this.setCombatSealed(sealed);this.renderGateSeals();if(this.debug)this.renderDebug();
+  }
+
+  setCombatSealed(sealed){for(const gate of this.gates)if(gate.properties.state==='combat-sealed')gate.sealed=Boolean(sealed);}
+
+  renderGateSeals(){
+    const time=performance.now()/1000;for(const gate of this.gates){gate.seal.clear();if(!gate.sealed)continue;gate.seal.lineStyle(7,0x50f4ff,.7).fillStyle(0x8a2be2,.12);gate.seal.fillRoundedRect(gate.x,gate.y-25,gate.width,gate.height+85,32);gate.seal.strokeRoundedRect(gate.x,gate.y-25,gate.width,gate.height+85,32);for(let i=0;i<4;i++){const y=gate.y+i*42+Math.sin(time*3+i)*9;gate.seal.lineStyle(3,i%2?0xb94cff:0x4ff8ea,.72);gate.seal.beginPath();gate.seal.moveTo(gate.x+22,y);gate.seal.lineTo(gate.x+gate.width-22,y+Math.sin(time*4+i)*15);gate.seal.strokePath();}}
+  }
+
+  toggleDebug(){this.debug=!this.debug;this.debugGraphics?.setVisible(this.debug);if(!this.debug)this.debugGraphics?.clear();return this.debug;}
+
+  worldObjects(layerName){return this.objects[layerName]||[];}
+
+  renderDebug(){
+    const g=this.debugGraphics;g.clear();g.lineStyle(6,0x39f4ff,.9);for(const rect of this.collision)g.strokeRect(rect.x,rect.y,rect.width,rect.height);for(const gate of this.gates){g.lineStyle(6,gate.sealed?0xff3864:0x71ff71,.95);g.strokeRect(gate.x,gate.y,gate.width,gate.height);}
+    for(const spawn of this.objects['Enemy Spawns']){g.fillStyle(0xff365f,.9);g.fillCircle(spawn.x,spawn.y,22);}for(const trigger of this.objects.Triggers){g.lineStyle(5,0xff4fd8,.8);g.strokeRect(trigger.x,trigger.y,trigger.width,trigger.height);}
+  }
+
+  resolveCollision(entity){
+    if(!this.ready)return false;let collided=false;const radius=entity.radius||20;const blockers=[...this.collision,...this.gates.filter((gate)=>gate.sealed).map((gate)=>({x:gate.x,y:gate.y,width:gate.width,height:gate.height}))];
+    for(const rect of blockers){const closestX=Math.max(rect.x,Math.min(entity.x,rect.x+rect.width)),closestY=Math.max(rect.y,Math.min(entity.y,rect.y+rect.height)),dx=entity.x-closestX,dy=entity.y-closestY,dist=Math.hypot(dx,dy);if(dist>=radius)continue;collided=true;
+      if(dist>0){const push=radius-dist;entity.x+=dx/dist*push;entity.y+=dy/dist*push;}else{const left=Math.abs(entity.x-rect.x),right=Math.abs(rect.x+rect.width-entity.x),top=Math.abs(entity.y-rect.y),bottom=Math.abs(rect.y+rect.height-entity.y),min=Math.min(left,right,top,bottom);if(min===left)entity.x=rect.x-radius;else if(min===right)entity.x=rect.x+rect.width+radius;else if(min===top)entity.y=rect.y-radius;else entity.y=rect.y+rect.height+radius;}entity.vx*=.42;entity.vy*=.42;
+    }return collided;
+  }
+}
+
+export const createShrineCourtyardRuntime=(parentId)=>new ShrineCourtyardRuntime(parentId);

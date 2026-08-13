@@ -1,8 +1,9 @@
 import { clamp, lerp, normalize, distance, approachAngle, encounterActiveLimit, campaignPressureCurve, cappedWardPressure, normalizedEnemyScales, enemySpeedCeiling, enemyTelegraphFloor, incomingDamageLimit, guardianAttackTiming } from './math.js?v=20260812-guardians1';
 import { HEROES, WEAPONS, ABILITIES, STATUS_EFFECTS, ELITE_MODIFIERS, BOSS_PATTERNS, BOSS_PROFILES, ENEMIES, ENCOUNTERS, ROOMS, DIFFICULTIES } from './data.js';
+import { createShrineCourtyardRuntime } from './map-runtime.js?v=20260813-map2';
 
 const canvas = document.querySelector('#game');
-const ctx = canvas.getContext('2d', { alpha: false });
+const ctx = canvas.getContext('2d', { alpha: true });
 const minimapCanvas = document.querySelector('#minimap');
 const minimapCtx = minimapCanvas.getContext('2d');
 const shell = document.querySelector('#game-shell');
@@ -58,6 +59,9 @@ const debugHubStation = debugParams.get('hub');
 const debugSystem = debugParams.get('system');
 const debugHero = debugParams.get('hero');
 const debugMission = debugParams.get('mission');
+const shrineMapRuntime=createShrineCourtyardRuntime('phaser-map');
+shell.addEventListener('scroll',()=>{if(shell.scrollTop||shell.scrollLeft)scrollShellToOrigin();},{passive:true});
+function scrollShellToOrigin(){shell.scrollTop=0;shell.scrollLeft=0;}
 
 const assets = {
   arena: new Image(), kitsune: new Image(), kitsuneFire: new Image(), kitsuneStates: new Image(), bamboo: new Image(), bambooFire: new Image(), bambooStates: new Image(), hopscotch: new Image(), hopscotchFire: new Image(), hopscotchStates: new Image(), rusty: new Image(), rustyFire: new Image(), rustyStates: new Image(), zap: new Image(), zapFire: new Image(), zapStates: new Image(), nomi: new Image(), nomiFire: new Image(), nomiStates: new Image(), enemies: new Image(), props: new Image(),
@@ -634,7 +638,7 @@ function restorePlayerCheckpoint(saved){
   restored.synergies=new Set(Array.isArray(saved.synergies)?saved.synergies:[]);
   restored.eventHistory=new Set(Array.isArray(saved.eventHistory)?saved.eventHistory:[]);
   restored.shopPurchases=new Set(Array.isArray(saved.shopPurchases)?saved.shopPurchases:[]);
-  Object.assign(player,restored,{x:room.playerSpawn.x,y:room.playerSpawn.y,vx:0,vy:0,attack:null,dashTime:0,shotCooldown:0,invulnerable:1.1,flash:0,hurtTime:0,stunTime:0,bleedTime:0,bleedTick:0,curseTime:0,curseMultiplier:1,castTime:0,ultimateFlash:0,wildHeartTime:0,braceTime:0,braced:false});player.maxSpiritShield=Math.max(0,Number(player.maxSpiritShield)||0);player.spiritShield=clamp(Number(player.spiritShield)||0,0,player.maxSpiritShield);
+  Object.assign(player,restored,{x:room.playerSpawn.x,y:room.playerSpawn.y,vx:0,vy:0,attack:null,dashTime:0,shotCooldown:0,aimFacing:Number.isFinite(restored.aimFacing)?restored.aimFacing:(restored.facing??-Math.PI/2),moveFacing:Number.isFinite(restored.moveFacing)?restored.moveFacing:(restored.facing??-Math.PI/2),aimLockTime:0,invulnerable:1.1,flash:0,hurtTime:0,stunTime:0,bleedTime:0,bleedTick:0,curseTime:0,curseMultiplier:1,castTime:0,ultimateFlash:0,wildHeartTime:0,braceTime:0,braced:false});player.maxSpiritShield=Math.max(0,Number(player.maxSpiritShield)||0);player.spiritShield=clamp(Number(player.spiritShield)||0,0,player.maxSpiritShield);
   equipWeapon(WEAPONS[player.weaponId]?player.weaponId:heroDef.weapon);player.health=clamp(Number(player.health)||1,1,player.maxHealth);camera.x=player.x;camera.y=player.y;camera.shake=0;resolveSynergies();
 }
 
@@ -1224,7 +1228,7 @@ function resetGame() {
   const legacyHealth=Math.min(25,profile.campaignClears*5)+profile.vitalityRank*5;const legacyGold=Math.min(25,profile.campaignClears*5)+profile.purseRank*5+(contractClaimed('spiritCull')?15:0);
   player = {
     x: room.playerSpawn.x, y: room.playerSpawn.y, vx: 0, vy: 0, radius: heroDef.radius,
-    facing: -Math.PI / 2, health: heroDef.maxHealth+legacyHealth, maxHealth: heroDef.maxHealth+legacyHealth, invulnerable: 0, flash: 0,
+    facing: -Math.PI / 2, aimFacing: -Math.PI / 2, moveFacing: -Math.PI / 2, aimLockTime: 0, health: heroDef.maxHealth+legacyHealth, maxHealth: heroDef.maxHealth+legacyHealth, invulnerable: 0, flash: 0,
     dashTime: 0, dashCooldown: 0, dashDirection: { x: 0, y: -1 }, dashTrailClock: 0,sprint:100,sprinting:false,footstepClock:0,
     attack: null, shotCooldown: 0,weaponId:weapon.id,arsenalAwakened:false,legendArsenalAwakened:false,
     abilityCooldowns: { undertowWell: 0, foxfireVolley: 0, wildHeart: 0, shockPaws: 0 },
@@ -2112,13 +2116,35 @@ function pointerWorld() {
   };
 }
 
+const AIM_FACING_LOCK = .42;
+
+function updatePointerAim(lock = false) {
+  if (!input.pointer.active || !player) return false;
+  const target = pointerWorld();
+  if (distance(player, target) <= 35) return false;
+  player.aimFacing = Math.atan2(target.y - player.y, target.x - player.x);
+  if (lock) player.aimLockTime = Math.max(player.aimLockTime || 0, AIM_FACING_LOCK);
+  return true;
+}
+
+function setActionFacing(direction, lock = true) {
+  if (!direction || (!direction.x && !direction.y)) return;
+  player.aimFacing = Math.atan2(direction.y, direction.x);
+  player.facing = player.aimFacing;
+  if (lock) player.aimLockTime = Math.max(player.aimLockTime || 0, AIM_FACING_LOCK);
+}
+
 function startDash() {
   if (player.dashCooldown > 0 || player.dashTime > 0 || player.hurtTime > 0 || player.stunTime > 0) return;
   const move = movementVector();
   if(!Number.isFinite(player.sprint))player.sprint=100;
   const direction = Math.hypot(move.x, move.y) > 0 ? move : { x: Math.cos(player.facing), y: Math.sin(player.facing) };
   player.dashDirection = direction;
-  player.facing = Math.atan2(direction.y, direction.x);
+  player.moveFacing = Math.atan2(direction.y, direction.x);
+  if ((player.aimLockTime || 0) <= 0) {
+    player.aimFacing = player.moveFacing;
+    player.facing = player.moveFacing;
+  }
   player.dashTime = heroDef.dashDuration;
   player.dashCooldown = heroDef.dashCooldown*player.dashCooldownMultiplier;
   player.invulnerable = Math.max(player.invulnerable, heroDef.dashInvulnerability);
@@ -2135,11 +2161,10 @@ function requestAttack() {
 }
 
 function startAttack() {
-  if (input.pointer.active) {
-    const target = pointerWorld();
-    const delta = distance(player, target);
-    if (delta > 35) player.facing = Math.atan2(target.y - player.y, target.x - player.x);
-  }
+  updatePointerAim(true);
+  player.facing = Number.isFinite(player.aimFacing) ? player.aimFacing : player.facing;
+  player.aimFacing = player.facing;
+  player.aimLockTime = Math.max(player.aimLockTime || 0, AIM_FACING_LOCK);
   const direction = { x: Math.cos(player.facing), y: Math.sin(player.facing) };
   player.attack = { index: 0, definition: { duration: weapon.attackDuration||.14 }, time: 0, released:false, facing:player.facing };
   player.shotCooldown = weapon.fireRate * player.fireRateMultiplier;
@@ -2196,7 +2221,7 @@ function aimDirection() {
 function useAbility(id) {
   const definition=ABILITIES[id];
   if (!definition || !player.unlockedAbilities.has(id) || player.abilityCooldowns[id] > 0 || player.hurtTime > .08 || player.stunTime > 0 || player.dashTime > 0 || !['playing','dojo'].includes(state)) return;
-  const direction=aimDirection(); player.facing=Math.atan2(direction.y,direction.x); player.abilityCooldowns[id]=definition.cooldown;player.castAbility=id;
+  const direction=aimDirection(); setActionFacing(direction); player.abilityCooldowns[id]=definition.cooldown;player.castAbility=id;
   if (id === 'undertowWell') {
     player.castTime=.34;
     const power=player.abilityPower.undertowWell;
@@ -2249,6 +2274,7 @@ function updatePlayer(dt) {
   const recoveryRate=state==='dojo'?4:1;
   player.dashCooldown = Math.max(0, player.dashCooldown - dt*recoveryRate);
   player.shotCooldown = Math.max(0, player.shotCooldown - dt);
+  player.aimLockTime = Math.max(0, (player.aimLockTime || 0) - dt);
   player.ultimateFlash = Math.max(0, player.ultimateFlash - dt);
   player.castTime=Math.max(0,player.castTime-dt);if(player.castTime<=0)player.castAbility=null;const wildHeartWasActive=player.wildHeartTime>0;player.wildHeartTime=Math.max(0,player.wildHeartTime-dt);if(wildHeartWasActive&&player.wildHeartTime<=0&&player.abilityEvolutions.wildHeart)triggerGuardianBloom();
   for(const id of Object.keys(player.abilityCooldowns)) player.abilityCooldowns[id]=Math.max(0,player.abilityCooldowns[id]-dt*recoveryRate);
@@ -2271,6 +2297,10 @@ function updatePlayer(dt) {
   if (input.attack || input.attackHeld || input.keys.has('j') || input.pressed.has('j') || input.pressed.has('enter')) requestAttack();
 
   const move = movementVector();
+  if (move.x || move.y) player.moveFacing = Math.atan2(move.y, move.x);
+  if (input.attackHeld || player.attack || player.castTime > 0) updatePointerAim(true);
+  const actionOwnsFacing = (player.aimLockTime || 0) > 0 || input.attackHeld || Boolean(player.attack) || player.castTime > 0;
+  if (actionOwnsFacing && Number.isFinite(player.aimFacing)) player.facing = player.aimFacing;
   const wantsSprint=input.keys.has(' ')&&Boolean(move.x||move.y)&&!player.attack&&player.castTime<=0&&player.dashTime<=0;
   player.sprinting=wantsSprint&&player.sprint>2;
   player.sprint=clamp(player.sprint+(player.sprinting?-27:28)*dt,0,100);
@@ -2301,8 +2331,9 @@ function updatePlayer(dt) {
     if (!move.x && !move.y) {
       const drag = Math.exp(-heroDef.drag * dt);
       player.vx *= drag; player.vy *= drag;
-    } else if (!player.attack) {
-      player.facing = approachAngle(player.facing, Math.atan2(move.y, move.x), clamp(dt * 15, 0, 1));
+    } else if (!actionOwnsFacing) {
+      player.facing = approachAngle(player.facing, player.moveFacing, clamp(dt * 15, 0, 1));
+      player.aimFacing = player.facing;
     }
   }
 
@@ -2935,6 +2966,7 @@ function keepInArena(entity) {
     }
   }
   for(const prop of destructibles){if(prop.broken)continue;const dx=entity.x-prop.x,dy=entity.y-prop.y,d=Math.hypot(dx,dy),minimum=entity.radius+prop.radius;if(d>0&&d<minimum){entity.x=prop.x+dx/d*minimum;entity.y=prop.y+dy/d*minimum;entity.vx*=.58;entity.vy*=.58;}}
+  if(room.mapRuntime==='phaser-tiled')shrineMapRuntime.resolveCollision(entity);
 }
 
 function burst(x, y, color, count, speed, size) {
@@ -3176,6 +3208,7 @@ function setWorldTransform(screen) {
 }
 
 function drawArenaBackdrop(screen){
+  if(room.mapRuntime==='phaser-tiled'&&['playing','story'].includes(state))return;
   if(!assets.arena.complete||!assets.arena.naturalWidth){ctx.fillStyle='#12112a';ctx.fillRect(0,0,room.width,room.height);return;}
   const halfWidth=screen.width/(camera.zoom*2)+160,halfHeight=screen.height/(camera.zoom*2)+160;
   const x=clamp(camera.x-halfWidth,0,room.width),y=clamp(camera.y-halfHeight,0,room.height),width=Math.min(room.width-x,halfWidth*2),height=Math.min(room.height-y,halfHeight*2);
@@ -3184,7 +3217,10 @@ function drawArenaBackdrop(screen){
 
 function draw(screen) {
   ctx.setTransform(screen.dpr, 0, 0, screen.dpr, 0, 0);
-  ctx.fillStyle = '#080718'; ctx.fillRect(0, 0, screen.width, screen.height);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const layeredMapActive=room.mapRuntime==='phaser-tiled'&&['playing','story'].includes(state);
+  if(!layeredMapActive){ctx.fillStyle = '#080718'; ctx.fillRect(0, 0, screen.width, screen.height);}
+  shrineMapRuntime.update({cameraX:camera.x,cameraY:camera.y,zoom:camera.zoom,width:screen.width,height:screen.height,active:layeredMapActive,sealed:state==='playing'&&enemies.some((enemy)=>!enemy.dead&&enemy.state!=='waiting')});
   setWorldTransform(screen);
   drawArenaBackdrop(screen);
 
@@ -3199,6 +3235,7 @@ function draw(screen) {
   // Attack art belongs in the world, behind readable character silhouettes. Hit motion/status tint stays on bodies.
   drawEffects(false);
   const renderables = [
+    ...(room.mapRuntime==='phaser-tiled'?shrineMapRuntime.worldObjects('Props / Interactive').map((object)=>({...object,renderType:'tiledProp'})):[]),
     ...(room.id==='jadeCourtyard'?props.filter((prop) => !prop.foreground).map((prop) => ({ ...prop, renderType: 'prop' })):[]),
     ...destructibles.filter((prop)=>!prop.broken).map((prop)=>({...prop,renderType:'destructible'})),
     ...(roomMission?.actors||[]).filter((actor)=>!actor.broken&&!actor.released).map((actor)=>({...actor,renderType:actor.kind==='anchor'?'missionAnchor':'missionCaptive'})),
@@ -3209,6 +3246,7 @@ function draw(screen) {
   drawCombatantReadabilityPlates(renderables);
   for (const entity of renderables) {
     if (entity.renderType === 'prop') drawProp(entity);
+    else if(entity.renderType==='tiledProp')drawTiledMapObject(entity);
     else if(entity.renderType==='destructible')drawDestructible(entity);
     else if(entity.renderType==='missionAnchor')drawMissionAnchor(entity);
     else if(entity.renderType==='missionCaptive')drawMissionCaptive(entity);
@@ -3218,6 +3256,7 @@ function draw(screen) {
     else drawEnemy(entity);
   }
   if(room.id==='jadeCourtyard')for (const prop of props.filter((item) => item.foreground)) drawProp(prop, .94);
+  if(room.mapRuntime==='phaser-tiled')for(const object of shrineMapRuntime.worldObjects('Foreground / Occlusion'))drawTiledMapObject(object,.94);
   drawForegroundHaze();
   drawEffects(true);
   if(player?.ultimateFlash>0&&profile.settings.flashIntensity>0){ctx.setTransform(screen.dpr,0,0,screen.dpr,0,0);const a=clamp(player.ultimateFlash/.16,0,1)*profile.settings.flashIntensity;const flash=ctx.createRadialGradient(screen.width/2,screen.height/2,20,screen.width/2,screen.height/2,screen.width*.7);flash.addColorStop(0,`rgba(255,214,126,${a*.42})`);flash.addColorStop(.45,`rgba(201,53,255,${a*.26})`);flash.addColorStop(1,'rgba(82,10,122,0)');ctx.fillStyle=flash;ctx.fillRect(0,0,screen.width,screen.height);}
@@ -3281,6 +3320,13 @@ function drawRoomInteractable(){
 
 function drawDestructible(prop){
   if(!assets.props.complete||!assets.props.naturalWidth)return;const sw=assets.props.naturalWidth/4,sh=assets.props.naturalHeight/2,h=250*prop.scale,w=h*(sw/sh);ctx.save();ctx.fillStyle='rgba(0,0,8,.38)';ctx.beginPath();ctx.ellipse(prop.x,prop.y+4,prop.radius*1.12,prop.radius*.38,0,0,Math.PI*2);ctx.fill();ctx.translate(prop.x,prop.y);if(prop.health<prop.maxHealth){ctx.rotate(Math.sin(performance.now()/26)*.035);ctx.globalAlpha=.82;}ctx.drawImage(assets.props,prop.col*sw,prop.row*sh,sw,sh,-w/2,-h*.82,w,h);ctx.restore();
+}
+
+function drawTiledMapObject(object,alpha=1){
+  if(!assets.props.complete||!assets.props.naturalWidth)return;const p=object.properties||{};if(!Number.isFinite(p.cropW)||!Number.isFinite(p.cropH))return;
+  const scale=p.scale??1,w=p.cropW*scale,h=p.cropH*scale,originY=p.originY??1,time=motionTime();ctx.save();ctx.globalAlpha=alpha;
+  if(p.collisionRadius){ctx.fillStyle='rgba(0,0,8,.28)';ctx.beginPath();ctx.ellipse(object.x,object.y+3,p.collisionRadius*1.12,p.collisionRadius*.34,0,0,Math.PI*2);ctx.fill();}
+  ctx.translate(object.x,object.y);if(p.foreground)ctx.rotate(Math.sin(time*1.4+object.x*.003)*.008);ctx.drawImage(assets.props,p.cropX,p.cropY,p.cropW,p.cropH,-w/2,-h*originY,w,h);ctx.restore();
 }
 
 function drawMissionAnchor(actor){
@@ -3500,7 +3546,7 @@ function drawHero(entity, alpha = 1, afterimage = false) {
   const runBob = stateName === 'run' ? Math.sin(time * animation.fps * Math.PI*(entity.sprinting?1.5:1)) * (entity.sprinting?5:3) : 0;
   const speedLean = clamp(moving / heroDef.speed, 0, 1) * .06;
   let scaleX = 1, scaleY = 1, rotation = 0;
-  if (stateName === 'run') { const pace=entity.sprinting?30:20;scaleX = 1 + Math.sin(time * pace) * (entity.sprinting?.065:.035); scaleY = 1 - Math.sin(time * pace) * (entity.sprinting?.055:.03); rotation = Math.cos(entity.facing) * speedLean*(entity.sprinting?1.8:1); }
+  if (stateName === 'run') { const pace=entity.sprinting?30:20;scaleX = 1 + Math.sin(time * pace) * (entity.sprinting?.065:.035); scaleY = 1 - Math.sin(time * pace) * (entity.sprinting?.055:.03); rotation = Math.cos(entity.moveFacing ?? entity.facing) * speedLean*(entity.sprinting?1.8:1); }
   if (stateName === 'dash') { scaleX = 1.28; scaleY = .88; rotation = Math.cos(entity.facing) * .08; }
   if (firing) {
     const p = clamp(entity.attack?.time / entity.attack?.definition.duration || .5, 0, 1);
@@ -3854,6 +3900,7 @@ function easeOutBack(x) {
 
 let lastDrawTime=0,lastFrameMetric=performance.now();const frameDurations=[];
 function frame(now) {
+  scrollShellToOrigin();
   const screen = resize();
   const dt = Math.min((now - lastTime) / 1000, .033);
   lastTime = now;
@@ -3866,9 +3913,12 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 
+window.__BRAWLPAWS_QA__=()=>({state,room:room.id,player:player&&{x:player.x,y:player.y,vx:player.vx,vy:player.vy,facing:player.facing,aimFacing:player.aimFacing,moveFacing:player.moveFacing,aimLockTime:player.aimLockTime,attacking:Boolean(player.attack)},mapReady:shrineMapRuntime.ready,mapDebug:shrineMapRuntime.debug});
+
 window.addEventListener('resize', ()=>{lastDrawTime=0;resize();});
 window.addEventListener('keydown', (event) => {
   const key = event.key.toLowerCase();
+  if(key==='f3'){const active=shrineMapRuntime.toggleDebug();if(player)spawnWord(player.x,player.y-90,active?'MAP DEBUG ON':'MAP DEBUG OFF',active?'#45f4ff':'#9ea1ad');event.preventDefault();return;}
   if(state==='settings'&&(key==='escape'||key==='o')){closeSettings();event.preventDefault();return;}
   if(state==='paused'&&key==='escape'){resumeGame();event.preventDefault();return;}
   if(key==='o'&&['preview','hub','playing','dojo','paused'].includes(state)){openSettings(state);event.preventDefault();return;}
