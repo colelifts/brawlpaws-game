@@ -222,7 +222,14 @@ test('route cards travel to real neighboring regions and preserve the destinatio
   assert.match(game,/function routeDestinations\(/);assert.match(game,/expeditionNeighbors\(room\.id\)/);assert.match(game,/neighbors\.map\(\(destination,index\)=>\(\{\.\.\.baseChoices\[index\],destination\}\)\)/);
   assert.doesNotMatch(game,/new Set\(\[\.\.\.direct,\.\.\.available\]\)/);
   for(const copy of ['UNCHARTED','route-destination','route-threat','resumeRegion:pendingRouteDestination','kind:\'routeChoice\''])assert.match(game,new RegExp(copy));
-  assert.match(game,/activateRoom\(pendingRouteDestination/);assert.match(game,/checkpoint\.kind===\'routeChoice\'/);assert.match(game,/ROOMS\[checkpoint\.destination\]/);
+  assert.match(game,/enterMerchantRoom\(\{destination:pendingRouteDestination/);assert.match(game,/checkpoint\.kind===\'routeChoice\'/);assert.match(game,/ROOMS\[checkpoint\.destination\]/);
+});
+
+test('Moon Market is a physical safe stop with an in-world shopkeeper',()=>{
+  assert.match(game,/function enterMerchantRoom\(/);assert.match(game,/spawnRoomInteractable\('shop'\)/);assert.match(game,/item\.type==='shop'/);assert.match(game,/APPROACH THE SHOPKEEPER/);
+  assert.match(game,/kind:'merchant'/);assert.match(game,/preparePhysicalRoute\(pendingRouteWave,\{restoring:true\}\)/);
+  assert.doesNotMatch(game,/function leaveShop\(\)\{[^}]*startWave/);
+  assert.match(html,/RETURN TO THE SPIRIT ROAD/);
 });
 
 test('Chrome performance, adaptive audio, and readable choice art are production-wired',()=>{

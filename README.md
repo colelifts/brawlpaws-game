@@ -103,8 +103,8 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - Ward-defense missions have a short opening grace period, limited simultaneous ward attackers, and a survival-scaled damage ceiling. Ignoring the ward still loses the room, while active defense has a fair reaction window.
 - Each chapter has four checkpoint-safe story beats: the opening, revelations after seals two and four, and the guardian confrontation. Every scene carries seal progress plus a one-line next objective so the six-chapter plot remains legible between route choices.
 - Dedicated Jadeguard Tanuki boss artwork, a 2,600-HP boss HUD, three phases, staff sweep, stunning ground slam, radial jade projectiles, phase summons, enrage, and chapter-clear story payoff
-- A branching Choose Your Path screen between waves with Combat, Elite, Heal, Shop, Treasure, and Shrine nodes
-- Enemy gold rewards, mutation-scaled elite routes, twelve run relics, and a functional Moon Market with persistent purchases
+- Physical spirit-road gates between ordinary regions, with safe backtracking into cleared landmarks and full-screen world-map inspection kept as an optional planning tool
+- Enemy gold rewards, mutation-scaled elite routes, twelve run relics, and a physical Moon Market stop: walk up to the animated shopkeeper, interact to open the compact purchase panel, then return to the in-world roads
 - Shop purchases include Dual-Wield, weapon damage, maximum health, ability-power improvements, and healing; active abilities remain tied to the level 2/4/6/8 earned ladder.
 - Chapter 2: Bamboo Hollow, with build-preserving moon-gate transition, six unique pre-boss arenas ending at Hollow Moonstone Causeway, a separate Moonfang Burrow guardian court, and six escalating 14/14/22/30/84/112-enemy waves
 - Bamboo Stalkers with twin-sickle attacks, Spore Archers with visible bow draw/release, and stun-maul Moss Brutes
