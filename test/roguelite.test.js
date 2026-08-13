@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { BOSS_PATTERNS, BOSS_PROFILES, ENCOUNTERS } from '../src/data.js';
 import { encounterActiveLimit } from '../src/math.js';
 
@@ -79,13 +79,22 @@ test('ranged facing is independent from locomotion so strafing cannot flip the s
   assert.doesNotMatch(game,/else if \(!player\.attack\) \{\s*player\.facing = approachAngle\(player\.facing, Math\.atan2\(move\.y, move\.x\)/);
 });
 
-test('Shrine Courtyard is a real Phaser and Tiled layered map vertical slice',()=>{
+test('Jade Grove owns ten real Phaser and Tiled layered map templates',()=>{
   assert.match(html,/phaser-3\.90\.0\.min\.js/);
   assert.match(html,/id="phaser-map"/);
-  for(const name of ['Ground','Ground Detail','Walls','Props Below Player','Collision','Props / Interactive','Doors / Gates','Enemy Spawns','Player Spawn','Triggers','Foreground / Occlusion','VFX Anchors'])assert.ok(shrineMap.layers.some((layer)=>layer.name===name),`missing ${name}`);
-  assert.match(mapRuntime,/tilemapTiledJSON\('shrine-courtyard'/);
+  const required=['Ground','Ground Detail','Walls','Props Below Player','Collision','Props / Interactive','Doors / Gates','Enemy Spawns','Player Spawn','Triggers','Foreground / Occlusion','VFX Anchors'];
+  const mapFiles=readdirSync(new URL('../assets/maps/jade-grove/',import.meta.url)).filter((file)=>file.endsWith('.json'));
+  assert.equal(mapFiles.length,10);
+  for(const file of mapFiles){const map=JSON.parse(readFileSync(new URL(`../assets/maps/jade-grove/${file}`,import.meta.url),'utf8'));for(const name of required)assert.ok(map.layers.some((layer)=>layer.name===name),`${file} missing ${name}`);assert.equal(map.width*map.tilewidth,6144);assert.equal(map.height*map.tileheight,3840);assert.ok(map.layers.find((layer)=>layer.name==='Enemy Spawns').objects.length>=12);}
+  assert.match(mapRuntime,/JADE_MAPS=/);
+  assert.match(mapRuntime,/tilemapTiledJSON\(definition\.key,definition\.path\)/);
   assert.match(mapRuntime,/resolveCollision\(entity\)/);
   assert.match(mapRuntime,/setCombatSealed\(sealed\)/);
+  assert.match(mapRuntime,/forwardGate\(roomId=this\.activeRoomId\)/);
+  assert.match(game,/authoredEnemySpawns/);
+  assert.match(game,/layeredMapRuntime\.exitAt\(player\)/);
+  for(const optionalRoom of ['jadeBrokenPavilion','jadeCrystalClearing','jadeTrainingYard'])assert.match(game,new RegExp(optionalRoom));
+  assert.match(game,/roomForWave\(index,requestedNodeType\)/);
   assert.match(game,/room\.mapRuntime==='phaser-tiled'/);
   assert.match(game,/key==='f3'/);
   assert.equal(shrineMap.width*shrineMap.tilewidth,6144);
@@ -502,7 +511,7 @@ test('the Spirit Dojo is an isolated interactive combat laboratory',()=>{
 test('combat waves activate distinct rooms with a visible location transition',()=>{
   for(const id of ['room-transition','room-transition-kicker','room-transition-title','room-transition-subtitle'])assert.match(html,new RegExp(`id="${id}"`));
   for(const fn of ['activateRoom','showRoomTransition','roomForWave'])assert.match(game,new RegExp(`function ${fn}\\(`));
-  assert.match(game,/activateRoom\(roomForWave\(index\)/);
+  assert.match(game,/activateRoom\(roomForWave\(index,requestedNodeType\)/);
   assert.match(game,/chapter\.bossRoom\|\|chapter\.rooms\?\.at\(-1\)/);
   assert.match(game,/const arenaCache=new Map/);
 });
@@ -519,7 +528,7 @@ test('every campaign wave advances into its own production-painted combat locati
   for(const [chapter,rooms] of Object.entries(chapterRooms)){
     assert.match(data,new RegExp(`id:\\s*'${chapter}'[\\s\\S]{0,260}rooms:\\s*\\[${rooms.map(room=>`'${room}'`).join(',')}\\]`));
     for(const room of rooms){
-      if(room==='jadeCourtyard')assert.match(data,/jadeCourtyard:\s*\{[\s\S]{0,360}width:\s*6144[\s\S]{0,80}height:\s*3840/);
+      if(chapter==='jadeChapter')assert.match(data,new RegExp(`${room}:\\s*\\{[\\s\\S]{0,520}width:\\s*6144[\\s\\S]{0,80}height:\\s*3840`));
       else assert.match(data,new RegExp(`${room}:\\s*\\{[\\s\\S]{0,360}width:\\s*4800[\\s\\S]{0,80}height:\\s*2700`));
       assert.match(data,new RegExp(`${room}:\\s*\\{[\\s\\S]{0,1600}combatBounds:`));
     }
@@ -563,7 +572,8 @@ test('late armies and guardians escalate pressure without changing the tutorial 
   assert.equal(encounterActiveLimit({waveIndex:5,chapterIndex:2,difficultyId:'ferocious'}),24);
   assert.equal(encounterActiveLimit({waveIndex:5,chapterIndex:2,difficultyId:'nightmare'}),24);
   assert.match(game,/const spawnDuration=Math\.max\(\.42,1\.35-index\*\.15-chapterIndex\*\.08\)/);
-  assert.match(game,/const angle=i\*2\.3999632297\+index\*\.73/);
+  assert.match(game,/const authored=authoredEnemySpawns\(\)/);
+  assert.match(game,/point\.properties\.spawnIndex/);
   assert.match(game,/campaignPressureCurve\(\{chapterIndex,waveIndex:Math\.max\(0,encounter\.wave\)/);
   assert.match(game,/window\.__BRAWLPAWS_PRESSURE__/);
   assert.match(game,/const cellSize=190,neighborOffsets=/);

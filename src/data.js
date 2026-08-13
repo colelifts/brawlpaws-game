@@ -520,6 +520,7 @@ export const ROOMS = {
   jadeCourtyard: {
     id: 'jadeCourtyard', name: 'Shrine Courtyard', width: 6144, height: 3840,
     map: 'assets/maps/jade-grove/shrine-courtyard.json', mapRuntime:'phaser-tiled',
+    exits:['north'],enemySet:'jade_early',difficulty:1,rewardType:'standard',
     background: 'assets/environment/jade-grove-arena.png',
     playerSpawn: { x: 3072, y: 2460 },
     enemySpawns: [
@@ -532,31 +533,35 @@ export const ROOMS = {
     combatBounds: { x: 3072, y: 1940, radiusX: 2750, radiusY: 1650 }
   },
   jadeMoonbridge: {
-    id:'jadeMoonbridge', name:'Moonbridge Crossing', width:4800, height:2700,
-    background:'assets/environment/jade-moonbridge.png', playerSpawn:{x:2100,y:1800}, enemySpawns:[], ambient:'river',spawnLane:.66,spawnLaneStep:.045,
-    combatBounds:{x:2410,y:1430,radiusX:1500,radiusY:780}
+    id:'jadeMoonbridge', name:'Moonbridge Crossing', width:6144, height:3840,map:'assets/maps/jade-grove/moonbridge-crossing.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'jade_bridge',difficulty:2,rewardType:'standard',
+    background:'assets/environment/jade-moonbridge.png', playerSpawn:{x:3072,y:3310}, enemySpawns:[], ambient:'river',spawnLane:.66,spawnLaneStep:.045,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
   jadeRootGarden: {
-    id:'jadeRootGarden', name:'Corrupted Root Garden', width:4800, height:2700,
-    background:'assets/environment/jade-root-garden.png', playerSpawn:{x:2400,y:1820}, enemySpawns:[], ambient:'roots',spawnLane:.55,spawnLaneStep:.05,
-    combatBounds:{x:2400,y:1440,radiusX:1650,radiusY:840}
+    id:'jadeRootGarden', name:'Root-Covered Plaza', width:6144, height:3840,map:'assets/maps/jade-grove/root-covered-plaza.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'jade_roots',difficulty:3,rewardType:'elite',
+    background:'assets/environment/jade-root-garden.png', playerSpawn:{x:3072,y:3310}, enemySpawns:[], ambient:'roots',spawnLane:.55,spawnLaneStep:.05,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
   jadeBellTerraces: {
-    id:'jadeBellTerraces',name:'Jade Bell Terraces',width:4800,height:2700,background:'assets/environment/jade-bell-terraces.png',playerSpawn:{x:2340,y:1810},enemySpawns:[],ambient:'bells',spawnLane:.6,spawnLaneStep:.046,
-    combatBounds:{x:2400,y:1430,radiusX:1740,radiusY:900}
+    id:'jadeBellTerraces',name:'Jade Bell Terraces',width:6144,height:3840,map:'assets/maps/jade-grove/bell-terraces.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'jade_bells',difficulty:4,rewardType:'shrine',background:'assets/environment/jade-bell-terraces.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'bells',spawnLane:.6,spawnLaneStep:.046,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
   jadeLanternCanals: {
-    id:'jadeLanternCanals',name:'Whispering Lantern Canals',width:4800,height:2700,background:'assets/environment/jade-lantern-canals.png',playerSpawn:{x:2400,y:1840},enemySpawns:[],ambient:'river',spawnLane:.58,spawnLaneStep:.044,
-    combatBounds:{x:2400,y:1435,radiusX:1700,radiusY:880}
+    id:'jadeLanternCanals',name:'Whispering Lantern Canals',width:6144,height:3840,map:'assets/maps/jade-grove/lantern-canals.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'jade_canals',difficulty:5,rewardType:'treasure',background:'assets/environment/jade-lantern-canals.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'river',spawnLane:.58,spawnLaneStep:.044,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
   jadeGuardianApproach: {
-    id:'jadeGuardianApproach', name:'Jadeguard Approach', width:4800, height:2700,
-    background:'assets/environment/jade-guardian-approach.png', playerSpawn:{x:2400,y:1900}, enemySpawns:[], ambient:'corruption',spawnLane:.66,spawnLaneStep:.04,
-    combatBounds:{x:2400,y:1500,radiusX:1550,radiusY:750}
+    id:'jadeGuardianApproach', name:'Jadebreaker Boss Courtyard', width:6144, height:3840,map:'assets/maps/jade-grove/jadebreaker-courtyard.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'jade_guardian',difficulty:7,rewardType:'guardian',
+    background:'assets/environment/jade-guardian-approach.png', playerSpawn:{x:3072,y:3310}, enemySpawns:[], ambient:'corruption',spawnLane:.66,spawnLaneStep:.04,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
   jadeWardenProcessional: {
-    id:'jadeWardenProcessional',name:'Jade Warden Processional',width:4800,height:2700,background:'assets/environment/jade-warden-processional.png',playerSpawn:{x:2400,y:1870},enemySpawns:[],ambient:'corruption',spawnLane:.61,spawnLaneStep:.04,
-    combatBounds:{x:2400,y:1460,radiusX:1730,radiusY:890}
+    id:'jadeWardenProcessional',name:'Jade Warden Processional',width:6144,height:3840,map:'assets/maps/jade-grove/warden-processional.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'jade_siege',difficulty:6,rewardType:'elite',background:'assets/environment/jade-warden-processional.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'corruption',spawnLane:.61,spawnLaneStep:.04,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
+  },
+  jadeBrokenPavilion:{id:'jadeBrokenPavilion',name:'Broken Pavilion',width:6144,height:3840,map:'assets/maps/jade-grove/broken-pavilion.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'jade_event',difficulty:2,rewardType:'event',background:'assets/environment/jade-root-garden.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'roots',spawnLane:.6,spawnLaneStep:.04,combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}},
+  jadeCrystalClearing:{id:'jadeCrystalClearing',name:'Spirit Crystal Clearing',width:6144,height:3840,map:'assets/maps/jade-grove/spirit-crystal-clearing.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'jade_elite',difficulty:4,rewardType:'elite',background:'assets/environment/jade-bell-terraces.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'bells',spawnLane:.6,spawnLaneStep:.04,combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}},
+  jadeTrainingYard:{id:'jadeTrainingYard',name:'Abandoned Training Yard',width:6144,height:3840,map:'assets/maps/jade-grove/abandoned-training-yard.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'jade_combat',difficulty:2,rewardType:'standard',background:'assets/environment/jade-grove-arena.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'dojo',spawnLane:.6,spawnLaneStep:.04,combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
   bambooHollow: {
     id: 'bambooHollow', name: 'Bamboo Hollow', width: 4800, height: 2700,

@@ -1,6 +1,21 @@
 # BrawlPaws layered map pipeline
 
-BrawlPaws maps are Tiled JSON maps rendered by the pinned local Phaser 3.90 runtime. The first vertical slice is `assets/maps/jade-grove/shrine-courtyard.json`; its source generator is `scripts/build-shrine-map.mjs`.
+BrawlPaws maps are Tiled JSON maps rendered by the pinned local Phaser 3.90 runtime. Jade Grove now ships with ten 6144×3840 handcrafted templates loaded by one reusable runtime. Its source generator is `scripts/build-shrine-map.mjs`.
+
+## Jade Grove template library
+
+- `shrine-courtyard.json` — open shrine plaza and tutorial approach
+- `moonbridge-crossing.json` — narrow broken bridge with river-bank blockers
+- `root-covered-plaza.json` — four corner islands and a solid root heart
+- `bell-terraces.json` — stepped lateral platforms and a central bell dais
+- `lantern-canals.json` — split canal lanes and alternating crossings
+- `warden-processional.json` — long northbound gauntlet with guardian plinths
+- `jadebreaker-courtyard.json` — large boss court, intro trigger, entrance seal, and victory exit
+- `broken-pavilion.json` — optional event template with collapsed architecture
+- `spirit-crystal-clearing.json` — optional elite clearing with crystal masses
+- `abandoned-training-yard.json` — optional combat template with equipment rows
+
+The six main chapter regions are selected in authored campaign order. Optional templates are registered for later branch selection. Every combat region owns its own collision, spawn, trigger, gate, interactive, foreground, and VFX data; no region uses its old generated painting as the active gameplay floor.
 
 The current migration keeps the proven combat/HUD canvas above Phaser while Phaser owns tilemap loading, camera culling, map art, authored world objects, collision geometry, gates, VFX anchors, and the F3 debug view. Combat actors consume the same map collision data now; actors, projectiles, and remaining effects move into Phaser incrementally without throwing away working game logic.
 
@@ -12,7 +27,9 @@ The current migration keeps the proven combat/HUD canvas above Phaser while Phas
 4. Export as JSON over the same file. Do not enable compressed layer data; Phaser's Tiled parser deliberately receives readable integer arrays.
 5. Run `npm.cmd test` and load `?system=tutorial&step=6` for a combat check.
 
-Running `node scripts/build-shrine-map.mjs` regenerates the initial authored map and will overwrite manual Tiled edits. Once a room becomes hand-edited, copy or retire its generator first.
+Running `node scripts/build-shrine-map.mjs` regenerates all ten authored Jade templates and will overwrite manual Tiled edits. Once a room becomes hand-edited, copy or retire its generator first.
+
+Enemy creation consumes the `Enemy Spawns` layer in authored order, cycling through those points with small offsets only when a wave contains more enemies than points. Clearing combat opens the physical north gate; progression waits until the player walks through its exit trigger.
 
 ## Required layers
 
