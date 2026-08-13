@@ -478,6 +478,16 @@ test('online allies transmit timed weapon and ability combat instead of avatar-o
   assert.match(game,/debugSystem==='coopCombat'/);
 });
 
+test('host-authoritative enemies target and damage every living party member',()=>{
+  for(const fn of ['combatTargets','enemyTarget','hurtCombatTarget'])assert.match(game,new RegExp(`function ${fn}\\(`));
+  assert.match(game,/packet\.type==='damage'&&packet\.payload\?\.targetId===coop\.id/);
+  assert.match(game,/coop\.connected&&!coopIsHost\(\)&&!coop\.applyingDamage/);
+  assert.match(game,/const target=enemyTarget\(enemy\),toPlayer/);
+  assert.match(game,/hurtCombatTarget\(target,Math\.round\(definition\.contactDamage/);
+  assert.match(game,/for\(const combatant of combatTargets\(\)\)/);
+  assert.match(game,/prepareBossSignature\(enemy,profile,target\)/);
+});
+
 test('specialist enemies use dedicated animation and attack assets',()=>{
   for(const id of ['bellweaverCat','powderkegToad','gatewardenRhino','mistclawLynx'])assert.match(data,new RegExp(`${id}: \\{`));
   for(const fn of ['summonBellweaverGuard','throwPowderkegBomb','drawSpecialEnemy','startSpecialistShowcase'])assert.match(game,new RegExp(`function ${fn}\\(`));
@@ -485,7 +495,7 @@ test('specialist enemies use dedicated animation and attack assets',()=>{
   assert.match(game,/const frontalGuard=enemy\.def\.behavior==='shield'/);
   assert.match(game,/enemy\.shield>0&&hitsFront/);
   assert.match(game,/type:'bomb'/);
-  assert.match(game,/enemy\.blinkX=player\.x\+through\.x\*definition\.blinkOffset/);
+  assert.match(game,/enemy\.blinkX=target\.x\+through\.x\*definition\.blinkOffset/);
   assert.match(game,/spawnWord\(enemy\.x,enemy\.y-70,'MIST STEP!'/);
   assert.match(game,/\['gatewardenRhino','mistclawLynx','gongwing'/);
   assert.match(game,/\['mossBrute','bambooStalker','powderkegToad'/);
@@ -585,7 +595,7 @@ test('guardians gain a telegraphed phase-specific sealing crossfire',()=>{
   for(const profile of ['jadeguardTanuki','moonfangKomainu','pyreclawShogun'])assert.match(data,new RegExp(`${profile}:[\\s\\S]{0,260}crossfireDamage:[\\s\\S]{0,520}'crossfire'`));
   for(const state of ['bossWindupCrossfire','bossCrossfire'])assert.match(game,new RegExp(state));
   assert.match(game,/function fireBossCrossfire\(/);
-  assert.match(game,/lineDistance<profile\.crossfireWidth\+player\.radius/);
+  assert.match(game,/lineDistance<profile\.crossfireWidth\+\(combatant\.radius\|\|24\)/);
   assert.match(game,/pattern\.id==='crossfire'/);
 });
 
