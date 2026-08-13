@@ -1,6 +1,6 @@
 # BrawlPaws layered map pipeline
 
-BrawlPaws maps are Tiled JSON maps rendered by the pinned local Phaser 3.90 runtime. Jade Grove, Bamboo Hollow, Crimson Dojo, and Storm Coast each ship with ten 6144×3840 layered templates loaded by one reusable runtime. Their source generators live in `scripts/build-*-maps.mjs` plus the original `build-shrine-map.mjs`.
+BrawlPaws maps are Tiled JSON maps rendered by the pinned local Phaser 3.90 runtime. The first five realms—Jade Grove, Bamboo Hollow, Crimson Dojo, Storm Coast, and Neon City—each ship with ten 6144×3840 layered templates loaded by one reusable runtime. Their source generators live in `scripts/build-*-maps.mjs` plus the original `build-shrine-map.mjs`.
 
 ## Jade Grove template library
 
@@ -61,6 +61,21 @@ The Ember Corridor battlefield hazard cuts across these authored layouts rather 
 - `raider-wreck.json` — optional elite and shop wreckage
 
 Water and sky-drop regions are solid navigation boundaries rather than decoration. Storm Surge attack lanes cross the traversable islands, and the Raijin arena owns a dedicated descent trigger, combat seal, and next-realm gate.
+
+## Neon City template library
+
+- `neon-rain-gate.json` — opening checkpoint between tower blocks
+- `circuit-market.json` — market alleys and central trade core
+- `hologram-arcade.json` — narrow arcade path between simulation voids
+- `skyrail-shrine.json` — elevated rail approach and pulse altar
+- `data-lotus-gardens.json` — data pools and root server
+- `shogun-tower.json` — fortified vertical processional
+- `shogun-core.json` — Daikyo Oni’s reactor arena
+- `memory-bazaar.json` — optional story/event market
+- `pulse-shrine.json` — optional recovery node
+- `kernel-foundry.json` — optional elite and shop district
+
+Building footprints, skyrail drops, hologram voids, and server walls are actual collision. Firewall Override lanes cross the legal movement corridors; the Shogun Core owns Daikyo’s descent trigger, combat seal, and final-realm gate.
 
 The current migration keeps the proven combat/HUD canvas above Phaser while Phaser owns tilemap loading, camera culling, map art, authored world objects, collision geometry, gates, VFX anchors, and the F3 debug view. Combat actors consume the same map collision data now; actors, projectiles, and remaining effects move into Phaser incrementally without throwing away working game logic.
 

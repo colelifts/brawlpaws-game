@@ -1,0 +1,2900 @@
+{
+  "compressionlevel": -1,
+  "height": 15,
+  "width": 24,
+  "infinite": false,
+  "layers": [
+    {
+      "id": 1,
+      "name": "Ground",
+      "type": "tilelayer",
+      "width": 24,
+      "height": 15,
+      "x": 0,
+      "y": 0,
+      "opacity": 1,
+      "visible": true,
+      "data": [
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        5,
+        5,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        5,
+        5,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        5,
+        5,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        5,
+        5,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        5,
+        5,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        5,
+        5,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        5,
+        5,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        5,
+        5,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        5,
+        5,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        5,
+        5,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        5,
+        5,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        5,
+        5,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ]
+    },
+    {
+      "id": 1,
+      "name": "Ground Detail",
+      "type": "tilelayer",
+      "width": 24,
+      "height": 15,
+      "x": 0,
+      "y": 0,
+      "opacity": 1,
+      "visible": true,
+      "data": [
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": 1,
+      "name": "Walls",
+      "type": "tilelayer",
+      "width": 24,
+      "height": 15,
+      "x": 0,
+      "y": 0,
+      "opacity": 1,
+      "visible": true,
+      "data": [
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Props Below Player",
+      "type": "objectgroup",
+      "draworder": "topdown",
+      "opacity": 1,
+      "visible": true,
+      "objects": [
+        {
+          "id": 1,
+          "name": "pulse_sign_w",
+          "type": "prop",
+          "x": 820,
+          "y": 2390,
+          "width": 340,
+          "height": 430,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "cropX",
+              "type": "float",
+              "value": 35
+            },
+            {
+              "name": "cropY",
+              "type": "float",
+              "value": 535
+            },
+            {
+              "name": "cropW",
+              "type": "float",
+              "value": 340
+            },
+            {
+              "name": "cropH",
+              "type": "float",
+              "value": 430
+            },
+            {
+              "name": "scale",
+              "type": "float",
+              "value": 0.8
+            },
+            {
+              "name": "originY",
+              "type": "float",
+              "value": 1
+            },
+            {
+              "name": "collisionRadius",
+              "type": "float",
+              "value": 60
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "name": "pulse_sign_e",
+          "type": "prop",
+          "x": 5324,
+          "y": 2390,
+          "width": 340,
+          "height": 430,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "cropX",
+              "type": "float",
+              "value": 35
+            },
+            {
+              "name": "cropY",
+              "type": "float",
+              "value": 535
+            },
+            {
+              "name": "cropW",
+              "type": "float",
+              "value": 340
+            },
+            {
+              "name": "cropH",
+              "type": "float",
+              "value": 430
+            },
+            {
+              "name": "scale",
+              "type": "float",
+              "value": 0.8
+            },
+            {
+              "name": "originY",
+              "type": "float",
+              "value": 1
+            },
+            {
+              "name": "collisionRadius",
+              "type": "float",
+              "value": 60
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "name": "pulse_lamp_w",
+          "type": "prop",
+          "x": 1280,
+          "y": 1080,
+          "width": 300,
+          "height": 420,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "cropX",
+              "type": "float",
+              "value": 55
+            },
+            {
+              "name": "cropY",
+              "type": "float",
+              "value": 65
+            },
+            {
+              "name": "cropW",
+              "type": "float",
+              "value": 300
+            },
+            {
+              "name": "cropH",
+              "type": "float",
+              "value": 420
+            },
+            {
+              "name": "scale",
+              "type": "float",
+              "value": 0.58
+            },
+            {
+              "name": "originY",
+              "type": "float",
+              "value": 1
+            },
+            {
+              "name": "collisionRadius",
+              "type": "float",
+              "value": 45
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "name": "pulse_lamp_e",
+          "type": "prop",
+          "x": 4864,
+          "y": 1080,
+          "width": 300,
+          "height": 420,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "cropX",
+              "type": "float",
+              "value": 55
+            },
+            {
+              "name": "cropY",
+              "type": "float",
+              "value": 65
+            },
+            {
+              "name": "cropW",
+              "type": "float",
+              "value": 300
+            },
+            {
+              "name": "cropH",
+              "type": "float",
+              "value": 420
+            },
+            {
+              "name": "scale",
+              "type": "float",
+              "value": 0.58
+            },
+            {
+              "name": "originY",
+              "type": "float",
+              "value": 1
+            },
+            {
+              "name": "collisionRadius",
+              "type": "float",
+              "value": 45
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "name": "pulse_data_crystal",
+          "type": "prop",
+          "x": 2200,
+          "y": 800,
+          "width": 310,
+          "height": 445,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "cropX",
+              "type": "float",
+              "value": 390
+            },
+            {
+              "name": "cropY",
+              "type": "float",
+              "value": 70
+            },
+            {
+              "name": "cropW",
+              "type": "float",
+              "value": 310
+            },
+            {
+              "name": "cropH",
+              "type": "float",
+              "value": 445
+            },
+            {
+              "name": "scale",
+              "type": "float",
+              "value": 0.6
+            },
+            {
+              "name": "originY",
+              "type": "float",
+              "value": 1
+            },
+            {
+              "name": "collisionRadius",
+              "type": "float",
+              "value": 66
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Collision",
+      "type": "objectgroup",
+      "draworder": "topdown",
+      "opacity": 1,
+      "visible": false,
+      "objects": [
+        {
+          "id": 6,
+          "name": "boundary_north_west",
+          "type": "collision",
+          "x": 0,
+          "y": 0,
+          "width": 2800,
+          "height": 220,
+          "rotation": 0,
+          "visible": true,
+          "properties": []
+        },
+        {
+          "id": 7,
+          "name": "boundary_north_east",
+          "type": "collision",
+          "x": 3344,
+          "y": 0,
+          "width": 2800,
+          "height": 220,
+          "rotation": 0,
+          "visible": true,
+          "properties": []
+        },
+        {
+          "id": 8,
+          "name": "boundary_south_west",
+          "type": "collision",
+          "x": 0,
+          "y": 3620,
+          "width": 2800,
+          "height": 220,
+          "rotation": 0,
+          "visible": true,
+          "properties": []
+        },
+        {
+          "id": 9,
+          "name": "boundary_south_east",
+          "type": "collision",
+          "x": 3344,
+          "y": 3620,
+          "width": 2800,
+          "height": 220,
+          "rotation": 0,
+          "visible": true,
+          "properties": []
+        },
+        {
+          "id": 10,
+          "name": "boundary_west",
+          "type": "collision",
+          "x": 0,
+          "y": 0,
+          "width": 260,
+          "height": 3840,
+          "rotation": 0,
+          "visible": true,
+          "properties": []
+        },
+        {
+          "id": 11,
+          "name": "boundary_east",
+          "type": "collision",
+          "x": 5884,
+          "y": 0,
+          "width": 260,
+          "height": 3840,
+          "rotation": 0,
+          "visible": true,
+          "properties": []
+        },
+        {
+          "id": 12,
+          "name": "pulse_hall",
+          "type": "collision",
+          "x": 2200,
+          "y": 520,
+          "width": 1744,
+          "height": 660,
+          "rotation": 0,
+          "visible": true,
+          "properties": []
+        },
+        {
+          "id": 13,
+          "name": "charge_pool_w",
+          "type": "collision",
+          "x": 820,
+          "y": 1300,
+          "width": 760,
+          "height": 550,
+          "rotation": 0,
+          "visible": true,
+          "properties": []
+        },
+        {
+          "id": 14,
+          "name": "charge_pool_e",
+          "type": "collision",
+          "x": 4564,
+          "y": 1300,
+          "width": 760,
+          "height": 550,
+          "rotation": 0,
+          "visible": true,
+          "properties": []
+        },
+        {
+          "id": 15,
+          "name": "restoration_node",
+          "type": "collision",
+          "x": 2700,
+          "y": 2220,
+          "width": 744,
+          "height": 440,
+          "rotation": 0,
+          "visible": true,
+          "properties": []
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Props / Interactive",
+      "type": "objectgroup",
+      "draworder": "topdown",
+      "opacity": 1,
+      "visible": true,
+      "objects": [
+        {
+          "id": 16,
+          "name": "pulse_cache_a",
+          "type": "prop",
+          "x": 1760,
+          "y": 2780,
+          "width": 330,
+          "height": 350,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "cropX",
+              "type": "float",
+              "value": 1100
+            },
+            {
+              "name": "cropY",
+              "type": "float",
+              "value": 155
+            },
+            {
+              "name": "cropW",
+              "type": "float",
+              "value": 330
+            },
+            {
+              "name": "cropH",
+              "type": "float",
+              "value": 350
+            },
+            {
+              "name": "scale",
+              "type": "float",
+              "value": 0.58
+            },
+            {
+              "name": "originY",
+              "type": "float",
+              "value": 1
+            },
+            {
+              "name": "destructible",
+              "type": "bool",
+              "value": true
+            },
+            {
+              "name": "kind",
+              "type": "string",
+              "value": "crate"
+            },
+            {
+              "name": "health",
+              "type": "float",
+              "value": 40
+            },
+            {
+              "name": "collisionRadius",
+              "type": "float",
+              "value": 52
+            }
+          ]
+        },
+        {
+          "id": 17,
+          "name": "pulse_chips",
+          "type": "prop",
+          "x": 4380,
+          "y": 2790,
+          "width": 420,
+          "height": 410,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "cropX",
+              "type": "float",
+              "value": 665
+            },
+            {
+              "name": "cropY",
+              "type": "float",
+              "value": 125
+            },
+            {
+              "name": "cropW",
+              "type": "float",
+              "value": 420
+            },
+            {
+              "name": "cropH",
+              "type": "float",
+              "value": 410
+            },
+            {
+              "name": "scale",
+              "type": "float",
+              "value": 0.46
+            },
+            {
+              "name": "originY",
+              "type": "float",
+              "value": 1
+            },
+            {
+              "name": "destructible",
+              "type": "bool",
+              "value": true
+            },
+            {
+              "name": "kind",
+              "type": "string",
+              "value": "pot"
+            },
+            {
+              "name": "health",
+              "type": "float",
+              "value": 22
+            },
+            {
+              "name": "collisionRadius",
+              "type": "float",
+              "value": 45
+            }
+          ]
+        },
+        {
+          "id": 18,
+          "name": "pulse_cache_b",
+          "type": "prop",
+          "x": 4660,
+          "y": 1770,
+          "width": 330,
+          "height": 350,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "cropX",
+              "type": "float",
+              "value": 1100
+            },
+            {
+              "name": "cropY",
+              "type": "float",
+              "value": 155
+            },
+            {
+              "name": "cropW",
+              "type": "float",
+              "value": 330
+            },
+            {
+              "name": "cropH",
+              "type": "float",
+              "value": 350
+            },
+            {
+              "name": "scale",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "originY",
+              "type": "float",
+              "value": 1
+            },
+            {
+              "name": "destructible",
+              "type": "bool",
+              "value": true
+            },
+            {
+              "name": "kind",
+              "type": "string",
+              "value": "crate"
+            },
+            {
+              "name": "health",
+              "type": "float",
+              "value": 40
+            },
+            {
+              "name": "collisionRadius",
+              "type": "float",
+              "value": 50
+            }
+          ]
+        },
+        {
+          "id": 19,
+          "name": "pulse_node",
+          "type": "prop",
+          "x": 3072,
+          "y": 930,
+          "width": 360,
+          "height": 415,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "cropX",
+              "type": "float",
+              "value": 700
+            },
+            {
+              "name": "cropY",
+              "type": "float",
+              "value": 535
+            },
+            {
+              "name": "cropW",
+              "type": "float",
+              "value": 360
+            },
+            {
+              "name": "cropH",
+              "type": "float",
+              "value": 415
+            },
+            {
+              "name": "scale",
+              "type": "float",
+              "value": 0.85
+            },
+            {
+              "name": "originY",
+              "type": "float",
+              "value": 1
+            },
+            {
+              "name": "interaction",
+              "type": "string",
+              "value": "dataShrine"
+            },
+            {
+              "name": "collisionRadius",
+              "type": "float",
+              "value": 115
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Doors / Gates",
+      "type": "objectgroup",
+      "draworder": "topdown",
+      "opacity": 1,
+      "visible": true,
+      "objects": [
+        {
+          "id": 20,
+          "name": "gate_forward",
+          "type": "door",
+          "x": 2800,
+          "y": 260,
+          "width": 544,
+          "height": 260,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "state",
+              "type": "string",
+              "value": "combat-sealed"
+            },
+            {
+              "name": "direction",
+              "type": "string",
+              "value": "forward"
+            },
+            {
+              "name": "destination",
+              "type": "string",
+              "value": "neonDataLotusGardens"
+            },
+            {
+              "name": "collision",
+              "type": "bool",
+              "value": true
+            },
+            {
+              "name": "sealColor",
+              "type": "string",
+              "value": "#ff3ab8"
+            }
+          ]
+        },
+        {
+          "id": 21,
+          "name": "gate_return",
+          "type": "door",
+          "x": 2800,
+          "y": 3570,
+          "width": 544,
+          "height": 150,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "state",
+              "type": "string",
+              "value": "open"
+            },
+            {
+              "name": "direction",
+              "type": "string",
+              "value": "back"
+            },
+            {
+              "name": "destination",
+              "type": "string",
+              "value": "previous"
+            },
+            {
+              "name": "collision",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Enemy Spawns",
+      "type": "objectgroup",
+      "draworder": "topdown",
+      "opacity": 1,
+      "visible": true,
+      "objects": [
+        {
+          "id": 22,
+          "name": "enemy_spawn_01",
+          "type": "enemySpawn",
+          "x": 4364,
+          "y": 900,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 0
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "ranged"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 0
+            }
+          ]
+        },
+        {
+          "id": 23,
+          "name": "enemy_spawn_02",
+          "type": "enemySpawn",
+          "x": 5524,
+          "y": 1220,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 1
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "ranged"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 0.11
+            }
+          ]
+        },
+        {
+          "id": 24,
+          "name": "enemy_spawn_03",
+          "type": "enemySpawn",
+          "x": 3964,
+          "y": 1550,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 2
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "ranged"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 0.22
+            }
+          ]
+        },
+        {
+          "id": 25,
+          "name": "enemy_spawn_04",
+          "type": "enemySpawn",
+          "x": 3072,
+          "y": 1900,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 3
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "ranged"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 0.33
+            }
+          ]
+        },
+        {
+          "id": 26,
+          "name": "enemy_spawn_05",
+          "type": "enemySpawn",
+          "x": 1380,
+          "y": 2250,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 4
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "ranged"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 0.44
+            }
+          ]
+        },
+        {
+          "id": 27,
+          "name": "enemy_spawn_06",
+          "type": "enemySpawn",
+          "x": 5524,
+          "y": 2250,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 5
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "ranged"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 0.55
+            }
+          ]
+        },
+        {
+          "id": 28,
+          "name": "enemy_spawn_07",
+          "type": "enemySpawn",
+          "x": 4364,
+          "y": 2600,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 6
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "ranged"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 0.66
+            }
+          ]
+        },
+        {
+          "id": 29,
+          "name": "enemy_spawn_08",
+          "type": "enemySpawn",
+          "x": 1780,
+          "y": 2940,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 7
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "ranged"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 0.77
+            }
+          ]
+        },
+        {
+          "id": 30,
+          "name": "enemy_spawn_09",
+          "type": "enemySpawn",
+          "x": 4764,
+          "y": 2940,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "ranged"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 0.88
+            }
+          ]
+        },
+        {
+          "id": 31,
+          "name": "enemy_spawn_10",
+          "type": "enemySpawn",
+          "x": 2180,
+          "y": 3260,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 9
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "flank"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 0.99
+            }
+          ]
+        },
+        {
+          "id": 32,
+          "name": "enemy_spawn_11",
+          "type": "enemySpawn",
+          "x": 5164,
+          "y": 3260,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 10
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "flank"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 1.1
+            }
+          ]
+        },
+        {
+          "id": 33,
+          "name": "enemy_spawn_12",
+          "type": "enemySpawn",
+          "x": 4764,
+          "y": 620,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 11
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "flank"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 1.21
+            }
+          ]
+        },
+        {
+          "id": 34,
+          "name": "enemy_spawn_13",
+          "type": "enemySpawn",
+          "x": 4364,
+          "y": 900,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 12
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "flank"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 1.32
+            }
+          ]
+        },
+        {
+          "id": 35,
+          "name": "enemy_spawn_14",
+          "type": "enemySpawn",
+          "x": 5524,
+          "y": 1220,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 13
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "flank"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 1.43
+            }
+          ]
+        },
+        {
+          "id": 36,
+          "name": "enemy_spawn_15",
+          "type": "enemySpawn",
+          "x": 3964,
+          "y": 1550,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 14
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "flank"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 1.54
+            }
+          ]
+        },
+        {
+          "id": 37,
+          "name": "enemy_spawn_16",
+          "type": "enemySpawn",
+          "x": 3072,
+          "y": 1900,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 15
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "flank"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 1.65
+            }
+          ]
+        },
+        {
+          "id": 38,
+          "name": "enemy_spawn_17",
+          "type": "enemySpawn",
+          "x": 1380,
+          "y": 2250,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 16
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "flank"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 1.76
+            }
+          ]
+        },
+        {
+          "id": 39,
+          "name": "enemy_spawn_18",
+          "type": "enemySpawn",
+          "x": 5524,
+          "y": 2250,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 17
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "flank"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 1.87
+            }
+          ]
+        },
+        {
+          "id": 40,
+          "name": "enemy_spawn_19",
+          "type": "enemySpawn",
+          "x": 4364,
+          "y": 2600,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 18
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "flank"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 1.98
+            }
+          ]
+        },
+        {
+          "id": 41,
+          "name": "enemy_spawn_20",
+          "type": "enemySpawn",
+          "x": 1780,
+          "y": 2940,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 19
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "center"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 2.09
+            }
+          ]
+        },
+        {
+          "id": 42,
+          "name": "enemy_spawn_21",
+          "type": "enemySpawn",
+          "x": 4764,
+          "y": 2940,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 20
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "center"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 2.2
+            }
+          ]
+        },
+        {
+          "id": 43,
+          "name": "enemy_spawn_22",
+          "type": "enemySpawn",
+          "x": 2180,
+          "y": 3260,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 21
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "center"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 2.31
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Player Spawn",
+      "type": "objectgroup",
+      "draworder": "topdown",
+      "opacity": 1,
+      "visible": true,
+      "objects": [
+        {
+          "id": 44,
+          "name": "player_spawn",
+          "type": "playerSpawn",
+          "x": 3072,
+          "y": 3310,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "facing",
+              "type": "string",
+              "value": "north"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "Triggers",
+      "type": "objectgroup",
+      "draworder": "topdown",
+      "opacity": 1,
+      "visible": false,
+      "objects": [
+        {
+          "id": 45,
+          "name": "pulse_encounter",
+          "type": "trigger",
+          "x": 650,
+          "y": 520,
+          "width": 4844,
+          "height": 2750,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "triggerType",
+              "type": "string",
+              "value": "encounter"
+            },
+            {
+              "name": "encounterId",
+              "type": "string",
+              "value": "neonPulseShrine_encounter"
+            },
+            {
+              "name": "once",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        },
+        {
+          "id": 46,
+          "name": "pulse_arrival",
+          "type": "trigger",
+          "x": 2440,
+          "y": 3020,
+          "width": 1264,
+          "height": 480,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "triggerType",
+              "type": "string",
+              "value": "cutscene"
+            },
+            {
+              "name": "cutsceneId",
+              "type": "string",
+              "value": "neonPulseShrine_arrival"
+            },
+            {
+              "name": "once",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        },
+        {
+          "id": 47,
+          "name": "pulse_exit",
+          "type": "trigger",
+          "x": 2700,
+          "y": 240,
+          "width": 744,
+          "height": 430,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "triggerType",
+              "type": "string",
+              "value": "roomExit"
+            },
+            {
+              "name": "destination",
+              "type": "string",
+              "value": "neonDataLotusGardens"
+            },
+            {
+              "name": "requiresClear",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "name": "Foreground / Occlusion",
+      "type": "objectgroup",
+      "draworder": "topdown",
+      "opacity": 1,
+      "visible": true,
+      "objects": [
+        {
+          "id": 48,
+          "name": "pulse_holo_w",
+          "type": "prop",
+          "x": 320,
+          "y": 1840,
+          "width": 340,
+          "height": 430,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "cropX",
+              "type": "float",
+              "value": 35
+            },
+            {
+              "name": "cropY",
+              "type": "float",
+              "value": 535
+            },
+            {
+              "name": "cropW",
+              "type": "float",
+              "value": 340
+            },
+            {
+              "name": "cropH",
+              "type": "float",
+              "value": 430
+            },
+            {
+              "name": "scale",
+              "type": "float",
+              "value": 1.3
+            },
+            {
+              "name": "originY",
+              "type": "float",
+              "value": 0.75
+            },
+            {
+              "name": "foreground",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        },
+        {
+          "id": 49,
+          "name": "pulse_holo_e",
+          "type": "prop",
+          "x": 5824,
+          "y": 1840,
+          "width": 340,
+          "height": 430,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "cropX",
+              "type": "float",
+              "value": 35
+            },
+            {
+              "name": "cropY",
+              "type": "float",
+              "value": 535
+            },
+            {
+              "name": "cropW",
+              "type": "float",
+              "value": 340
+            },
+            {
+              "name": "cropH",
+              "type": "float",
+              "value": 430
+            },
+            {
+              "name": "scale",
+              "type": "float",
+              "value": 1.3
+            },
+            {
+              "name": "originY",
+              "type": "float",
+              "value": 0.75
+            },
+            {
+              "name": "foreground",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        },
+        {
+          "id": 50,
+          "name": "pulse_arch",
+          "type": "prop",
+          "x": 3072,
+          "y": 620,
+          "width": 380,
+          "height": 430,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "cropX",
+              "type": "float",
+              "value": 690
+            },
+            {
+              "name": "cropY",
+              "type": "float",
+              "value": 520
+            },
+            {
+              "name": "cropW",
+              "type": "float",
+              "value": 380
+            },
+            {
+              "name": "cropH",
+              "type": "float",
+              "value": 430
+            },
+            {
+              "name": "scale",
+              "type": "float",
+              "value": 1.4
+            },
+            {
+              "name": "originY",
+              "type": "float",
+              "value": 0.82
+            },
+            {
+              "name": "foreground",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "name": "VFX Anchors",
+      "type": "objectgroup",
+      "draworder": "topdown",
+      "opacity": 1,
+      "visible": true,
+      "objects": [
+        {
+          "id": 51,
+          "name": "pulse_holo_w",
+          "type": "vfx",
+          "x": 1100,
+          "y": 1660,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "effect",
+              "type": "string",
+              "value": "spiritWisp"
+            },
+            {
+              "name": "color",
+              "type": "string",
+              "value": "#45efff"
+            }
+          ]
+        },
+        {
+          "id": 52,
+          "name": "pulse_holo_e",
+          "type": "vfx",
+          "x": 5044,
+          "y": 1660,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "effect",
+              "type": "string",
+              "value": "spiritWisp"
+            },
+            {
+              "name": "color",
+              "type": "string",
+              "value": "#ff3ab8"
+            }
+          ]
+        },
+        {
+          "id": 53,
+          "name": "pulse_rain",
+          "type": "vfx",
+          "x": 3072,
+          "y": 1940,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "effect",
+              "type": "string",
+              "value": "fallingPetals"
+            },
+            {
+              "name": "radius",
+              "type": "float",
+              "value": 1450
+            }
+          ]
+        },
+        {
+          "id": 54,
+          "name": "pulse_pulse",
+          "type": "vfx",
+          "x": 3072,
+          "y": 690,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "effect",
+              "type": "string",
+              "value": "lanternGlow"
+            },
+            {
+              "name": "color",
+              "type": "string",
+              "value": "#ff45cd"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "nextlayerid": 13,
+  "nextobjectid": 55,
+  "orientation": "orthogonal",
+  "renderorder": "right-down",
+  "tiledversion": "1.11.2",
+  "tileheight": 256,
+  "tilewidth": 256,
+  "type": "map",
+  "version": "1.10",
+  "properties": [
+    {
+      "name": "roomId",
+      "type": "string",
+      "value": "neonPulseShrine"
+    },
+    {
+      "name": "displayName",
+      "type": "string",
+      "value": "Pulse Shrine"
+    },
+    {
+      "name": "template",
+      "type": "string",
+      "value": "pulse"
+    },
+    {
+      "name": "isOptional",
+      "type": "bool",
+      "value": true
+    },
+    {
+      "name": "isBoss",
+      "type": "bool",
+      "value": false
+    },
+    {
+      "name": "biome",
+      "type": "string",
+      "value": "neon"
+    }
+  ],
+  "tilesets": [
+    {
+      "firstgid": 1,
+      "columns": 6,
+      "image": "../../../tilesets/neon-city/neon-ground.svg",
+      "imageheight": 256,
+      "imagewidth": 1536,
+      "margin": 0,
+      "name": "neon-ground",
+      "spacing": 0,
+      "tilecount": 6,
+      "tileheight": 256,
+      "tilewidth": 256
+    }
+  ]
+}
