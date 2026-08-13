@@ -519,6 +519,15 @@ test('party-aware hazards and specialists preserve their full status payloads',(
   assert.match(game,/target=enemyTarget\(enemy\)\|\|player/);
 });
 
+test('late co-op joins restore the live encounter and rebalance pressure in place',()=>{
+  for(const fn of ['partyPressureFor','rebalanceLiveParty','coopEnemySnapshot','coopSessionState','applyCoopJoinState'])assert.match(game,new RegExp(`function ${fn}\\(`));
+  assert.match(game,/connection\.send\(\{type:'welcome',hostId:coop\.id,session:coopSessionState\(\)\}\)/);
+  assert.match(game,/rebalanceLiveParty\(oldSize,coopPartySize\(\)\)/);
+  assert.match(game,/currentRatio=enemy\.maxHealth>0\?enemy\.health\/enemy\.maxHealth:1/);
+  assert.match(game,/coop\.applyingSignal=true;resetGame\(\)/);
+  assert.match(game,/applyCoopSnapshot\(\{room:session\.room,enemies:session\.enemies\|\|\[\]\}\)/);
+});
+
 test('specialist enemies use dedicated animation and attack assets',()=>{
   for(const id of ['bellweaverCat','powderkegToad','gatewardenRhino','mistclawLynx'])assert.match(data,new RegExp(`${id}: \\{`));
   for(const fn of ['summonBellweaverGuard','throwPowderkegBomb','drawSpecialEnemy','startSpecialistShowcase'])assert.match(game,new RegExp(`function ${fn}\\(`));

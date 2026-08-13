@@ -133,6 +133,7 @@ Next ability work:
 - Shared online progression now awards each ally host-issued kill gold, XP, and elite road resources while retaining individual level-up drafts. Guest shots transmit a bounded build signature so damage, extra projectiles, critical chance, pierce, and ricochet choices remain mechanically real under host authority.
 - Co-op defeat is party-based: a fallen BrawlPaw becomes untargetable and can be revived in-world by an ally holding interact nearby. Revive progress is visible above the body, health restoration is synchronized, and the expedition only ends when the entire connected party is down.
 - Biome pressure and specialist control attacks are party-aware under the host. Bell echoes, spores, eclipse rifts, fire/storm/neon lanes, powderkegs, snares, and Moonveil curses can target and resolve against any living ally while synchronizing status duration, power, stun, and sprint drain.
+- Late-joining allies receive a host-authored live-session handoff containing chapter, region, encounter type, difficulty, enemies, boss state, and host position. Party joins/leaves rebalance surviving enemy health, shields, and damage in place while preserving percentage damage already dealt.
 
 **Exit gate:** abilities are mechanically distinct, readable at game scale, aim correctly in eight directions, and display clear cooldown states.
 
