@@ -506,6 +506,7 @@ let currentUpgradeChoices = [];
 let pendingLevelUps = 0;
 let currentRouteChoices = [];
 let pendingRouteWave = 0;
+let pendingRouteDestination = null;
 let activeRouteEvent = null;
 let roomInteractable = null;
 let destructibles = [];
@@ -617,10 +618,11 @@ function serializePlayerCheckpoint(){
 function validRunSnapshot(snapshot){
   if(!snapshot||snapshot.version!==RUN_VERSION||!HEROES[snapshot.heroId]||!DIFFICULTIES[snapshot.difficulty])return false;
   if(!Number.isInteger(snapshot.chapterIndex)||snapshot.chapterIndex<0||snapshot.chapterIndex>=CHAPTER_ORDER.length||!snapshot.player)return false;
-  const checkpoint=snapshot.checkpoint;const allowed=['story','wave','route','boss','guardianReward','endlessDecision'];if(!checkpoint||!allowed.includes(checkpoint.kind))return false;
+  const checkpoint=snapshot.checkpoint;const allowed=['story','wave','route','routeChoice','boss','guardianReward','endlessDecision'];if(!checkpoint||!allowed.includes(checkpoint.kind))return false;
   const savedChapter=ENCOUNTERS[CHAPTER_ORDER[snapshot.chapterIndex]];
   if(checkpoint.kind==='wave'&&(!Number.isInteger(checkpoint.wave)||checkpoint.wave<0||checkpoint.wave>=savedChapter.waves.length))return false;
   if(checkpoint.kind==='route'&&(!Number.isInteger(checkpoint.nextWave)||checkpoint.nextWave<1||checkpoint.nextWave>=savedChapter.waves.length))return false;
+  if(checkpoint.kind==='routeChoice'&&(!Number.isInteger(checkpoint.nextWave)||checkpoint.nextWave<1||checkpoint.nextWave>=savedChapter.waves.length||!ROOMS[checkpoint.destination]))return false;
   if(checkpoint.kind==='guardianReward'&&!GUARDIAN_REWARDS[checkpoint.guardianId])return false;
   return true;
 }
@@ -637,6 +639,7 @@ function checkpointLabel(snapshot){
   if(point.kind==='endlessDecision')return `ENDLESS ROAD ${snapshot.endlessRoad?.stage||1}  BANK OR CONTINUE`;
   if(point.kind==='guardianReward')return `CHAPTER ${snapshot.chapterIndex+1}  GUARDIAN REWARD`;
   if(point.kind==='route')return `CHAPTER ${snapshot.chapterIndex+1}  CHOOSE WAVE ${point.nextWave+1}`;
+  if(point.kind==='routeChoice')return `${ROOMS[point.destination]?.name.toUpperCase()||'CHOSEN REGION'}  ${point.nodeId==='shop'?'MARKET':'EVENT'}`;
   if(point.kind==='wave')return `CHAPTER ${snapshot.chapterIndex+1}  WAVE ${point.wave+1}`;
   return `CHAPTER ${snapshot.chapterIndex+1}  ${savedChapter.name.toUpperCase()}`;
 }
@@ -683,6 +686,7 @@ function resumeSavedRun(){
   else if(point.kind==='endlessDecision')openEndlessRoadDecision({resume:true});
   else if(point.kind==='guardianReward')openGuardianReward(point.guardianId);
   else if(point.kind==='route'){if(point.region&&ROOMS[point.region])activateRoom(point.region,{reposition:true});openRoute(point.nextWave);}
+  else if(point.kind==='routeChoice'){pendingRouteWave=point.nextWave;pendingRouteDestination=point.destination;if(point.region&&ROOMS[point.region])activateRoom(point.region,{reposition:true});if(point.nodeId==='shop')openShop();else openRouteEvent(point.nodeId);}
   else if(point.kind==='wave')startWave(point.wave,{...(point.modifiers||{}),resumeRegion:point.region});
   else showStory(['intro','interlude2','interlude4','boss','epilogue'].includes(point.beat)?point.beat:'intro');
   updateHud();
@@ -1628,12 +1632,18 @@ function updateEncounter(dt) {
 }
 
 function openRoute(nextWave){
-  pendingRouteWave=nextWave;state='route';routeScreen.classList.add('active');currentRouteChoices=ROUTE_SETS[(nextWave-1)%ROUTE_SETS.length];
+  pendingRouteWave=nextWave;pendingRouteDestination=null;state='route';routeScreen.classList.add('active');const baseChoices=ROUTE_SETS[(nextWave-1)%ROUTE_SETS.length],neighbors=routeDestinations(nextWave,baseChoices.length);currentRouteChoices=baseChoices.map((choice,index)=>({...choice,destination:neighbors[index]}));
   ui.routeBiome.textContent=`${room.name.toUpperCase()}  BRANCHING ROUTE`;
   ui.routeProgress.innerHTML=[...Array(chapter.waves.length).keys(),'boss'].map((step,index)=>`<span class="route-step ${index<nextWave?'cleared':index===nextWave?'current':''} ${step==='boss'?'boss':''}">${step==='boss'?'BOSS':index+1}</span>`).join('');
-  routeGrid.innerHTML=currentRouteChoices.map((node,index)=>`<button class="route-card ${node.id==='elite'?'elite':''}" style="--node:${node.color}" data-route-index="${index}"><span class="choice-art node-icon" data-choice-art="${routeArtFrame(node.id)}" aria-hidden="true"></span><strong>${node.name}</strong><em>${node.tag}</em><span>${node.description}</span></button>`).join('');
+  routeGrid.innerHTML=currentRouteChoices.map((node,index)=>{const destination=expeditionNode(node.destination),threat=expeditionThreat(node.destination),loot=expeditionLoot(node.destination,index+nextWave*11),known=player.discoveredRegions.has(node.destination);return `<button class="route-card ${node.id==='elite'?'elite':''}" style="--node:${node.color};--destination:${destination?.color||node.color}" data-route-index="${index}"><span class="choice-art node-icon" data-choice-art="${routeArtFrame(node.id)}" aria-hidden="true"></span><small class="route-destination">${known?'CHARTED':'UNCHARTED'} · ${ROOMS[node.destination]?.name.toUpperCase()||'SPIRIT ROAD'}</small><strong>${node.name}</strong><em>${node.tag}</em><span class="route-copy">${node.description}</span><b class="route-threat" style="color:${threat.color}">${threat.name} · ${loot.name} LOOT</b></button>`;}).join('');
   for(const button of routeGrid.querySelectorAll('.route-card'))button.addEventListener('click',()=>selectRoute(Number(button.dataset.routeIndex)));
   refreshRouteSummary();updateHud();playSfx('upgrade',.2,.92);saveRunCheckpoint({kind:'route',nextWave});
+}
+
+function routeDestinations(nextWave,count=3){
+  const direct=expeditionNeighbors(room.id).filter((roomId)=>expeditionNode(roomId)?.chapterIndex===chapterIndex&&!player.clearedRegions.has(roomId));
+  const ordered=[...new Set(direct)].sort((a,b)=>{const aNode=expeditionNode(a),bNode=expeditionNode(b),aForward=aNode.order>=nextWave?0:1,bForward=bNode.order>=nextWave?0:1;return aForward-bForward||Math.abs(aNode.order-nextWave)-Math.abs(bNode.order-nextWave)||aNode.order-bNode.order;});
+  const chapterWorld=EXPEDITION_WORLD.chapters[chapterIndex],fallback=ordered[0]||chapterWorld.rooms[Math.min(nextWave,chapterWorld.rooms.length-1)];while(ordered.length<count)ordered.push(fallback);return ordered.slice(0,count);
 }
 
 function routeArtFrame(id){return ({combat:8,event:14,elite:9,shop:11,treasure:12,secret:14,shrine:13,heal:10}[id]??8);}
@@ -1649,12 +1659,12 @@ function extractExpedition(){
 }
 
 function selectRoute(index){
-  if(state!=='route')return;const node=currentRouteChoices[index];if(!node)return;routeScreen.classList.remove('active');
-  if(node.id==='elite')startWave(pendingRouteWave,{nodeType:'elite',healthScale:1.28,speedScale:1.18,damageScale:1.22,rewardScale:2});
-  else if(PHYSICAL_ROUTE_NODES.has(node.id))startWave(pendingRouteWave,{nodeType:node.id,rewardScale:1.08});
-  else if(node.id==='shop')openShop();
-  else if(node.id==='event'||node.id==='secret')openRouteEvent(node.id);
-  else startWave(pendingRouteWave);
+  if(state!=='route')return;const node=currentRouteChoices[index];if(!node)return;pendingRouteDestination=node.destination;routeScreen.classList.remove('active');
+  if(node.id==='elite')startWave(pendingRouteWave,{nodeType:'elite',resumeRegion:pendingRouteDestination,healthScale:1.28,speedScale:1.18,damageScale:1.22,rewardScale:2});
+  else if(PHYSICAL_ROUTE_NODES.has(node.id))startWave(pendingRouteWave,{nodeType:node.id,resumeRegion:pendingRouteDestination,rewardScale:1.08});
+  else if(node.id==='shop'){saveRunCheckpoint({kind:'routeChoice',nextWave:pendingRouteWave,nodeId:node.id,destination:pendingRouteDestination});openShop();}
+  else if(node.id==='event'||node.id==='secret'){saveRunCheckpoint({kind:'routeChoice',nextWave:pendingRouteWave,nodeId:node.id,destination:pendingRouteDestination});openRouteEvent(node.id);}
+  else startWave(pendingRouteWave,{resumeRegion:pendingRouteDestination});
 }
 
 function openRouteEvent(kind){
@@ -1673,7 +1683,7 @@ function chooseRouteEvent(index){
 }
 
 function finishRouteEvent(options={}){
-  const eventKind=activeRouteEvent?.kind||'event';eventScreen.classList.remove('active');activeRouteEvent=null;spawnWord(player.x,player.y-95,'FATE CHOSEN!','#d94cff');updateHud();startWave(pendingRouteWave,{nodeType:eventKind,...options});
+  const eventKind=activeRouteEvent?.kind||'event';eventScreen.classList.remove('active');activeRouteEvent=null;spawnWord(player.x,player.y-95,'FATE CHOSEN!','#d94cff');updateHud();startWave(pendingRouteWave,{nodeType:eventKind,resumeRegion:pendingRouteDestination,...options});
 }
 
 function openGuardianReward(guardianId){
@@ -1863,7 +1873,7 @@ function useRoomInteractable(){
 }
 
 function openShop(){
-  state='shop';shopScreen.classList.add('active');renderShop();
+  if(pendingRouteDestination&&ROOMS[pendingRouteDestination]&&room.id!==pendingRouteDestination)activateRoom(pendingRouteDestination,{reposition:true,announce:true,waveIndex:pendingRouteWave,subtitle:'TRAVELING MOON MARKET'});state='shop';shopScreen.classList.add('active');renderShop();
 }
 
 function renderShop(){
@@ -1877,7 +1887,7 @@ function buyShopItem(item){
   if(state!=='shop'||!item||player.gold<item.price||!item.available())return;player.gold-=item.price;item.apply();resolveSynergies();player.shopPurchases.add(item.id);playSfx('upgrade',.18,1.22);burst(player.x,player.y-30,item.color,18,230,4);renderShop();updateHud();
 }
 
-function leaveShop(){shopScreen.classList.remove('active');startWave(pendingRouteWave,{nodeType:'shop'});}
+function leaveShop(){shopScreen.classList.remove('active');startWave(pendingRouteWave,{nodeType:'shop',resumeRegion:pendingRouteDestination});}
 
 function gainXp(amount) {
   player.xp += amount;

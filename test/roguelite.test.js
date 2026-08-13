@@ -30,7 +30,7 @@ test('the extended campaign has physical room rewards and destructible loot',()=
   for(const fn of ['spawnRoomInteractable','useRoomInteractable','spawnRoomDestructibles','damageDestructibles','breakDestructible','drawRoomInteractable','drawDestructible'])assert.match(game,new RegExp(`function ${fn}\\(`));
   assert.match(game,/PHYSICAL_ROUTE_NODES=new Set/);
   assert.match(game,/wave\.targetCount\|\|wave\.roster\.length/);
-  assert.match(game,/currentRouteChoices=ROUTE_SETS\[\(nextWave-1\)%ROUTE_SETS\.length\]/);
+  assert.match(game,/baseChoices=ROUTE_SETS\[\(nextWave-1\)%ROUTE_SETS\.length\]/);
   assert.match(game,/CLAIM YOUR ROUTE REWARD/);
   for(const count of [72,112,150])assert.match(data,new RegExp(`targetCount:${count}`));
 });
@@ -190,6 +190,13 @@ test('expedition distance drives danger, loot quality, discoveries, and safe ext
   for(const id of ['expedition-pressure','expedition-threat','expedition-loot','expedition-risk','world-map-risk','route-extract'])assert.match(html,new RegExp(`id="${id}"`));
   assert.match(game,/function extractExpedition\(/);assert.match(game,/expeditionsExtracted/);assert.match(game,/worldDiscoveries/);assert.match(game,/expeditionShards/);
   assert.match(game,/regionPressure\.enemyHealth/);assert.match(game,/regionThreat\.gold/);assert.match(game,/Math\.floor\(\(player\.expeditionShards\|\|0\)\*\.35\)/);
+});
+
+test('route cards travel to real neighboring regions and preserve the destination through detours',()=>{
+  assert.match(game,/function routeDestinations\(/);assert.match(game,/expeditionNeighbors\(room\.id\)/);assert.match(game,/destination:neighbors\[index\]/);
+  assert.doesNotMatch(game,/new Set\(\[\.\.\.direct,\.\.\.available\]\)/);
+  for(const copy of ['UNCHARTED','route-destination','route-threat','resumeRegion:pendingRouteDestination','kind:\'routeChoice\''])assert.match(game,new RegExp(copy));
+  assert.match(game,/activateRoom\(pendingRouteDestination/);assert.match(game,/checkpoint\.kind===\'routeChoice\'/);assert.match(game,/ROOMS\[checkpoint\.destination\]/);
 });
 
 test('Chrome performance, adaptive audio, and readable choice art are production-wired',()=>{
