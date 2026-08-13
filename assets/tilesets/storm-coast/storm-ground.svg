@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="256" viewBox="0 0 1536 256">
+  <defs>
+    <linearGradient id="dock" x2="0" y2="1"><stop stop-color="#3e5b65"/><stop offset="1" stop-color="#1b2939"/></linearGradient>
+    <linearGradient id="reef" x2="1" y2="1"><stop stop-color="#3c716f"/><stop offset="1" stop-color="#1c3746"/></linearGradient>
+    <linearGradient id="sea" x2="0" y2="1"><stop stop-color="#17677f"/><stop offset="1" stop-color="#172446"/></linearGradient>
+    <linearGradient id="glass" x2="1" y2="1"><stop stop-color="#44777d"/><stop offset="1" stop-color="#27324d"/></linearGradient>
+    <linearGradient id="wall" x2="0" y2="1"><stop stop-color="#294753"/><stop offset="1" stop-color="#101c2c"/></linearGradient>
+    <pattern id="spray" width="50" height="42" patternUnits="userSpaceOnUse"><circle cx="12" cy="12" r="2.5" fill="#a7ffff" opacity=".26"/><circle cx="37" cy="30" r="1.8" fill="#6a8dff" opacity=".22"/></pattern>
+  </defs>
+  <g stroke="#091725" stroke-width="5">
+    <g><rect width="256" height="256" fill="url(#dock)"/><path d="M0 63h256M0 129h256M0 194h256M41 0v63m77-63v63m76-63v63M18 63v66m71-66v66m72-66v66m67-66v66M48 129v65m78-65v65m69-65v65M20 194v62m70-62v62m77-62v62m61-62v62" stroke="#7593a1" stroke-width="2" opacity=".4"/><rect width="256" height="256" fill="url(#spray)" stroke="none"/></g>
+    <g transform="translate(256)"><rect width="256" height="256" fill="url(#reef)"/><path d="M0 207q47-49 98-7t158-30M0 45q46 30 90 0t91 8 75-12" fill="none" stroke="#43a49a" stroke-width="14" opacity=".47"/><path d="M0 88h256M0 176h256" stroke="#9ebbb0" stroke-width="3" opacity=".24"/><rect width="256" height="256" fill="url(#spray)" stroke="none"/></g>
+    <g transform="translate(512)"><rect width="256" height="256" fill="url(#sea)"/><path d="M-15 52q58-33 123 0t163 0M-24 122q78-39 148 0t151 0M-18 198q66-31 138 0t151 0" fill="none" stroke="#52e8f8" stroke-width="9" opacity=".39"/><path d="M30 0l48 256M181 0l-22 256" stroke="#afebff" stroke-width="4" opacity=".13"/></g>
+    <g transform="translate(768)"><rect width="256" height="256" fill="url(#glass)"/><circle cx="128" cy="128" r="92" fill="none" stroke="#61f5f1" stroke-width="8" opacity=".48"/><path d="M128 36l18 63 60-22-48 43 50 36-63-15-8 65-15-64-63 14 50-37-47-43 60 23z" fill="#26374b" stroke="#b0ffff" stroke-width="4" opacity=".76"/></g>
+    <g transform="translate(1024)"><rect x="3" y="3" width="250" height="250" rx="12" fill="url(#wall)"/><path d="M8 60h240M8 127h240M8 198h240M65 8v52m119-52v52M41 60v67m122-67v67m-75 0v71m113-71v71m-135 0v50m113-50v50" stroke="#567580" stroke-width="5" opacity=".58"/><path d="M14 20h228" stroke="#b28b49" stroke-width="8" opacity=".44"/></g>
+    <g transform="translate(1280)"><rect x="3" y="3" width="250" height="250" rx="12" fill="#142432"/><path d="M31 230L128 25l97 205z" fill="#244e56" stroke="#417d80" stroke-width="7"/><circle cx="128" cy="145" r="44" fill="none" stroke="#39eaff" stroke-width="10" opacity=".76"/><path d="M128 91l18 36 39 6-28 28 7 39-36-18-36 18 7-39-28-28 39-6z" fill="#d6fcff" opacity=".53"/></g>
+  </g>
+</svg>

@@ -39,7 +39,20 @@ const CRIMSON_MAPS=[
   ['crimsonExecutionYard','execution-yard']
 ].map(([roomId,file])=>({roomId,key:`crimson-${file}`,path:`assets/maps/crimson-dojo/${file}.json`,tilesetName:'crimson-ground',tilesetKey:'crimson-ground'}));
 
-const LAYERED_MAPS=[...JADE_MAPS.map((entry)=>({...entry,tilesetName:'jade-ground',tilesetKey:'jade-ground'})),...BAMBOO_MAPS,...CRIMSON_MAPS];
+const STORM_MAPS=[
+  ['stormTempestHarbor','tempest-harbor'],
+  ['stormTideglassCauseway','tideglass-causeway'],
+  ['stormDrownedBellSanctum','drowned-bell-sanctum'],
+  ['stormSirenReefMonastery','siren-reef-monastery'],
+  ['stormThunderbreakLighthouse','thunderbreak-lighthouse'],
+  ['stormSkyfangAscent','skyfang-ascent'],
+  ['stormEyeOfTempest','eye-of-tempest'],
+  ['stormPearlCove','storm-pearl-cove'],
+  ['stormTidekeeperShrine','tidekeeper-shrine'],
+  ['stormRaiderWreck','raider-wreck']
+].map(([roomId,file])=>({roomId,key:`storm-${file}`,path:`assets/maps/storm-coast/${file}.json`,tilesetName:'storm-ground',tilesetKey:'storm-ground'}));
+
+const LAYERED_MAPS=[...JADE_MAPS.map((entry)=>({...entry,tilesetName:'jade-ground',tilesetKey:'jade-ground'})),...BAMBOO_MAPS,...CRIMSON_MAPS,...STORM_MAPS];
 
 const objectProperties=(object)=>Object.fromEntries((object.properties||[]).map((entry)=>[entry.name,entry.value]));
 
@@ -59,6 +72,7 @@ export class LayeredMapRuntime {
         this.load.image('jade-ground','assets/tilesets/jade-grove/jade-ground.svg');
         this.load.image('bamboo-ground','assets/tilesets/bamboo-hollow/bamboo-ground.svg');
         this.load.image('crimson-ground','assets/tilesets/crimson-dojo/crimson-ground.svg');
+        this.load.image('storm-ground','assets/tilesets/storm-coast/storm-ground.svg');
         this.load.image('jade-props','assets/environment/jade-props.png');
         this.load.spritesheet('spirit-wisp','assets/environment/animated/spirit-wisp.png',{frameWidth:512,frameHeight:512});
         this.load.spritesheet('lantern-flame','assets/environment/animated/lantern-flame.png',{frameWidth:512,frameHeight:512});

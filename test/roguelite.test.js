@@ -126,6 +126,18 @@ test('Crimson Dojo owns ten layered warpath and guardian maps',()=>{
   assert.match(game,/chapter\.id==='crimsonChapter'.*CRIMSON_OPTIONAL_ROOMS/);
 });
 
+test('Storm Coast owns ten layered islands and a giant guardian arena',()=>{
+  const required=['Ground','Ground Detail','Walls','Props Below Player','Collision','Props / Interactive','Doors / Gates','Enemy Spawns','Player Spawn','Triggers','Foreground / Occlusion','VFX Anchors'];
+  const mapFiles=readdirSync(new URL('../assets/maps/storm-coast/',import.meta.url)).filter((file)=>file.endsWith('.json'));
+  assert.equal(mapFiles.length,10);
+  for(const file of mapFiles){const map=JSON.parse(readFileSync(new URL(`../assets/maps/storm-coast/${file}`,import.meta.url),'utf8'));for(const name of required)assert.ok(map.layers.some((layer)=>layer.name===name),`${file} missing ${name}`);assert.equal(map.width*map.tilewidth,6144);assert.equal(map.height*map.tileheight,3840);assert.ok(map.layers.find((layer)=>layer.name==='Enemy Spawns').objects.length>=18);assert.equal(map.properties.find((property)=>property.name==='biome')?.value,'storm');}
+  assert.match(mapRuntime,/STORM_MAPS=/);
+  assert.match(mapRuntime,/storm-ground/);
+  for(const optionalRoom of ['stormPearlCove','stormTidekeeperShrine','stormRaiderWreck'])assert.match(game,new RegExp(optionalRoom));
+  assert.match(game,/STORM_OPTIONAL_ROOMS/);
+  assert.match(game,/chapter\.id==='stormChapter'.*STORM_OPTIONAL_ROOMS/);
+});
+
 test('Chrome performance, adaptive audio, and readable choice art are production-wired',()=>{
   assert.match(game,/Math\.min\(window\.devicePixelRatio \|\| 1, 1\.25\)/);
   assert.match(game,/window\.__BRAWLPAWS_PERF__/);
@@ -553,7 +565,7 @@ test('every campaign wave advances into its own production-painted combat locati
   for(const [chapter,rooms] of Object.entries(chapterRooms)){
     assert.match(data,new RegExp(`id:\\s*'${chapter}'[\\s\\S]{0,260}rooms:\\s*\\[${rooms.map(room=>`'${room}'`).join(',')}\\]`));
     for(const room of rooms){
-      if(['jadeChapter','bambooChapter','crimsonChapter'].includes(chapter))assert.match(data,new RegExp(`${room}:\\s*\\{[\\s\\S]{0,700}width:\\s*6144[\\s\\S]{0,80}height:\\s*3840`));
+      if(['jadeChapter','bambooChapter','crimsonChapter','stormChapter'].includes(chapter))assert.match(data,new RegExp(`${room}:\\s*\\{[\\s\\S]{0,760}width:\\s*6144[\\s\\S]{0,80}height:\\s*3840`));
       else assert.match(data,new RegExp(`${room}:\\s*\\{[\\s\\S]{0,360}width:\\s*4800[\\s\\S]{0,80}height:\\s*2700`));
       assert.match(data,new RegExp(`${room}:\\s*\\{[\\s\\S]{0,1600}combatBounds:`));
     }

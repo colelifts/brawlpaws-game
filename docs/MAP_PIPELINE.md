@@ -1,6 +1,6 @@
 # BrawlPaws layered map pipeline
 
-BrawlPaws maps are Tiled JSON maps rendered by the pinned local Phaser 3.90 runtime. Jade Grove, Bamboo Hollow, and Crimson Dojo each ship with ten 6144×3840 layered templates loaded by one reusable runtime. Their source generators live in `scripts/build-*-maps.mjs` plus the original `build-shrine-map.mjs`.
+BrawlPaws maps are Tiled JSON maps rendered by the pinned local Phaser 3.90 runtime. Jade Grove, Bamboo Hollow, Crimson Dojo, and Storm Coast each ship with ten 6144×3840 layered templates loaded by one reusable runtime. Their source generators live in `scripts/build-*-maps.mjs` plus the original `build-shrine-map.mjs`.
 
 ## Jade Grove template library
 
@@ -46,6 +46,21 @@ Bamboo’s main and optional routes use separate enemy spawn geometry, destructi
 - `execution-yard.json` — optional elite and shop war camp
 
 The Ember Corridor battlefield hazard cuts across these authored layouts rather than an empty ellipse. Pyreclaw’s boss court includes its own guardian trigger, entrance geometry, combat seal, and storm-bound exit.
+
+## Storm Coast template library
+
+- `tempest-harbor.json` — opening harbor with water wings and warehouses
+- `tideglass-causeway.json` — narrow fractured crossing above deep sea
+- `drowned-bell-sanctum.json` — flooded galleries and bell dais
+- `siren-reef-monastery.json` — reef pools and storm choir
+- `thunderbreak-lighthouse.json` — cliff-lined beacon approach
+- `skyfang-ascent.json` — fortified climb between sky drops
+- `eye-of-tempest.json` — Raijin Kirin’s giant storm-eye arena
+- `storm-pearl-cove.json` — optional event and treasure cove
+- `tidekeeper-shrine.json` — optional recovery route
+- `raider-wreck.json` — optional elite and shop wreckage
+
+Water and sky-drop regions are solid navigation boundaries rather than decoration. Storm Surge attack lanes cross the traversable islands, and the Raijin arena owns a dedicated descent trigger, combat seal, and next-realm gate.
 
 The current migration keeps the proven combat/HUD canvas above Phaser while Phaser owns tilemap loading, camera culling, map art, authored world objects, collision geometry, gates, VFX anchors, and the F3 debug view. Combat actors consume the same map collision data now; actors, projectiles, and remaining effects move into Phaser incrementally without throwing away working game logic.
 

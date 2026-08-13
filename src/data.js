@@ -638,33 +638,36 @@ export const ROOMS = {
   crimsonAncestorShrine:{id:'crimsonAncestorShrine',name:'Ancestor Flame Shrine',width:6144,height:3840,map:'assets/maps/crimson-dojo/ancestor-flame-shrine.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'crimson_shrine',difficulty:7,rewardType:'shrine',background:'assets/environment/crimson-bell-court.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'bells',spawnLane:.6,spawnLaneStep:.04,combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}},
   crimsonExecutionYard:{id:'crimsonExecutionYard',name:'Execution Yard',width:6144,height:3840,map:'assets/maps/crimson-dojo/execution-yard.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'crimson_elite',difficulty:8,rewardType:'elite',background:'assets/environment/crimson-war-yard.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'ash',spawnLane:.6,spawnLaneStep:.04,combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}},
   stormTempestHarbor:{
-    id:'stormTempestHarbor',name:'Tempest Harbor',width:4800,height:2700,background:'assets/environment/storm-tempest-harbor-v1.png',playerSpawn:{x:2400,y:1840},enemySpawns:[],ambient:'storm',spawnLane:.62,spawnLaneStep:.042,
-    combatBounds:{x:2400,y:1440,radiusX:1880,radiusY:990}
+    id:'stormTempestHarbor',name:'Tempest Harbor',width:6144,height:3840,map:'assets/maps/storm-coast/tempest-harbor.json',mapRuntime:'phaser-tiled',exits:['north'],enemySet:'storm_raiders',difficulty:5,rewardType:'standard',background:'assets/environment/storm-tempest-harbor-v1.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'storm',spawnLane:.62,spawnLaneStep:.042,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
   stormTideglassCauseway:{
-    id:'stormTideglassCauseway',name:'Tideglass Causeway',width:4800,height:2700,background:'assets/environment/storm-tideglass-causeway-v1.png',playerSpawn:{x:2200,y:1840},enemySpawns:[],ambient:'tide',spawnLane:.63,spawnLaneStep:.04,
-    combatBounds:{x:2400,y:1440,radiusX:1760,radiusY:920}
+    id:'stormTideglassCauseway',name:'Tideglass Causeway',width:6144,height:3840,map:'assets/maps/storm-coast/tideglass-causeway.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'storm_causeway',difficulty:6,rewardType:'standard',background:'assets/environment/storm-tideglass-causeway-v1.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'tide',spawnLane:.63,spawnLaneStep:.04,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
   stormDrownedBellSanctum:{
-    id:'stormDrownedBellSanctum',name:'Drowned Bell Sanctum',width:4800,height:2700,background:'assets/environment/storm-drowned-bell-sanctum-v1.png',playerSpawn:{x:2400,y:1850},enemySpawns:[],ambient:'storm',spawnLane:.61,spawnLaneStep:.04,
-    combatBounds:{x:2400,y:1450,radiusX:1780,radiusY:920}
+    id:'stormDrownedBellSanctum',name:'Drowned Bell Sanctum',width:6144,height:3840,map:'assets/maps/storm-coast/drowned-bell-sanctum.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'storm_bells',difficulty:7,rewardType:'elite',background:'assets/environment/storm-drowned-bell-sanctum-v1.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'storm',spawnLane:.61,spawnLaneStep:.04,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
   stormSirenReefMonastery:{
-    id:'stormSirenReefMonastery',name:'Siren Reef Monastery',width:4800,height:2700,background:'assets/environment/storm-siren-reef-monastery-v1.png',playerSpawn:{x:2380,y:1840},enemySpawns:[],ambient:'tide',spawnLane:.6,spawnLaneStep:.038,
-    combatBounds:{x:2400,y:1440,radiusX:1810,radiusY:940}
+    id:'stormSirenReefMonastery',name:'Siren Reef Monastery',width:6144,height:3840,map:'assets/maps/storm-coast/siren-reef-monastery.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'storm_reef',difficulty:8,rewardType:'shrine',background:'assets/environment/storm-siren-reef-monastery-v1.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'tide',spawnLane:.6,spawnLaneStep:.038,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
   stormThunderbreakLighthouse:{
-    id:'stormThunderbreakLighthouse',name:'Thunderbreak Lighthouse',width:4800,height:2700,background:'assets/environment/storm-thunderbreak-lighthouse-v1.png',playerSpawn:{x:2430,y:1840},enemySpawns:[],ambient:'lightning',spawnLane:.59,spawnLaneStep:.038,
-    combatBounds:{x:2400,y:1440,radiusX:1800,radiusY:930}
+    id:'stormThunderbreakLighthouse',name:'Thunderbreak Lighthouse',width:6144,height:3840,map:'assets/maps/storm-coast/thunderbreak-lighthouse.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'storm_lighthouse',difficulty:9,rewardType:'treasure',background:'assets/environment/storm-thunderbreak-lighthouse-v1.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'lightning',spawnLane:.59,spawnLaneStep:.038,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
   stormSkyfangAscent:{
-    id:'stormSkyfangAscent',name:'Skyfang Ascent',width:4800,height:2700,background:'assets/environment/storm-skyfang-ascent-v1.png',playerSpawn:{x:2400,y:1870},enemySpawns:[],ambient:'tempest',spawnLane:.6,spawnLaneStep:.036,
-    combatBounds:{x:2400,y:1450,radiusX:1820,radiusY:940}
+    id:'stormSkyfangAscent',name:'Skyfang Ascent',width:6144,height:3840,map:'assets/maps/storm-coast/skyfang-ascent.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'storm_siege',difficulty:11,rewardType:'elite',background:'assets/environment/storm-skyfang-ascent-v1.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'tempest',spawnLane:.6,spawnLaneStep:.036,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
   stormEyeOfTempest:{
-    id:'stormEyeOfTempest',name:'Eye of the Tempest',width:4800,height:2700,background:'assets/environment/storm-eye-of-tempest-v1.png',playerSpawn:{x:2400,y:1930},enemySpawns:[],ambient:'tempest',spawnLane:.62,spawnLaneStep:.034,
-    combatBounds:{x:2400,y:1500,radiusX:1640,radiusY:820}
+    id:'stormEyeOfTempest',name:'Eye of the Tempest',width:6144,height:3840,map:'assets/maps/storm-coast/eye-of-tempest.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'storm_guardian',difficulty:12,rewardType:'guardian',background:'assets/environment/storm-eye-of-tempest-v1.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'tempest',spawnLane:.62,spawnLaneStep:.034,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
+  stormPearlCove:{id:'stormPearlCove',name:'Storm Pearl Cove',width:6144,height:3840,map:'assets/maps/storm-coast/storm-pearl-cove.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'storm_event',difficulty:8,rewardType:'event',background:'assets/environment/storm-drowned-bell-sanctum-v1.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'tide',spawnLane:.6,spawnLaneStep:.04,combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}},
+  stormTidekeeperShrine:{id:'stormTidekeeperShrine',name:'Tidekeeper Shrine',width:6144,height:3840,map:'assets/maps/storm-coast/tidekeeper-shrine.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'storm_shrine',difficulty:9,rewardType:'shrine',background:'assets/environment/storm-siren-reef-monastery-v1.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'tide',spawnLane:.6,spawnLaneStep:.04,combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}},
+  stormRaiderWreck:{id:'stormRaiderWreck',name:'Tempest Raider Wreck',width:6144,height:3840,map:'assets/maps/storm-coast/raider-wreck.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'storm_elite',difficulty:10,rewardType:'elite',background:'assets/environment/storm-tempest-harbor-v1.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'storm',spawnLane:.6,spawnLaneStep:.04,combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}},
   neonRainGate:{id:'neonRainGate',name:'Neon Rain Gate',width:4800,height:2700,background:'assets/environment/neon-rain-gate-v1.png',playerSpawn:{x:2400,y:1840},enemySpawns:[],ambient:'neonRain',spawnLane:.62,spawnLaneStep:.04,combatBounds:{x:2400,y:1450,radiusX:1900,radiusY:990}},
   neonCircuitMarket:{id:'neonCircuitMarket',name:'Circuit Market',width:4800,height:2700,background:'assets/environment/neon-circuit-market-v1.png',playerSpawn:{x:2200,y:1840},enemySpawns:[],ambient:'neonRain',spawnLane:.61,spawnLaneStep:.038,combatBounds:{x:2400,y:1440,radiusX:1840,radiusY:960}},
   neonHologramArcade:{id:'neonHologramArcade',name:'Hologram Arcade',width:4800,height:2700,background:'assets/environment/neon-hologram-arcade-v1.png',playerSpawn:{x:2400,y:1850},enemySpawns:[],ambient:'hologram',spawnLane:.6,spawnLaneStep:.038,combatBounds:{x:2400,y:1450,radiusX:1810,radiusY:940}},
