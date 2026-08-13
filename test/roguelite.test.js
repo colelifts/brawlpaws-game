@@ -232,6 +232,11 @@ test('Moon Market is a physical safe stop with an in-world shopkeeper',()=>{
   assert.match(html,/RETURN TO THE SPIRIT ROAD/);
 });
 
+test('story and secret detours begin at physical world interactables',()=>{
+  assert.match(game,/function enterRouteEventRoom\(/);assert.match(game,/spawnRoomInteractable\(kind\)/);assert.match(game,/item\.type==='event'\|\|item\.type==='secret'/);assert.match(game,/function drawEventInteractable\(/);
+  assert.match(game,/kind:'eventRoom'/);assert.doesNotMatch(game,/else if\(node\.id==='event'\|\|node\.id==='secret'\)\{saveRunCheckpoint[^}]*openRouteEvent/);
+});
+
 test('Chrome performance, adaptive audio, and readable choice art are production-wired',()=>{
   assert.match(game,/Math\.min\(window\.devicePixelRatio \|\| 1, 1\.25\)/);
   assert.match(game,/window\.__BRAWLPAWS_PERF__/);

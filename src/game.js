@@ -575,7 +575,7 @@ function applyRemoteAction(playerId,heroId,payload={}){
   burst(member.x+direction.x*44,member.y+direction.y*44,remoteWeapon.impactColor,10,220,3);
 }
 function coopSignal(payload){if(coopIsHost())sendCoop('signal',{payload});}
-function applyCoopSignal(payload){if(!payload)return;coop.applyingSignal=true;if(payload.kind==='wave'){setChapter(payload.chapter);startWave(payload.wave,{...(payload.modifiers||{}),nodeType:payload.nodeType||'combat',resumeRegion:payload.room});}else if(payload.kind==='merchant'){setChapter(payload.chapter);enterMerchantRoom({destination:payload.room,nextWave:payload.nextWave,restoring:true});}else if(payload.kind==='boss'){setChapter(payload.chapter);spawnBoss();}coop.applyingSignal=false;}
+function applyCoopSignal(payload){if(!payload)return;coop.applyingSignal=true;if(payload.kind==='wave'){setChapter(payload.chapter);startWave(payload.wave,{...(payload.modifiers||{}),nodeType:payload.nodeType||'combat',resumeRegion:payload.room});}else if(payload.kind==='merchant'){setChapter(payload.chapter);enterMerchantRoom({destination:payload.room,nextWave:payload.nextWave,restoring:true});}else if(payload.kind==='eventRoom'){setChapter(payload.chapter);enterRouteEventRoom(payload.nodeType,{destination:payload.room,nextWave:payload.nextWave,restoring:true});}else if(payload.kind==='boss'){setChapter(payload.chapter);spawnBoss();}coop.applyingSignal=false;}
 function applyCoopSnapshot(payload){
   if(!payload||payload.room!==room.id)return;for(const saved of payload.enemies||[]){let enemy=enemies.find((candidate)=>candidate.id===saved.id);if(!enemy){enemy=makeEnemy({type:saved.type,x:saved.x,y:saved.y,delay:0,healthScale:1,speedScale:1,damageScale:1},enemies.length);enemy.id=saved.id;enemies.push(enemy);}Object.assign(enemy,saved);enemy.def=ENEMIES[enemy.type];}
   const ids=new Set((payload.enemies||[]).map((enemy)=>enemy.id));for(const enemy of enemies)if(!ids.has(enemy.id))enemy.dead=true;
@@ -676,7 +676,7 @@ function resumeSavedRun(){
   else if(point.kind==='endlessDecision')openEndlessRoadDecision({resume:true});
   else if(point.kind==='guardianReward')openGuardianReward(point.guardianId);
   else if(point.kind==='route'){if(point.region&&ROOMS[point.region])activateRoom(point.region,{reposition:true});preparePhysicalRoute(point.nextWave,{restoring:true});}
-  else if(point.kind==='routeChoice'){pendingRouteWave=point.nextWave;pendingRouteDestination=point.destination;if(point.nodeId==='shop')enterMerchantRoom({destination:point.destination,nextWave:point.nextWave,restoring:true});else{if(point.region&&ROOMS[point.region])activateRoom(point.region,{reposition:true});openRouteEvent(point.nodeId);}}
+  else if(point.kind==='routeChoice'){pendingRouteWave=point.nextWave;pendingRouteDestination=point.destination;if(point.nodeId==='shop')enterMerchantRoom({destination:point.destination,nextWave:point.nextWave,restoring:true});else enterRouteEventRoom(point.nodeId,{destination:point.destination,nextWave:point.nextWave,restoring:true});}
   else if(point.kind==='wave')startWave(point.wave,{...(point.modifiers||{}),resumeRegion:point.region});
   else showStory(['intro','interlude2','interlude4','boss','epilogue'].includes(point.beat)?point.beat:'intro');
   updateHud();
@@ -1022,7 +1022,9 @@ const INTERACTABLE_DEFS={
   heal:{name:'SACRED SPRING',prompt:'DRINK FROM THE SPRING',color:'#65ef55',icon:'HEAL'},
   treasure:{name:'SPIRIT VAULT',prompt:'OPEN THE RELIC VAULT',color:'#d94cff',icon:'RELIC'},
   shrine:{name:'HERO SHRINE',prompt:'COMMUNE FOR AN UPGRADE',color:'#35e7ff',icon:'POWER'},
-  shop:{name:'MOON MARKET',prompt:'BROWSE THE SHOPKEEPER\'S WARES',color:'#ffb52f',icon:'SHOP'}
+  shop:{name:'MOON MARKET',prompt:'BROWSE THE SHOPKEEPER\'S WARES',color:'#ffb52f',icon:'SHOP'},
+  event:{name:'LANTERN SPIRIT',prompt:'HEAR THE SPIRIT\'S BARGAIN',color:'#c45cff',icon:'FATE'},
+  secret:{name:'HIDDEN SPIRIT SEAL',prompt:'BREAK THE HIDDEN SEAL',color:'#45eaff',icon:'SECRET'}
 };
 
 const UPGRADE_RARITIES={
@@ -1749,7 +1751,7 @@ function commitRouteChoice(node){
   if(node.id==='elite')startWave(pendingRouteWave,{nodeType:'elite',resumeRegion:pendingRouteDestination,healthScale:1.28,speedScale:1.18,damageScale:1.22,rewardScale:2});
   else if(PHYSICAL_ROUTE_NODES.has(node.id))startWave(pendingRouteWave,{nodeType:node.id,resumeRegion:pendingRouteDestination,rewardScale:1.08});
   else if(node.id==='shop')enterMerchantRoom({destination:pendingRouteDestination,nextWave:pendingRouteWave});
-  else if(node.id==='event'||node.id==='secret'){saveRunCheckpoint({kind:'routeChoice',nextWave:pendingRouteWave,nodeId:node.id,destination:pendingRouteDestination});openRouteEvent(node.id);}
+  else if(node.id==='event'||node.id==='secret')enterRouteEventRoom(node.id,{destination:pendingRouteDestination,nextWave:pendingRouteWave});
   else startWave(pendingRouteWave,{resumeRegion:pendingRouteDestination});
 }
 
@@ -1761,6 +1763,13 @@ function openRouteEvent(kind){
   eventChoiceGrid.innerHTML=activeRouteEvent.choices.map((choice,index)=>`<button class="event-choice" style="--event:${choice.color}" data-event-index="${index}" ${choice.available&&!choice.available()?'disabled':''}><span class="choice-art event-icon" data-choice-art="${choiceArtFrame(choice)}" aria-hidden="true"></span><strong>${choice.name}</strong><em>${choice.tag}</em><p>${choice.description}</p><b>${choice.result}</b></button>`).join('');
   for(const button of eventChoiceGrid.querySelectorAll('.event-choice'))button.addEventListener('click',()=>chooseRouteEvent(Number(button.dataset.eventIndex)));
   playSfx('upgrade',.24,kind==='secret'?1.18:.9);
+}
+
+function enterRouteEventRoom(kind,{destination=pendingRouteDestination,nextWave=pendingRouteWave,restoring=false}={}){
+  if(!ROUTE_EVENTS[kind]||!ROOMS[destination])return;pendingRouteDestination=destination;pendingRouteWave=nextWave;activateRoom(destination,{reposition:true,announce:!restoring,waveIndex:nextWave,subtitle:kind==='secret'?'HIDDEN LANDMARK':'LANTERN CROSSROADS'});
+  Object.values(effects).forEach((list)=>list.splice(0));enemies=[];destructibles=[];roomMission=null;clearDelay=-1;state='playing';encounter.wave=nextWave;encounter.waveTime=0;encounter.transitioning=false;encounter.awaitingGate=false;encounter.awaitingRouteChoice=false;encounter.routeGateChoices=[];encounter.routeGateLock=0;encounter.bossActive=false;encounter.nodeType=kind;encounter.modifiers={nodeType:kind,resumeRegion:destination};roomInteractable=null;spawnRoomInteractable(kind);
+  ui.waveLabel.textContent=`CHAPTER ${chapterIndex+1}  ${kind==='secret'?'HIDDEN ROAD':'SPIRIT EVENT'}`;ui.roomState.textContent=kind==='secret'?'SECRET LANDMARK':'LANTERN CROSSROADS';ui.roomState.style.color=INTERACTABLE_DEFS[kind].color;ui.objective.textContent=`APPROACH THE ${kind==='secret'?'HIDDEN SEAL':'LANTERN SPIRIT'}  ·  PRESS E TO INTERACT`;saveRunCheckpoint({kind:'routeChoice',nextWave,nodeId:kind,destination});
+  if(!restoring&&!coop.applyingSignal)coopSignal({kind:'eventRoom',chapter:chapterIndex,nextWave,room:destination,nodeType:kind});updateHud();
 }
 
 function chooseRouteEvent(index){
@@ -1951,11 +1960,12 @@ function breakDestructible(prop){
 function nearestRoomInteractable(){if(!roomInteractable||roomInteractable.used)return null;const d=distance(player,roomInteractable);return d<=190?{item:roomInteractable,distance:d}:null;}
 
 function useRoomInteractable(){
-  const nearby=nearestRoomInteractable();if(!nearby)return false;const item=nearby.item;item.used=true;
+  const nearby=nearestRoomInteractable();if(!nearby)return false;const item=nearby.item;if((item.type==='event'||item.type==='secret')&&coop.connected&&!coopIsHost()){spawnWord(player.x,player.y-82,'HOST SPEAKS FOR THE PARTY','#9cf4ff');return true;}item.used=true;
   if(item.type==='heal'){player.health=Math.min(player.maxHealth,player.health+50);spawnWord(item.x,item.y-90,'RESTORED!','#65ef55');}
   else if(item.type==='treasure')grantRelic();
   else if(item.type==='shrine'){pendingLevelUps++;openLevelUp();}
   else if(item.type==='shop'){openShop();return true;}
+  else if(item.type==='event'||item.type==='secret'){openRouteEvent(item.type);return true;}
   effects.rings.push({x:item.x,y:item.y,radius:22,maxRadius:190,color:item.color,life:.8,maxLife:.8});burst(item.x,item.y-18,item.color,32,370,6);encounter.modifiers={...(encounter.modifiers||{}),interactableUsed:true};saveRunCheckpoint({kind:'wave',wave:encounter.wave,modifiers:encounter.modifiers});playSfx('upgrade',.23,1.02);updateHud();return true;
 }
 
@@ -2198,6 +2208,9 @@ function begin() {
   }
   if(debugSystem==='merchantRoom'){
     player.maxHealth=900;player.health=900;player.gold=240;enterMerchantRoom({destination:'jadeRootGarden',nextWave:2});if(debugParams.has('near')&&roomInteractable){player.x=roomInteractable.x;player.y=roomInteractable.y+145;camera.x=player.x;camera.y=player.y;}return;
+  }
+  if(debugSystem==='eventRoom'){
+    player.maxHealth=900;player.health=900;player.gold=80;const kind=debugParams.has('secret')?'secret':'event';enterRouteEventRoom(kind,{destination:kind==='secret'?'jadeCrystalClearing':'jadeBrokenPavilion',nextWave:2});if(debugParams.has('near')&&roomInteractable){player.x=roomInteractable.x;player.y=roomInteractable.y+145;camera.x=player.x;camera.y=player.y;}return;
   }
   if(debugSystem==='mapCutscene'){
     startWave(0);setTimeout(()=>{const trigger=layeredMapRuntime.worldObjects('Triggers').find((entry)=>entry.properties.triggerType==='cutscene');if(trigger){player.x=trigger.x+trigger.width/2;player.y=trigger.y+trigger.height/2;camera.x=player.x;camera.y=player.y;}},500);return;
@@ -3108,7 +3121,7 @@ function updateEnemies(dt) {
   if(state==='playing'&&alive.length>0&&nearbyInteractable&&!encounter.bossActive)ui.objective.textContent=`PRESS E  ${nearbyInteractable.item.prompt}`;
   if(state==='playing'&&alive.length===0&&volatileDanger&&!encounter.bossActive)ui.objective.textContent='ESCAPE THE VOLATILE CORE!';
   if(state==='playing'&&alive.length===0&&!volatileDanger&&!missionComplete()&&!encounter.bossActive)ui.objective.textContent=missionObjectiveText(0,0);
-  if(state==='playing'&&alive.length===0&&!volatileDanger&&roomInteractable&&!roomInteractable.used&&!encounter.bossActive)ui.objective.textContent=roomInteractable.type==='shop'?`APPROACH THE SHOPKEEPER  ·  PRESS E TO BROWSE`:`CLAIM YOUR ROUTE REWARD  ${roomInteractable.prompt}`;
+  if(state==='playing'&&alive.length===0&&!volatileDanger&&roomInteractable&&!roomInteractable.used&&!encounter.bossActive)ui.objective.textContent=roomInteractable.type==='shop'?`APPROACH THE SHOPKEEPER  ·  PRESS E TO BROWSE`:roomInteractable.type==='event'?`APPROACH THE LANTERN SPIRIT  ·  PRESS E TO INTERACT`:roomInteractable.type==='secret'?`APPROACH THE HIDDEN SEAL  ·  PRESS E TO INTERACT`:`CLAIM YOUR ROUTE REWARD  ${roomInteractable.prompt}`;
   if(state==='playing'&&alive.length===0&&!volatileDanger&&missionComplete()&&(!roomInteractable||roomInteractable.used)&&clearDelay<0&&!encounter.bossActive)beginWaveTransition();
 }
 
@@ -3452,7 +3465,7 @@ function drawPhysicalRouteGates(){
 function draw(screen) {
   ctx.setTransform(screen.dpr, 0, 0, screen.dpr, 0, 0);
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  const layeredMapActive=room.mapRuntime==='phaser-tiled'&&['playing','story','shop'].includes(state);
+  const layeredMapActive=room.mapRuntime==='phaser-tiled'&&['playing','story','shop','event'].includes(state);
   if(!layeredMapActive){ctx.fillStyle = '#080718'; ctx.fillRect(0, 0, screen.width, screen.height);}
   layeredMapRuntime.update({roomId:room.id,cameraX:camera.x,cameraY:camera.y,zoom:camera.zoom,width:screen.width,height:screen.height,active:layeredMapActive,sealed:state==='playing'&&enemies.some((enemy)=>!enemy.dead&&enemy.state!=='waiting')});
   setWorldTransform(screen);
@@ -3565,8 +3578,17 @@ function drawMinimap(){
 function drawRoomInteractable(){
   const item=roomInteractable;if(!item||item.used)return;const time=motionTime(),near=distance(player,item)<190,pulse=1+Math.sin(time*4)*.06;
   if(item.type==='shop'){drawMerchantInteractable(item,time,near,pulse);return;}
+  if(item.type==='event'||item.type==='secret'){drawEventInteractable(item,time,near,pulse);return;}
   ctx.save();ctx.translate(item.x,item.y);const glow=ctx.createRadialGradient(0,0,5,0,0,145);glow.addColorStop(0,`${item.color}66`);glow.addColorStop(1,`${item.color}00`);ctx.fillStyle=glow;ctx.beginPath();ctx.ellipse(0,18,145*pulse,72*pulse,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle=item.color;ctx.lineWidth=near?7:4;ctx.setLineDash([18,11]);ctx.lineDashOffset=-time*42;ctx.beginPath();ctx.ellipse(0,18,92*pulse,41*pulse,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
   ctx.fillStyle='rgba(6,5,17,.94)';ctx.strokeStyle=item.color;ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(-122,-125,244,72,10);ctx.fill();ctx.stroke();ctx.font='900 35px Impact';ctx.textAlign='center';ctx.fillStyle=item.color;ctx.fillText(item.icon,0,-80);ctx.font='italic 900 17px Impact';ctx.fillStyle='#fff7ed';ctx.fillText(item.name,0,-59);if(near){ctx.font='900 13px Inter';ctx.fillStyle=item.color;ctx.fillText(`[ E ] ${item.prompt}`,0,-140);}ctx.restore();
+}
+
+function drawEventInteractable(item,time,near,pulse){
+  const secret=item.type==='secret';ctx.save();ctx.translate(item.x,item.y);const glow=ctx.createRadialGradient(0,-36,8,0,-24,155);glow.addColorStop(0,`${item.color}70`);glow.addColorStop(1,`${item.color}00`);ctx.fillStyle=glow;ctx.beginPath();ctx.ellipse(0,-20,150*pulse,122*pulse,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='rgba(2,3,12,.45)';ctx.beginPath();ctx.ellipse(0,25,67,18,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle=item.color;ctx.lineWidth=near?5:3;ctx.setLineDash(secret?[7,7]:[18,9]);ctx.lineDashOffset=-time*38;ctx.beginPath();ctx.ellipse(0,20,83*pulse,31*pulse,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+  if(secret){ctx.rotate(Math.sin(time*2.2)*.035);ctx.fillStyle='#16091f';ctx.strokeStyle='#dffcff';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(0,-112);ctx.lineTo(45,-72);ctx.lineTo(35,-9);ctx.lineTo(0,16);ctx.lineTo(-36,-9);ctx.lineTo(-45,-72);ctx.closePath();ctx.fill();ctx.stroke();ctx.strokeStyle=item.color;ctx.shadowColor=item.color;ctx.shadowBlur=24;ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(-19,-66);ctx.lineTo(0,-89);ctx.lineTo(20,-66);ctx.lineTo(0,-34);ctx.closePath();ctx.stroke();}
+  else{const bob=Math.sin(time*3.2)*7;drawAtlasFrame(assets.spiritWispVfx,Math.floor(time*8)%6,0,-63+bob,145,170,0,.9,item.color);ctx.fillStyle='#181126';ctx.strokeStyle='#f5efff';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(-34,-38,68,74,11);ctx.fill();ctx.stroke();ctx.fillStyle=item.color;ctx.shadowColor=item.color;ctx.shadowBlur=17;ctx.beginPath();ctx.roundRect(-20,-23,40,43,8);ctx.fill();ctx.shadowBlur=0;}
+  ctx.fillStyle='rgba(5,5,15,.94)';ctx.strokeStyle=item.color;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(-132,-167,264,39,8);ctx.fill();ctx.stroke();ctx.fillStyle=near?'#fff6e8':item.color;ctx.font='italic 900 16px Bangers, Impact, sans-serif';ctx.textAlign='center';ctx.fillText(near?`[ E ] ${secret?'BREAK HIDDEN SEAL':'HEAR THE BARGAIN'}`:item.name,0,-141);ctx.restore();
 }
 
 function drawMerchantInteractable(item,time,near,pulse){
