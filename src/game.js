@@ -2,6 +2,7 @@ import { clamp, lerp, normalize, distance, approachAngle, encounterActiveLimit, 
 import { HEROES, WEAPONS, ABILITIES, STATUS_EFFECTS, ELITE_MODIFIERS, BOSS_PATTERNS, BOSS_PROFILES, ENEMIES, ENCOUNTERS, ROOMS, DIFFICULTIES } from './data.js?v=20260813-expedition6';
 import { createLayeredMapRuntime } from './map-runtime.js?v=20260813-expedition6';
 import { EXPEDITION_WORLD, expeditionNode, expeditionNeighbors, expeditionWorldPosition, expeditionProgress, expeditionThreat, expeditionLoot } from './expedition-world.js?v=20260813-world2';
+import { PROFILE_VERSION, DEFAULT_SETTINGS, DEFAULT_CONTRACT_PROGRESS, createDefaultProfile, defaultHeroMastery, sanitizeProfile, createSaveArchive, parseSaveArchive } from './profile.js?v=20260813-save1';
 
 const canvas = document.querySelector('#game');
 const ctx = canvas.getContext('2d', { alpha: true });
@@ -242,36 +243,12 @@ const ui = {
 const PROFILE_KEY='brawlpaws-profile-v1';
 const RUN_KEY='brawlpaws-run-v1';
 const RUN_VERSION=1;
-const DEFAULT_SETTINGS={screenShake:1,flashIntensity:1,damageNumbers:true,ambientMotion:true,minimap:true,masterVolume:.8,musicVolume:.55,sfxVolume:.85,abilityVolume:.85,uiVolume:.7};
-const DEFAULT_CONTRACT_PROGRESS={spiritCull:0,eliteBreakers:0,foxfireHunt:0,sealRunner:0,guardianOath:0};
-const DEFAULT_HERO_MASTERY=Object.fromEntries(Object.keys(HEROES).map((id)=>[id,{xp:0,highestRoad:0,kills:0,guardians:0}]));
-const DEFAULT_PROFILE={spiritShards:0,campaignClears:0,runsStarted:0,expeditionsExtracted:0,bestExtractionDepth:0,bestDifficulty:'',lastDifficulty:'ferocious',selectedHero:'kitsune',highestLevel:1,tutorialComplete:false,tutorialStep:0,vitalityRank:0,forgeRank:0,attunementRank:0,purseRank:0,ascensionRank:1,ascensionClears:0,unlockedHeroes:['kitsune','bamboo'],collectedWeapons:[],boundArsenal:{},discoveredEnemies:['groveMinion'],discoveredGuardians:[],worldDiscoveries:['jadeCourtyard'],heroMastery:DEFAULT_HERO_MASTERY,contractProgress:DEFAULT_CONTRACT_PROGRESS,claimedContracts:[],settings:DEFAULT_SETTINGS};
+const DEFAULT_HERO_MASTERY=defaultHeroMastery();
+const DEFAULT_PROFILE=createDefaultProfile();
 function loadProfile(){
   try{
-    const loaded={...DEFAULT_PROFILE,...JSON.parse(localStorage.getItem(PROFILE_KEY)||'{}')};
-    loaded.settings={...DEFAULT_SETTINGS,...loaded.settings};
-    loaded.settings.screenShake=[0,.35,1].includes(Number(loaded.settings.screenShake))?Number(loaded.settings.screenShake):1;
-    loaded.settings.flashIntensity=[0,.35,1].includes(Number(loaded.settings.flashIntensity))?Number(loaded.settings.flashIntensity):1;
-    loaded.settings.damageNumbers=loaded.settings.damageNumbers!==false;
-    loaded.settings.ambientMotion=loaded.settings.ambientMotion!==false;
-    loaded.settings.minimap=loaded.settings.minimap!==false;
-    for(const key of ['masterVolume','musicVolume','sfxVolume','abilityVolume','uiVolume'])loaded.settings[key]=clamp(Number(loaded.settings[key]??DEFAULT_SETTINGS[key]),0,1);
-    loaded.discoveredEnemies=Array.isArray(loaded.discoveredEnemies)?loaded.discoveredEnemies:['groveMinion'];
-    loaded.discoveredGuardians=Array.isArray(loaded.discoveredGuardians)?loaded.discoveredGuardians:[];
-    loaded.worldDiscoveries=Array.isArray(loaded.worldDiscoveries)?[...new Set(loaded.worldDiscoveries.filter((id)=>expeditionNode(id)))]:['jadeCourtyard'];if(!loaded.worldDiscoveries.includes('jadeCourtyard'))loaded.worldDiscoveries.unshift('jadeCourtyard');
-    loaded.expeditionsExtracted=Math.max(0,Math.round(Number(loaded.expeditionsExtracted)||0));loaded.bestExtractionDepth=Math.max(0,Math.round(Number(loaded.bestExtractionDepth)||0));
-    loaded.collectedWeapons=Array.isArray(loaded.collectedWeapons)?loaded.collectedWeapons:[];
-    loaded.boundArsenal=loaded.boundArsenal&&typeof loaded.boundArsenal==='object'?loaded.boundArsenal:{};
-    loaded.heroMastery=Object.fromEntries(Object.keys(HEROES).map((id)=>{const saved=loaded.heroMastery?.[id]||{};return [id,{xp:Math.max(0,Math.round(Number(saved.xp)||0)),highestRoad:Math.max(0,Math.round(Number(saved.highestRoad)||0)),kills:Math.max(0,Math.round(Number(saved.kills)||0)),guardians:Math.max(0,Math.round(Number(saved.guardians)||0))}];}));
-    loaded.unlockedHeroes=Array.isArray(loaded.unlockedHeroes)?loaded.unlockedHeroes:['kitsune','bamboo'];
-    loaded.contractProgress={...DEFAULT_CONTRACT_PROGRESS,...loaded.contractProgress};loaded.claimedContracts=Array.isArray(loaded.claimedContracts)?loaded.claimedContracts:[];
-    if(loaded.campaignClears>0&&!loaded.unlockedHeroes.includes('hopscotch'))loaded.unlockedHeroes.push('hopscotch');
-    if(loaded.campaignClears>0&&!loaded.unlockedHeroes.includes('nomi'))loaded.unlockedHeroes.push('nomi');
-    if(loaded.campaignClears>=2&&!loaded.unlockedHeroes.includes('zap'))loaded.unlockedHeroes.push('zap');
-    loaded.ascensionRank=clamp(Math.round(Number(loaded.ascensionRank)||1),1,10);loaded.ascensionClears=Math.max(0,Math.round(Number(loaded.ascensionClears)||0));
-    if(loaded.ascensionClears>0&&!loaded.unlockedHeroes.includes('rusty'))loaded.unlockedHeroes.push('rusty');
-    return loaded;
-  }catch{return {...DEFAULT_PROFILE,settings:{...DEFAULT_SETTINGS},unlockedHeroes:[...DEFAULT_PROFILE.unlockedHeroes],collectedWeapons:[],boundArsenal:{},discoveredEnemies:[...DEFAULT_PROFILE.discoveredEnemies],discoveredGuardians:[],worldDiscoveries:[...DEFAULT_PROFILE.worldDiscoveries],heroMastery:structuredClone(DEFAULT_HERO_MASTERY),contractProgress:{...DEFAULT_CONTRACT_PROGRESS},claimedContracts:[]};}
+    return sanitizeProfile(JSON.parse(localStorage.getItem(PROFILE_KEY)||'{}'));
+  }catch{return createDefaultProfile();}
 }
 function saveProfile(){try{localStorage.setItem(PROFILE_KEY,JSON.stringify(profile));}catch{/* Storage can be unavailable in private contexts. */}}
 let profile=loadProfile();
@@ -523,6 +500,7 @@ let activeCodexId = null;
 let runActive = false;
 let pausedState = 'playing';
 let settingsReturnState = 'preview';
+let resetSaveConfirmUntil=0;
 let currentGuardianRewards = [];
 let pendingGuardianReward = null;
 let currentRelicChoices = [];
@@ -705,6 +683,7 @@ function refreshSettingsUi(){
     button.classList.toggle('selected',profile.settings[key]===value);
   }
   for(const slider of settingsScreen.querySelectorAll('[data-audio-setting]')){const key=slider.dataset.audioSetting;slider.value=profile.settings[key];const output=settingsScreen.querySelector(`[data-audio-output="${key}"]`);if(output)output.value=`${Math.round(profile.settings[key]*100)}%`;}
+  const summary=document.querySelector('#save-data-summary');if(summary)summary.textContent=`PROFILE V${PROFILE_VERSION} · ${profile.worldDiscoveries.length}/${EXPEDITION_WORLD.nodes.length} LANDMARKS · ${profile.spiritShards} BANKED SHARDS`;
 }
 
 function openSettings(returnState=state){
@@ -715,6 +694,18 @@ function closeSettings(){if(state!=='settings')return;settingsScreen.classList.r
 
 function changeSetting(key,raw){
   if(!(key in DEFAULT_SETTINGS))return;profile.settings[key]=raw==='true'?true:raw==='false'?false:Number(raw);saveProfile();refreshSettingsUi();applyAudioMix();
+}
+function saveDataStatus(message,tone=''){const element=document.querySelector('#save-data-status');if(!element)return;element.textContent=message;element.classList.remove('error','success');if(tone)element.classList.add(tone);}
+function exportProfileSave(){
+  const archive=createSaveArchive(profile),text=JSON.stringify(archive,null,2),field=document.querySelector('#save-data-text');field.value=text;field.select();
+  const blob=new Blob([text],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`brawlpaws-save-${new Date().toISOString().slice(0,10)}.json`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);saveDataStatus('SAVE EXPORTED & DOWNLOADED','success');playSfx('upgrade',.2,1.08);
+}
+function importProfileText(text){
+  try{const imported=parseSaveArchive(text);localStorage.setItem(PROFILE_KEY,JSON.stringify(imported));localStorage.removeItem(RUN_KEY);saveDataStatus('IMPORT VALID · RELOADING','success');setTimeout(()=>location.reload(),450);return true;}catch(error){saveDataStatus(error?.message||'SAVE IMPORT FAILED','error');playSfx('hurt',.16,.9);return false;}
+}
+function requestProfileReset(){
+  const button=document.querySelector('#reset-save'),now=performance.now();if(now>resetSaveConfirmUntil){resetSaveConfirmUntil=now+5000;button.textContent='CLICK AGAIN TO ERASE';button.classList.add('confirm');saveDataStatus('CONFIRM WITHIN 5 SECONDS','error');setTimeout(()=>{if(performance.now()>=resetSaveConfirmUntil){button.textContent='RESET ALL PROGRESS';button.classList.remove('confirm');saveDataStatus('RESET CANCELLED');}},5100);return;}
+  localStorage.removeItem(PROFILE_KEY);localStorage.removeItem(RUN_KEY);button.textContent='PROGRESS ERASED';saveDataStatus('NEW JOURNEY READY · RELOADING','success');setTimeout(()=>location.reload(),450);
 }
 
 for(const slider of settingsScreen.querySelectorAll('[data-audio-setting]'))slider.addEventListener('input',()=>changeSetting(slider.dataset.audioSetting,slider.value));
@@ -4093,6 +4084,10 @@ document.querySelector('#pause-settings').addEventListener('click',()=>openSetti
 document.querySelector('#save-title-button').addEventListener('click',returnToTitle);
 document.querySelector('#close-settings').addEventListener('click',closeSettings);
 for(const button of settingsScreen.querySelectorAll('[data-setting]'))button.addEventListener('click',()=>changeSetting(button.dataset.setting,button.dataset.value));
+document.querySelector('#export-save').addEventListener('click',exportProfileSave);
+document.querySelector('#import-save').addEventListener('click',()=>importProfileText(document.querySelector('#save-data-text').value));
+document.querySelector('#import-save-file').addEventListener('change',async(event)=>{const file=event.target.files?.[0];if(!file)return;try{const text=await file.text();document.querySelector('#save-data-text').value=text;importProfileText(text);}catch{saveDataStatus('SAVE FILE COULD NOT BE READ','error');}finally{event.target.value='';}});
+document.querySelector('#reset-save').addEventListener('click',requestProfileReset);
 document.querySelector('#close-codex').addEventListener('click',closeCodex);
 document.querySelector('#world-map-button').addEventListener('click',openWorldMap);
 document.querySelector('#close-world-map').addEventListener('click',closeWorldMap);

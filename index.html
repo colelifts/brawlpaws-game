@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#080817" />
   <link rel="icon" href="data:," />
   <title>BrawlPaws — Six-Chapter Roguelite Campaign</title>
-  <link rel="stylesheet" href="styles.css?v=20260813-expedition8" />
+  <link rel="stylesheet" href="styles.css?v=20260813-save1" />
 </head>
 <body>
   <main id="game-shell" aria-label="BrawlPaws roguelite campaign">
@@ -247,6 +247,16 @@
             <div><strong>UI &amp; REWARDS</strong><p>Menu confirmations, upgrades, discoveries, and rewards.</p></div>
             <label class="audio-slider"><input type="range" min="0" max="1" step="0.01" data-audio-setting="uiVolume"><output data-audio-output="uiVolume">70%</output></label>
           </article>
+          <article class="save-data-row">
+            <header><div><strong>CAMPAIGN SAVE</strong><p id="save-data-summary">PROFILE V2 · STORED ON THIS DEVICE</p></div><span id="save-data-status" role="status">READY</span></header>
+            <textarea id="save-data-text" aria-label="BrawlPaws save data" spellcheck="false" placeholder="Exported save data appears here. To import, paste a BrawlPaws save here or choose a JSON file."></textarea>
+            <div class="save-data-actions">
+              <button id="export-save" type="button">EXPORT &amp; DOWNLOAD</button>
+              <label class="save-file-button">CHOOSE SAVE FILE<input id="import-save-file" type="file" accept="application/json,.json" /></label>
+              <button id="import-save" type="button">IMPORT PASTED SAVE</button>
+              <button id="reset-save" class="danger-button" type="button">RESET ALL PROGRESS</button>
+            </div>
+          </article>
         </div>
         <button id="close-settings">RETURN <kbd>ESC</kbd></button>
       </div>
@@ -402,6 +412,6 @@
     <div id="loading">AWAKENING THE GROVE…</div>
   </main>
   <script src="vendor/phaser-3.90.0.min.js"></script>
-    <script type="module" src="src/game.js?v=20260813-expedition8"></script>
+    <script type="module" src="src/game.js?v=20260813-save1"></script>
 </body>
 </html>

@@ -11,6 +11,7 @@ const data=readFileSync(new URL('../src/data.js',import.meta.url),'utf8');
 const styles=readFileSync(new URL('../styles.css',import.meta.url),'utf8');
 const mapRuntime=readFileSync(new URL('../src/map-runtime.js',import.meta.url),'utf8');
 const expeditionWorld=readFileSync(new URL('../src/expedition-world.js',import.meta.url),'utf8');
+const profileSource=readFileSync(new URL('../src/profile.js',import.meta.url),'utf8');
 const shrineMap=JSON.parse(readFileSync(new URL('../assets/maps/jade-grove/shrine-courtyard.json',import.meta.url),'utf8'));
 
 test('the run includes route and shop interaction surfaces',()=>{
@@ -454,7 +455,7 @@ test('Rusty is an Ascension-earned twin-revolver ricochet hero',()=>{
 
 test('Hopscotch is an earned directional archer with a timed piercing release',()=>{
   for(const asset of ['hopscotch-portrait.png','hopscotch-archer-alpha.png','hopscotch-fire-alpha.png','hopscotch-arrow-alpha.png'])assert.match(game+html,new RegExp(asset.replace('.','\\.')));
-  assert.match(game,/unlockedHeroes:\['kitsune','bamboo'\]/);
+  assert.match(profileSource,/unlockedHeroes:\['kitsune','bamboo'\]/);
   assert.match(game,/profile\.unlockedHeroes\.push\('hopscotch'\)/);
   assert.match(game,/profile\.campaignClears>=2&&!profile\.unlockedHeroes\.includes\('zap'\)/);
   assert.match(game,/function releaseWeaponVolley\(/);
@@ -481,8 +482,8 @@ test('the persistent Codex records encountered spirits and exposes real counterp
   for(const id of ['codex-screen','codex-grid','codex-detail','codex-progress','codex-button','close-codex'])assert.match(html,new RegExp(`id="${id}"`));
   for(const tab of ['heroes','enemies','guardians','statuses'])assert.match(html,new RegExp(`data-codex-tab="${tab}"`));
   for(const fn of ['codexArtFor','codexEntries','discoverEnemy','renderCodex','renderCodexDetail','openCodex','closeCodex'])assert.match(game,new RegExp(`function ${fn}\\(`));
-  assert.match(game,/discoveredEnemies:\['groveMinion'\]/);
-  assert.match(game,/discoveredGuardians:\[\]/);
+  assert.match(profileSource,/discoveredEnemies:\['groveMinion'\]/);
+  assert.match(profileSource,/discoveredGuardians:\[\]/);
   assert.match(game,/discoverEnemy\(definition\)/);
   assert.match(game,/debugSystem==='codex'/);
   assert.match(game,/data-open-codex/);
@@ -762,7 +763,7 @@ test('level seven forces an authored legend arsenal with persistent collection t
 
 test('discovered Arsenal blueprints bind per hero without bypassing the low-power opening',()=>{
   for(const weapon of ['frostbiteNeedle','oniMortar','galeWarFan','embercoilRepeater','tempestChakram','moonpiercerRailbow'])assert.match(game,new RegExp(`id:'${weapon}'[\\s\\S]{0,180}tier:`));
-  assert.match(game,/boundArsenal:\{\}/);
+  assert.match(profileSource,/boundArsenal:\{\}/);
   assert.match(game,/function boundArsenalForHero\(\)/);
   assert.match(game,/function bindArsenalBlueprint\(id\)/);
   assert.match(game,/function renderArsenalContract\(\)/);
@@ -816,7 +817,7 @@ test('combat effects preserve readable player and enemy silhouettes',()=>{
 
 test('first-run tutorial explains, verifies, saves, skips, and cannot soft-lock',()=>{
   for(const id of ['move','fire','sprint','dash','loot','fight'])assert.match(game,new RegExp(`id:'${id}'`));
-  assert.match(game,/tutorialComplete:false,tutorialStep:0/);
+  assert.match(profileSource,/tutorialComplete:false,tutorialStep:0/);
   assert.match(game,/function showTutorialLesson\(index=0\)/);
   assert.match(game,/function updateTutorial\(dt\)/);
   assert.match(game,/function typeTutorialCopy\(copy\)/);
