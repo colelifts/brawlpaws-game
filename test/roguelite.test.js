@@ -323,6 +323,13 @@ test('spirit roads use authored world-gate art instead of abstract portal rings'
   assert.match(game,/ctx\.drawImage\(assets\.routeGates,sx,sy,sw,sh/);
 });
 
+test('branching exits grow authored traversal roads through the live terrain',()=>{
+  assert.match(game,/function drawAuthoredRouteRoads\(\)/);
+  assert.match(game,/road\.bezierCurveTo\(/);
+  assert.match(game,/drawAuthoredRouteRoads\(\);\s*if\(room\.id!==/);
+  assert.match(game,/function routeRoadPalette\(\)/);
+});
+
 test('Tiled cutscene triggers launch saved one-time world dialogue',()=>{
   assert.match(mapRuntime,/triggersAt\(entity,roomId=this\.activeRoomId\)/);
   for(const helper of ['mapCutsceneDefinition','showMapCutscene','finishMapCutscene','updateMapTriggers'])assert.match(game,new RegExp(`function ${helper}\\(`));

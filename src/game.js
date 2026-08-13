@@ -3567,6 +3567,36 @@ function drawPhysicalRouteGates(){
   }ctx.restore();
 }
 
+function routeRoadPalette(){
+  if(room.id.startsWith('bamboo'))return {bed:'#132b25',stone:'#3d725b',edge:'#65ef9b',glow:'#74f1c7'};
+  if(room.id.startsWith('crimson'))return {bed:'#321611',stone:'#7e392d',edge:'#ff754e',glow:'#ffb24f'};
+  if(room.id.startsWith('storm'))return {bed:'#102536',stone:'#285e79',edge:'#4ceaff',glow:'#b7f8ff'};
+  if(room.id.startsWith('neon'))return {bed:'#17142f',stone:'#59346f',edge:'#ff49bd',glow:'#59f2ff'};
+  if(room.id.startsWith('shadow'))return {bed:'#1e102d',stone:'#563176',edge:'#bf68ff',glow:'#e5b8ff'};
+  return {bed:'#15271f',stone:'#345e48',edge:'#72ef83',glow:'#63efff'};
+}
+
+function drawAuthoredRouteRoads(){
+  if(!encounter?.awaitingRouteChoice||!encounter.routeGateChoices?.length)return;
+  const palette=routeRoadPalette(),time=performance.now()/1000,b=room.combatBounds,startX=b.x,startY=Math.min(b.y-80,Math.max(...encounter.routeGateChoices.map((gate)=>gate.y))+610);
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+  for(const gate of encounter.routeGateChoices){
+    if(gate.backtrack||gate.extract)continue;
+    const endX=gate.x,endY=gate.y+96,controlY=lerp(startY,endY,.48),near=distance(player,gate)<390;
+    const road=new Path2D();road.moveTo(startX,startY);road.bezierCurveTo(startX,controlY,lerp(startX,endX,.66),controlY,endX,endY);
+    ctx.globalAlpha=.82;ctx.strokeStyle='rgba(3,5,11,.82)';ctx.lineWidth=196;ctx.stroke(road);
+    ctx.strokeStyle=palette.bed;ctx.lineWidth=166;ctx.stroke(road);
+    ctx.globalAlpha=.66;ctx.strokeStyle=palette.stone;ctx.lineWidth=126;ctx.setLineDash([92,18,44,16]);ctx.lineDashOffset=gate.index*41;ctx.stroke(road);ctx.setLineDash([]);
+    ctx.globalAlpha=near?.72:.46;ctx.strokeStyle=gate.color||palette.edge;ctx.shadowColor=gate.color||palette.glow;ctx.shadowBlur=near?18:10;ctx.lineWidth=5;ctx.setLineDash([28,46]);ctx.lineDashOffset=-time*26+gate.index*19;ctx.stroke(road);ctx.setLineDash([]);ctx.shadowBlur=0;
+    for(let step=1;step<=5;step++){
+      const t=step/6,inv=1-t,x=inv*inv*inv*startX+3*inv*inv*t*startX+3*inv*t*t*lerp(startX,endX,.66)+t*t*t*endX,y=inv*inv*inv*startY+3*inv*inv*t*controlY+3*inv*t*t*controlY+t*t*t*endY,side=step%2?-1:1;
+      ctx.globalAlpha=.68;ctx.fillStyle='#11101e';ctx.strokeStyle=palette.stone;ctx.lineWidth=4;ctx.beginPath();ctx.ellipse(x+side*78,y,20,13,side*.18,0,Math.PI*2);ctx.fill();ctx.stroke();
+      const pulse=.55+Math.sin(time*3+step+gate.index)*.18;ctx.globalCompositeOperation='lighter';ctx.globalAlpha=pulse;ctx.fillStyle=gate.color||palette.glow;ctx.shadowColor=gate.color||palette.glow;ctx.shadowBlur=18;ctx.beginPath();ctx.arc(x+side*78,y-16,5,0,Math.PI*2);ctx.fill();ctx.globalCompositeOperation='source-over';ctx.shadowBlur=0;
+    }
+  }
+  ctx.restore();
+}
+
 function draw(screen) {
   ctx.setTransform(screen.dpr, 0, 0, screen.dpr, 0, 0);
   ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -3577,6 +3607,7 @@ function draw(screen) {
   setWorldTransform(screen);
   drawArenaBackdrop(screen);
 
+  drawAuthoredRouteRoads();
   if(room.id!=='spiritVillage')drawWorldZones();
   if(room.id==='jadeCourtyard'){drawFloorDetails();drawArchitectureLandmarks();drawLightPools();}
   drawAmbient();
