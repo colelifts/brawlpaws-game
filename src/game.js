@@ -2606,11 +2606,13 @@ function updatePlayer(dt) {
 
   const move = movementVector();
   if (move.x || move.y) player.moveFacing = Math.atan2(move.y, move.x);
-  // Twin-stick rule: movement controls translation; a live mouse aim controls body facing.
-  // This prevents alternating left/right frames when moving opposite the firing direction.
+  // Twin-stick ownership: movement always controls the feet, while a live attack/cast
+  // owns body facing. The short lock bridges weapon cooldown gaps without letting an
+  // idle mouse permanently override the direction of travel.
+  const pointerAiming=input.pointer.active&&(firingInput||Boolean(player.attack)||player.castTime>0||(player.aimLockTime||0)>0);
   if(input.gamepad.aim.magnitude>.18){const aim=aimDirection();setActionFacing(aim,input.gamepad.held.has('attack')||Boolean(player.attack));}
-  else if (input.pointer.active) updatePointerAim(input.attackHeld || Boolean(player.attack) || player.castTime > 0);
-  const actionOwnsFacing = input.gamepad.aim.magnitude>.18||input.pointer.active || (player.aimLockTime || 0) > 0 || input.attackHeld || Boolean(player.attack) || player.castTime > 0;
+  else if(pointerAiming)updatePointerAim(firingInput||Boolean(player.attack)||player.castTime>0);
+  const actionOwnsFacing = input.gamepad.aim.magnitude>.18||pointerAiming||(player.aimLockTime||0)>0||firingInput||Boolean(player.attack)||player.castTime>0;
   if (actionOwnsFacing && Number.isFinite(player.aimFacing)) player.facing = player.aimFacing;
   const wantsSprint=(keyHeld('sprint')||input.gamepad.held.has('sprint'))&&Boolean(move.x||move.y)&&!player.attack&&player.castTime<=0&&player.dashTime<=0;
   player.sprinting=wantsSprint&&player.sprint>2;
