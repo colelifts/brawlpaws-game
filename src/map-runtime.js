@@ -124,8 +124,8 @@ export class LayeredMapRuntime {
     if(missing.length)throw new Error(`${definition.roomId} is missing Tiled layers: ${missing.join(', ')}`);
     const entry={...definition,map,mapData,layers:{},objects:{},collision:[],gates:[],display:[],debugGraphics:null,visible:false};
     const tiles=map.addTilesetImage(definition.tilesetName,definition.tilesetKey,256,256,0,0);
-    for(const [name,depth] of [['Ground',-3000],['Ground Detail',-2900],['Walls',-2400]]){
-      const layer=map.createLayer(name,tiles,0,0).setDepth(depth).setVisible(false);entry.layers[name]=layer;entry.display.push(layer);
+    for(const [name,depth,alpha] of [['Ground',-3000,.03],['Ground Detail',-2900,.08],['Walls',-2400,.18]]){
+      const layer=map.createLayer(name,tiles,0,0).setDepth(depth).setAlpha(alpha).setVisible(false);entry.layers[name]=layer;entry.display.push(layer);
     }
     for(const layerName of REQUIRED_LAYERS.filter((name)=>!['Ground','Ground Detail','Walls'].includes(name))){
       const source=map.getObjectLayer(layerName);entry.objects[layerName]=(source?.objects||[]).map((object)=>({...object,properties:objectProperties(object)}));
@@ -159,6 +159,7 @@ export class LayeredMapRuntime {
       if(p.effect==='lanternGlow')sprite=scene.add.sprite(anchor.x,anchor.y,'lantern-flame').setDisplaySize(260,210).setAlpha(.42).setBlendMode('ADD').setDepth(-1000+anchor.y*.01).play('map-flame');
       if(sprite){sprite.setVisible(false);entry.display.push(sprite);}
     }
+    const petalAnchor=entry.objects['VFX Anchors'].find((anchor)=>anchor.properties.effect==='fallingPetals');if(petalAnchor){const emitter=scene.add.particles(petalAnchor.x,petalAnchor.y,'spirit-wisp',{frame:5,x:{min:-(petalAnchor.properties.radius||1200),max:petalAnchor.properties.radius||1200},y:{min:-720,max:120},lifespan:{min:5200,max:8400},frequency:150,quantity:1,scale:{start:.026,end:.009},alpha:{start:.46,end:0},speedX:{min:-24,max:34},speedY:{min:42,max:82},rotate:{min:0,max:360},tint:[0xff72c8,0xd785ff,0x74e9ff],blendMode:'ADD'}).setDepth(-980).setVisible(false);entry.display.push(emitter);}
   }
 
   createDebug(scene,entry){entry.debugGraphics=scene.add.graphics().setDepth(100000).setVisible(false);entry.display.push(entry.debugGraphics);}
@@ -174,8 +175,10 @@ export class LayeredMapRuntime {
   activeEntry(){return this.entries.get(this.activeRoomId)||null;}
 
   setEntryOffset(entry,x=0,y=0){
-    if(!entry?.displayOrigins)return;for(const object of entry.display){const origin=entry.displayOrigins.get(object);if(origin)object.setPosition(origin.x+x,origin.y+y);}
+    if(!entry?.displayOrigins)return;entry.offsetX=x;entry.offsetY=y;for(const object of entry.display){const origin=entry.displayOrigins.get(object);if(origin)object.setPosition(origin.x+x,origin.y+y);}
   }
+
+  visibleRegions(){return [...this.entries.values()].filter((entry)=>entry.visible).map((entry)=>({roomId:entry.roomId,offsetX:entry.offsetX||0,offsetY:entry.offsetY||0,width:entry.map.widthInPixels,height:entry.map.heightInPixels}));}
 
   entrySpawn(roomId,direction='back'){
     const entry=this.entries.get(roomId),gate=direction==='forward'?this.forwardGate(roomId):this.backGate(roomId);if(!entry||!gate)return this.playerSpawn(roomId);

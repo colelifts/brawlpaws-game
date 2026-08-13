@@ -1,6 +1,6 @@
 import { clamp, lerp, normalize, distance, approachAngle, encounterActiveLimit, campaignPressureCurve, cappedWardPressure, normalizedEnemyScales, enemySpeedCeiling, enemyTelegraphFloor, incomingDamageLimit, guardianAttackTiming } from './math.js?v=20260812-guardians1';
 import { HEROES, WEAPONS, ABILITIES, STATUS_EFFECTS, ELITE_MODIFIERS, BOSS_PATTERNS, BOSS_PROFILES, ENEMIES, ENCOUNTERS, ROOMS, DIFFICULTIES } from './data.js?v=20260813-casts1';
-import { createLayeredMapRuntime } from './map-runtime.js?v=20260813-stream1';
+import { createLayeredMapRuntime } from './map-runtime.js?v=20260813-stream5';
 import { EXPEDITION_WORLD, EXPEDITION_MILESTONES, expeditionNode, expeditionNeighbors, expeditionWorldPosition, expeditionProgress, expeditionRealmProgress, expeditionThreat, expeditionLoot } from './expedition-world.js?v=20260813-world3';
 import { PROFILE_VERSION, DEFAULT_SETTINGS, DEFAULT_CONTRACT_PROGRESS, createDefaultProfile, defaultHeroMastery, sanitizeProfile, createSaveArchive, parseSaveArchive } from './profile.js?v=20260813-prestige1';
 import { DEFAULT_BINDINGS, BINDING_LABELS, keyLabel, gamepadActions } from './controls.js?v=20260813-controls1';
@@ -8,6 +8,8 @@ import { MASTERY_CAP, MASTERY_POWER_CAP, MASTERY_CRESTS, masteryCrest, available
 
 const canvas = document.querySelector('#game');
 const ctx = canvas.getContext('2d', { alpha: true });
+const worldBackdropCanvas=document.querySelector('#world-backdrop');
+const worldBackdropCtx=worldBackdropCanvas.getContext('2d',{alpha:false});
 const minimapCanvas = document.querySelector('#minimap');
 const minimapCtx = minimapCanvas.getContext('2d');
 const worldMapCanvas=document.querySelector('#world-map');
@@ -2379,9 +2381,13 @@ function resize() {
   if (canvas.width !== Math.round(width * dpr) || canvas.height !== Math.round(height * dpr)) {
     canvas.width = Math.round(width * dpr);
     canvas.height = Math.round(height * dpr);
+    worldBackdropCanvas.width=Math.round(width*dpr);
+    worldBackdropCanvas.height=Math.round(height*dpr);
   }
   canvas.style.width = `${width}px`;
   canvas.style.height = `${height}px`;
+  worldBackdropCanvas.style.width=`${width}px`;
+  worldBackdropCanvas.style.height=`${height}px`;
   camera.zoom = Math.min(width / 2100, height / 1180);
   camera.zoom = Math.max(camera.zoom, .43);
   return { width, height, dpr };
@@ -3536,6 +3542,19 @@ function drawArenaBackdrop(screen){
   ctx.drawImage(assets.arena,x/room.width*assets.arena.naturalWidth,y/room.height*assets.arena.naturalHeight,width/room.width*assets.arena.naturalWidth,height/room.height*assets.arena.naturalHeight,x,y,width,height);
 }
 
+function drawLayeredWorldBackdrop(screen,active){
+  worldBackdropCtx.setTransform(screen.dpr,0,0,screen.dpr,0,0);worldBackdropCtx.fillStyle='#070615';worldBackdropCtx.fillRect(0,0,screen.width,screen.height);if(!active)return;
+  const viewLeft=camera.x-screen.width/(camera.zoom*2),viewTop=camera.y-screen.height/(camera.zoom*2),viewRight=camera.x+screen.width/(camera.zoom*2),viewBottom=camera.y+screen.height/(camera.zoom*2);
+  for(const region of layeredMapRuntime.visibleRegions()){
+    const definition=ROOMS[region.roomId],image=definition?loadRoomArena(definition):null;if(!image?.complete||!image.naturalWidth)continue;
+    const left=Math.max(viewLeft,region.offsetX),top=Math.max(viewTop,region.offsetY),right=Math.min(viewRight,region.offsetX+region.width),bottom=Math.min(viewBottom,region.offsetY+region.height);if(right<=left||bottom<=top)continue;
+    const worldU0=(left-region.offsetX)/region.width,worldV0=(top-region.offsetY)/region.height,worldU1=(right-region.offsetX)/region.width,worldV1=(bottom-region.offsetY)/region.height;
+    const sx=(.08+worldU0*.84)*image.naturalWidth,sy=(.1+worldV0*.53)*image.naturalHeight,sw=(worldU1-worldU0)*.84*image.naturalWidth,sh=(worldV1-worldV0)*.53*image.naturalHeight;
+    const dx=(left-camera.x)*camera.zoom+screen.width/2,dy=(top-camera.y)*camera.zoom+screen.height/2,dw=(right-left)*camera.zoom,dh=(bottom-top)*camera.zoom;worldBackdropCtx.drawImage(image,sx,sy,sw,sh,dx,dy,dw,dh);
+  }
+  const shade=worldBackdropCtx.createRadialGradient(screen.width*.5,screen.height*.48,screen.height*.18,screen.width*.5,screen.height*.5,screen.width*.72);shade.addColorStop(0,'rgba(5,10,20,.02)');shade.addColorStop(1,'rgba(2,2,12,.38)');worldBackdropCtx.fillStyle=shade;worldBackdropCtx.fillRect(0,0,screen.width,screen.height);
+}
+
 function drawPhysicalRouteGates(){
   if(!encounter?.awaitingRouteChoice||!encounter.routeGateChoices?.length)return;const time=performance.now()/1000;
   ctx.save();for(const gate of encounter.routeGateChoices){const near=distance(player,gate)<340,pulse=.5+Math.sin(time*3.2+gate.index)*.5,color=gate.color||'#45efff',radius=gate.radius||66;
@@ -3551,6 +3570,7 @@ function draw(screen) {
   const layeredMapActive=room.mapRuntime==='phaser-tiled'&&['playing','story','shop','event'].includes(state);
   if(!layeredMapActive){ctx.fillStyle = '#080718'; ctx.fillRect(0, 0, screen.width, screen.height);}
   layeredMapRuntime.update({roomId:room.id,cameraX:camera.x,cameraY:camera.y,zoom:camera.zoom,width:screen.width,height:screen.height,active:layeredMapActive,sealed:state==='playing'&&enemies.some((enemy)=>!enemy.dead&&enemy.state!=='waiting')});
+  drawLayeredWorldBackdrop(screen,layeredMapActive);
   setWorldTransform(screen);
   drawArenaBackdrop(screen);
 

@@ -15,8 +15,9 @@ body { font-family: "Arial Narrow", "Roboto Condensed", Impact, sans-serif; colo
 button, kbd { font: inherit; }
 
 #game-shell { position: fixed; inset:0; width: auto; height: auto; min-height: 540px; overflow: clip; background: #070615; }
-#phaser-map{position:absolute;inset:0;z-index:0;overflow:hidden;background:#070615;visibility:hidden}#phaser-map canvas{display:block;width:100%!important;height:100%!important}
-#game { position:absolute;inset:0;z-index:1;display: block; width: 100%!important; height: 100%!important; cursor: crosshair; }
+#world-backdrop{position:absolute;inset:0;z-index:0;display:block;width:100%!important;height:100%!important;background:#070615}
+#phaser-map{position:absolute;inset:0;z-index:1;overflow:hidden;background:transparent;visibility:hidden}#phaser-map canvas{display:block;width:100%!important;height:100%!important}
+#game { position:absolute;inset:0;z-index:2;display: block; width: 100%!important; height: 100%!important; cursor: crosshair; }
 #game-shell::after {
   content: ""; position: absolute; inset: 0; pointer-events: none;
   background: radial-gradient(circle at center, transparent 54%, rgba(1, 0, 10, .48) 100%);

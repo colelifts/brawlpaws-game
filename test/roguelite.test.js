@@ -299,6 +299,18 @@ test('authored regions stream across aligned gates and preserve entry direction'
   assert.match(game,/entryGate:'forward'/);
 });
 
+test('layered regions composite production-painted scenery beneath live world layers',()=>{
+  assert.match(html,/id="world-backdrop"/);
+  assert.match(styles,/#world-backdrop\{/);
+  assert.match(mapRuntime,/visibleRegions\(\)/);
+  assert.match(mapRuntime,/\['Ground',-3000,\.03\]/);
+  assert.match(game,/function drawLayeredWorldBackdrop\(/);
+  assert.match(game,/layeredMapRuntime\.visibleRegions\(\)/);
+  assert.match(game,/drawLayeredWorldBackdrop\(screen,layeredMapActive\)/);
+  assert.match(mapRuntime,/petalAnchor=entry\.objects\['VFX Anchors'\]/);
+  assert.match(mapRuntime,/scene\.add\.particles\(petalAnchor\.x,petalAnchor\.y,'spirit-wisp'/);
+});
+
 test('spirit roads use authored world-gate art instead of abstract portal rings',()=>{
   assert.match(game,/routeGates: new Image\(\)/);
   assert.match(game,/route-gates-v1\.png/);
