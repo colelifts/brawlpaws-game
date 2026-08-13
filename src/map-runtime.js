@@ -193,6 +193,8 @@ export class LayeredMapRuntime {
 
   forwardGate(roomId=this.activeRoomId){return this.entries.get(roomId)?.gates.find((gate)=>gate.properties.direction==='forward')||null;}
 
+  backGate(roomId=this.activeRoomId){return this.entries.get(roomId)?.gates.find((gate)=>gate.properties.direction==='back')||null;}
+
   exitAt(entity){
     const gate=this.forwardGate();if(!gate||gate.sealed)return null;const margin=70;
     return entity.x>=gate.x-margin&&entity.x<=gate.x+gate.width+margin&&entity.y>=gate.y-margin&&entity.y<=gate.y+gate.height+margin?{destination:gate.properties.destination,gate}:null;

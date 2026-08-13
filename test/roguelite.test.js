@@ -267,6 +267,15 @@ test('cleared encounters branch through physical in-world spirit roads',()=>{
   assert.match(game,/if\(ordered\.length\)return ordered\.slice\(0,count\)/);
 });
 
+test('authored return gates revisit cleared regions without replaying combat',()=>{
+  assert.match(mapRuntime,/backGate\(roomId=this\.activeRoomId\)/);
+  assert.match(game,/function returnToClearedRegion\(/);
+  assert.match(game,/player\.clearedRegions\?\.has\(previousRegion\)/);
+  assert.match(game,/player\.regionHistory\.pop\(\)/);
+  assert.match(game,/preparePhysicalRoute\(pendingRouteWave,\{restoring:true\}\)/);
+  assert.match(game,/RETURNING ALONG THE SPIRIT ROAD/);
+});
+
 test('the Mission Board tracks and rewards persistent campaign contracts',()=>{
   for(const id of ['spiritCull','eliteBreakers','foxfireHunt','sealRunner','guardianOath'])assert.match(game,new RegExp(`id:'${id}'`));
   for(const helper of ['recordContractProgress','renderMissionBoard','claimCampaignContract','contractClaimed'])assert.match(game,new RegExp(`function ${helper}\\(`));

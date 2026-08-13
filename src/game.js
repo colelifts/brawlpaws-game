@@ -1,6 +1,6 @@
 import { clamp, lerp, normalize, distance, approachAngle, encounterActiveLimit, campaignPressureCurve, cappedWardPressure, normalizedEnemyScales, enemySpeedCeiling, enemyTelegraphFloor, incomingDamageLimit, guardianAttackTiming } from './math.js?v=20260812-guardians1';
 import { HEROES, WEAPONS, ABILITIES, STATUS_EFFECTS, ELITE_MODIFIERS, BOSS_PATTERNS, BOSS_PROFILES, ENEMIES, ENCOUNTERS, ROOMS, DIFFICULTIES } from './data.js?v=20260813-expedition6';
-import { createLayeredMapRuntime } from './map-runtime.js?v=20260813-expedition6';
+import { createLayeredMapRuntime } from './map-runtime.js?v=20260813-worldgates2';
 import { EXPEDITION_WORLD, EXPEDITION_MILESTONES, expeditionNode, expeditionNeighbors, expeditionWorldPosition, expeditionProgress, expeditionRealmProgress, expeditionThreat, expeditionLoot } from './expedition-world.js?v=20260813-world3';
 import { PROFILE_VERSION, DEFAULT_SETTINGS, DEFAULT_CONTRACT_PROGRESS, createDefaultProfile, defaultHeroMastery, sanitizeProfile, createSaveArchive, parseSaveArchive } from './profile.js?v=20260813-prestige1';
 import { DEFAULT_BINDINGS, BINDING_LABELS, keyLabel, gamepadActions } from './controls.js?v=20260813-controls1';
@@ -1321,7 +1321,7 @@ function resetGame() {
     abilityEvolutions:{undertowWell:false,foxfireVolley:false,wildHeart:false,shockPaws:false},
     upgradeRanks:{spiritRounds:0,quickPaws:0,vitality:0,undertow:0,hungryFlame:0,heartBloom:0,stormHeart:0,wardbreaker:0,spiritHunter:0,spiritCatalyst:0,pressureChamber:0,headhunter:0,keenEye:0,moonPiercer:0,perfectDraw:0,glassFang:0,spiritMomentum:0,guardianHunter:0,deepReserves:0,bankShot:0,loadedDice:0,quickdraw:0,spiritCylinder:0,phaseRounds:0,foxstepMastery:0,ironBelly:0,scatterBore:0,guardianHide:0,capacitorBank:0,chainLogic:0,rapidCycle:0,moonEdge:0,secondPassage:0,cranePoise:0,permafrost:0,shatterpoint:0,oniPayload:0,blastChamber:0,razorCurrent:0,typhoonReach:0,cinderDrum:0,ruptureMagazine:0,cycloneEdge:0,crosswindRecall:0,lunarCapacitor:0,horizonBore:0,razorFang:0,hollowHex:0,spiritAegis:0},
     heartBonus: 0, stormBonus: 0,guardianBlessings:[],endingVow:null,victoryShardBonus:0,
-    gold:legacyGold,goldMultiplier:1,expeditionShards:0,relics:[],shopPurchases:new Set(),discoveredRegions:new Set(profile.worldDiscoveries||[room.id]),clearedRegions:new Set(),worldX:0,worldY:0,currentRegion:room.id,killHeal:0,damageTakenMultiplier:heroDef.damageTakenMultiplier,speedMultiplier:masteryBonus.speed,dashCooldownMultiplier:1,
+    gold:legacyGold,goldMultiplier:1,expeditionShards:0,relics:[],shopPurchases:new Set(),discoveredRegions:new Set(profile.worldDiscoveries||[room.id]),clearedRegions:new Set(),regionHistory:[],worldX:0,worldY:0,currentRegion:room.id,killHeal:0,damageTakenMultiplier:heroDef.damageTakenMultiplier,speedMultiplier:masteryBonus.speed,dashCooldownMultiplier:1,
     knockbackResistance:heroDef.knockbackResistance,knockbackMultiplier:1,braceTime:0,braceDelay:.72,braceDamageMultiplier:.8,braced:false,shieldDamageMultiplier:1,eliteDamageMultiplier:contractClaimed('eliteBreakers')?1.08:1,guardianDamageMultiplier:contractClaimed('guardianOath')?1.08:1,eliteGoldMultiplier:1,eliteKillHeal:0,statusDurationMultiplier:1,bleedOnHit:0,bleedSpread:false,curseOnCrit:0,cursePowerMultiplier:1,curseDurationMultiplier:1,spiritShield:0,maxSpiritShield:0,shieldTime:0,bonusProjectiles:0,bonusPierces:0,bonusRicochets:0,ricochetDamageRetention:.78,critBonus:0,critDamageMultiplier:1,arcChainBonus:0,arcChainPower:1,arcChainRange:0,glaiveReturnPower:1,glaiveReturnSpeed:1,glaiveReturnCrit:0,weaponEvolution:null,
     wildHeartTime: 0, ultimateFlash: 0, castTime: 0, castAbility: null,
     hitCount: 0, maxCombo: 0, comboDrop: 0, dashes: 0, hurtTime: 0, stunTime: 0, bleedTime:0, bleedTick:0, curseTime:0, curseMultiplier:1,
@@ -1668,6 +1668,8 @@ function preparePhysicalRoute(nextWave,{restoring=false}={}){
   pendingRouteWave=nextWave;pendingRouteDestination=null;currentRouteChoices=buildRouteChoices(nextWave);state='playing';routeScreen.classList.remove('active');
   const positions=routeGateLayout(currentRouteChoices.length);encounter.transitioning=true;encounter.awaitingGate=false;encounter.awaitingRouteChoice=true;encounter.transitionTime=0;encounter.routeGateLock=restoring?.35:.75;
   encounter.routeGateChoices=currentRouteChoices.map((node,index)=>({...node,...positions[index],radius:68,index,threat:expeditionThreat(node.destination),loot:expeditionLoot(node.destination,index+nextWave*11)}));
+  const history=Array.isArray(player.regionHistory)?player.regionHistory:[];const previousRegion=history.at(-1),backGate=room.mapRuntime==='phaser-tiled'?layeredMapRuntime.backGate():null;
+  if(previousRegion&&ROOMS[previousRegion]&&player.clearedRegions?.has(previousRegion)){const x=backGate?backGate.x+backGate.width/2:room.combatBounds.x,y=backGate?backGate.y-backGate.height*.35:room.combatBounds.y+room.combatBounds.radiusY*.62;encounter.routeGateChoices.push({id:'backtrack',name:'Return Road',tag:'CLEARED REGION',color:'#9aa8c9',destination:previousRegion,x,y,radius:58,index:4,backtrack:true});}
   const canExtract=(player.clearedRegions?.size||0)>=3;if(canExtract){const forward=layeredMapRuntime.forwardGate(),centerX=forward?forward.x+forward.width/2:room.combatBounds.x,centerY=forward?forward.y+forward.height+560:room.combatBounds.y-room.combatBounds.radiusY*.35;encounter.routeGateChoices.push({id:'extract',name:'Extraction Lantern',tag:'BANK ALL ROAD SHARDS',color:'#6cff91',x:centerX,y:centerY,radius:62,index:3,extract:true});}
   ui.roomState.textContent='SPIRIT ROADS OPEN';ui.roomState.style.color='#45efff';ui.objective.textContent=coop.connected&&!coopIsHost()?'FOLLOW THE HOST TO THE NEXT ROAD':'WALK INTO A SPIRIT ROAD  ·  M OPENS WORLD MAP';
   if(!restoring){spawnWord(player.x,player.y-105,'CHOOSE YOUR ROAD','#45efff');playSfx('upgrade',.18,.94);}saveRunCheckpoint({kind:'route',nextWave});
@@ -1676,9 +1678,13 @@ function preparePhysicalRoute(nextWave,{restoring=false}={}){
 function updatePhysicalRoute(dt){
   encounter.routeGateLock=Math.max(0,(encounter.routeGateLock||0)-dt);if(encounter.routeGateLock>0)return;
   const choices=encounter.routeGateChoices||[];let nearest=null,nearestDistance=Infinity;
-  for(const choice of choices){const d=distance(player,choice);if(d<nearestDistance){nearest=choice;nearestDistance=d;}if(d<=choice.radius+player.radius*.72){if(coop.connected&&!coopIsHost()){spawnWord(player.x,player.y-78,'HOST CHOOSES THE ROAD','#9cf4ff');encounter.routeGateLock=1;return;}encounter.awaitingRouteChoice=false;encounter.routeGateChoices=[];player.vx=0;player.vy=0;if(choice.extract)extractExpedition({fromWorld:true});else commitRouteChoice(choice);return;}}
+  for(const choice of choices){const d=distance(player,choice);if(d<nearestDistance){nearest=choice;nearestDistance=d;}if(d<=choice.radius+player.radius*.72){if(coop.connected&&!coopIsHost()){spawnWord(player.x,player.y-78,'HOST CHOOSES THE ROAD','#9cf4ff');encounter.routeGateLock=1;return;}encounter.awaitingRouteChoice=false;encounter.routeGateChoices=[];player.vx=0;player.vy=0;if(choice.extract)extractExpedition({fromWorld:true});else if(choice.backtrack)returnToClearedRegion(choice.destination);else commitRouteChoice(choice);return;}}
   if(nearest&&nearestDistance<340)ui.objective.textContent=nearest.extract?`ENTER TO EXTRACT  ·  BANK ${player.expeditionShards||0} SHARDS`:`${nearest.name.toUpperCase()}  ·  ${ROOMS[nearest.destination]?.name.toUpperCase()||'SPIRIT ROAD'}`;
   else ui.objective.textContent=coop.connected&&!coopIsHost()?'FOLLOW THE HOST TO THE NEXT ROAD':'WALK INTO A SPIRIT ROAD  ·  M OPENS WORLD MAP';
+}
+
+function returnToClearedRegion(destination){
+  if(!ROOMS[destination]||!player.clearedRegions?.has(destination))return;player.regionHistory=Array.isArray(player.regionHistory)?player.regionHistory:[];player.regionHistory.pop();activateRoom(destination,{reposition:true,announce:true,waveIndex:pendingRouteWave,subtitle:'RETURNING ALONG THE SPIRIT ROAD'});preparePhysicalRoute(pendingRouteWave,{restoring:true});spawnWord(player.x,player.y-96,'CLEARED ROAD REVISITED','#a9c8ff');
 }
 
 function openRoute(nextWave){
@@ -1715,7 +1721,7 @@ function selectRoute(index){
 }
 
 function commitRouteChoice(node){
-  if(!node)return;pendingRouteDestination=node.destination;encounter.awaitingRouteChoice=false;encounter.routeGateChoices=[];encounter.transitioning=false;
+  if(!node)return;pendingRouteDestination=node.destination;player.regionHistory=Array.isArray(player.regionHistory)?player.regionHistory:[];if(room.id!==pendingRouteDestination&&player.regionHistory.at(-1)!==room.id)player.regionHistory.push(room.id);encounter.awaitingRouteChoice=false;encounter.routeGateChoices=[];encounter.transitioning=false;
   if(node.id==='elite')startWave(pendingRouteWave,{nodeType:'elite',resumeRegion:pendingRouteDestination,healthScale:1.28,speedScale:1.18,damageScale:1.22,rewardScale:2});
   else if(PHYSICAL_ROUTE_NODES.has(node.id))startWave(pendingRouteWave,{nodeType:node.id,resumeRegion:pendingRouteDestination,rewardScale:1.08});
   else if(node.id==='shop'){saveRunCheckpoint({kind:'routeChoice',nextWave:pendingRouteWave,nodeId:node.id,destination:pendingRouteDestination});openShop();}
@@ -2156,7 +2162,7 @@ function begin() {
     return;
   }
   if(debugSystem==='physicalRoute'){
-    player.maxHealth=900;player.health=900;player.clearedRegions=new Set(['jadeCourtyard']);activateRoom('jadeMoonbridge',{reposition:true});encounter.wave=1;preparePhysicalRoute(2);if(debugParams.has('autowalk'))setTimeout(()=>{const choice=encounter.routeGateChoices?.[0];if(choice){player.x=choice.x;player.y=choice.y;camera.x=player.x;camera.y=player.y;}},650);return;
+    player.maxHealth=900;player.health=900;player.clearedRegions=new Set(['jadeCourtyard','jadeMoonbridge']);player.regionHistory=['jadeCourtyard'];activateRoom('jadeMoonbridge',{reposition:true});encounter.wave=1;preparePhysicalRoute(2);if(debugParams.has('autowalk'))setTimeout(()=>{const choice=encounter.routeGateChoices?.find((entry)=>debugParams.has('back')?entry.backtrack:!entry.backtrack&&!entry.extract);if(choice){player.x=choice.x;player.y=choice.y;camera.x=player.x;camera.y=player.y;}},650);return;
   }
   if(debugSystem==='bambooRoute'){setChapter(1);player.maxHealth=1600;player.health=1600;startWave(2,{nodeType:['elite','shrine','event'].includes(debugParams.get('node'))?debugParams.get('node'):'elite'});return;}
   if(debugSystem==='crimsonRoute'){setChapter(2);player.maxHealth=2400;player.health=2400;startWave(3,{nodeType:['elite','shrine','event'].includes(debugParams.get('node'))?debugParams.get('node'):'elite'});return;}
@@ -3399,7 +3405,7 @@ function drawPhysicalRouteGates(){
   if(!encounter?.awaitingRouteChoice||!encounter.routeGateChoices?.length)return;const time=performance.now()/1000;
   ctx.save();for(const gate of encounter.routeGateChoices){const near=distance(player,gate)<340,pulse=.5+Math.sin(time*3.2+gate.index)*.5,color=gate.color||'#45efff',radius=gate.radius||66;
     ctx.save();ctx.translate(gate.x,gate.y);ctx.scale(1,.58);const glow=ctx.createRadialGradient(0,0,8,0,0,radius*1.45);glow.addColorStop(0,`${color}55`);glow.addColorStop(.58,`${color}1f`);glow.addColorStop(1,`${color}00`);ctx.fillStyle=glow;ctx.beginPath();ctx.arc(0,0,radius*1.45,0,Math.PI*2);ctx.fill();ctx.strokeStyle=`${color}${near?'ee':'a8'}`;ctx.lineWidth=near?7:4;ctx.setLineDash([18,10]);ctx.lineDashOffset=-time*42;ctx.beginPath();ctx.arc(0,0,radius+8+pulse*4,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.strokeStyle=`${color}72`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,radius*.68-pulse*3,0,Math.PI*2);ctx.stroke();ctx.restore();
-    ctx.save();ctx.translate(gate.x,gate.y-16);ctx.shadowColor=color;ctx.shadowBlur=near?22:12;ctx.fillStyle=color;ctx.font='900 20px Bangers, Impact, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(gate.extract?'⇧':gate.icon||'◆',0,0);ctx.restore();
+    ctx.save();ctx.translate(gate.x,gate.y-16);ctx.shadowColor=color;ctx.shadowBlur=near?22:12;ctx.fillStyle=color;ctx.font='900 20px Bangers, Impact, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(gate.extract?'⇧':gate.backtrack?'↩':gate.icon||'◆',0,0);ctx.restore();
     const labelY=gate.y+(gate.index===1?112:126);ctx.save();ctx.translate(gate.x,labelY);ctx.textAlign='center';ctx.shadowColor='#000';ctx.shadowBlur=8;ctx.fillStyle='rgba(5,6,15,.88)';ctx.strokeStyle=`${color}${near?'dd':'78'}`;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(-112,-32,224,64,10);ctx.fill();ctx.stroke();ctx.shadowBlur=0;ctx.fillStyle=near?'#fff':'#e9e6f0';ctx.font='900 15px Bangers, Impact, sans-serif';ctx.fillText(gate.name.toUpperCase(),0,-8);ctx.fillStyle=color;ctx.font='800 9px Inter, sans-serif';const destination=gate.extract?`BANK ${player.expeditionShards||0} SHARDS`:(ROOMS[gate.destination]?.name||'Spirit Road').toUpperCase();ctx.fillText(destination,0,13);ctx.restore();
   }ctx.restore();
 }
