@@ -1,6 +1,6 @@
 # BrawlPaws layered map pipeline
 
-BrawlPaws maps are Tiled JSON maps rendered by the pinned local Phaser 3.90 runtime. Jade Grove and Bamboo Hollow each ship with ten 6144×3840 layered templates loaded by one reusable runtime. Their source generators are `scripts/build-shrine-map.mjs` and `scripts/build-bamboo-maps.mjs`.
+BrawlPaws maps are Tiled JSON maps rendered by the pinned local Phaser 3.90 runtime. Jade Grove, Bamboo Hollow, and Crimson Dojo each ship with ten 6144×3840 layered templates loaded by one reusable runtime. Their source generators live in `scripts/build-*-maps.mjs` plus the original `build-shrine-map.mjs`.
 
 ## Jade Grove template library
 
@@ -32,6 +32,21 @@ The six main chapter regions are selected in authored campaign order. Optional t
 
 Bamboo’s main and optional routes use separate enemy spawn geometry, destructibles, moon gates, collision silhouettes, VFX anchors, and story triggers. Spore Bloom pressure remains a combat system and now lands inside real navigable geometry.
 
+## Crimson Dojo template library
+
+- `first-bell-dojo.json` — opening dojo and twin bell towers
+- `ember-bell-court.json` — bell galleries, ember trenches, and the great dais
+- `ashen-war-yard.json` — barracks, armories, and central duel ring
+- `cinder-pagoda-rooftops.json` — narrow roof path over blocked drop zones
+- `ashen-drum-foundry.json` — forge wings, drum presses, and molten hammer
+- `shogun-war-processional.json` — late-run fortified Oni processional
+- `oni-gate-throne.json` — Pyreclaw Shogun’s guardian court
+- `foxfire-archive.json` — optional story/event archive
+- `ancestor-flame-shrine.json` — optional recovery and shrine route
+- `execution-yard.json` — optional elite and shop war camp
+
+The Ember Corridor battlefield hazard cuts across these authored layouts rather than an empty ellipse. Pyreclaw’s boss court includes its own guardian trigger, entrance geometry, combat seal, and storm-bound exit.
+
 The current migration keeps the proven combat/HUD canvas above Phaser while Phaser owns tilemap loading, camera culling, map art, authored world objects, collision geometry, gates, VFX anchors, and the F3 debug view. Combat actors consume the same map collision data now; actors, projectiles, and remaining effects move into Phaser incrementally without throwing away working game logic.
 
 ## Open and edit a room in Tiled
@@ -42,7 +57,7 @@ The current migration keeps the proven combat/HUD canvas above Phaser while Phas
 4. Export as JSON over the same file. Do not enable compressed layer data; Phaser's Tiled parser deliberately receives readable integer arrays.
 5. Run `npm.cmd test` and load `?system=tutorial&step=6` for a combat check.
 
-Running `npm.cmd run build:maps` regenerates both ten-map biome packs and will overwrite manual Tiled edits. Once a room becomes hand-edited, copy or retire its generator first.
+Running `npm.cmd run build:maps` regenerates all current ten-map biome packs and will overwrite manual Tiled edits. Once a room becomes hand-edited, copy or retire its generator first.
 
 Enemy creation consumes the `Enemy Spawns` layer in authored order, cycling through those points with small offsets only when a wave contains more enemies than points. Clearing combat opens the physical north gate; progression waits until the player walks through its exit trigger.
 

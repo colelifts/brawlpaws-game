@@ -601,39 +601,42 @@ export const ROOMS = {
   bambooLotusSanctuary:{id:'bambooLotusSanctuary',name:'Moonlotus Sanctuary',width:6144,height:3840,map:'assets/maps/bamboo-hollow/lotus-sanctuary.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'bamboo_shrine',difficulty:5,rewardType:'shrine',background:'assets/environment/bamboo-moonlotus-reservoir.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'moonriver',spawnLane:.6,spawnLaneStep:.04,combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}},
   bambooHunterCamp:{id:'bambooHunterCamp',name:'Reedblade Hunter Camp',width:6144,height:3840,map:'assets/maps/bamboo-hollow/reedblade-hunter-camp.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'bamboo_elite',difficulty:5,rewardType:'elite',background:'assets/environment/bamboo-hollow-arena.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'mooncurse',spawnLane:.6,spawnLaneStep:.04,combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}},
   crimsonDojo: {
-    id: 'crimsonDojo', name: 'Crimson Dojo', width: 4800, height: 2700,
+    id: 'crimsonDojo', name: 'First Bell Dojo', width: 6144, height: 3840,map:'assets/maps/crimson-dojo/first-bell-dojo.json',mapRuntime:'phaser-tiled',exits:['north'],enemySet:'crimson_challengers',difficulty:3,rewardType:'standard',
     background: 'assets/environment/crimson-dojo-arena.png',
-    playerSpawn: { x: 2400, y: 1540 },
+    playerSpawn: { x: 3072, y: 3310 },
     enemySpawns: [],
-    combatBounds: { x: 2400, y: 1420, radiusX: 1940, radiusY: 1060 }
+    combatBounds: { x: 3072, y: 1940, radiusX: 2700, radiusY: 1600 }
   },
   crimsonBellCourt: {
-    id:'crimsonBellCourt', name:'Ember Bell Court', width:4800, height:2700,
-    background:'assets/environment/crimson-bell-court.png', playerSpawn:{x:2180,y:1830}, enemySpawns:[], ambient:'bells', spawnLane:.64, spawnLaneStep:.045,
-    combatBounds:{x:2400,y:1450,radiusX:1620,radiusY:820}
+    id:'crimsonBellCourt', name:'Ember Bell Court', width:6144, height:3840,map:'assets/maps/crimson-dojo/ember-bell-court.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'crimson_bells',difficulty:4,rewardType:'standard',
+    background:'assets/environment/crimson-bell-court.png', playerSpawn:{x:3072,y:3310}, enemySpawns:[], ambient:'bells', spawnLane:.64, spawnLaneStep:.045,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
   crimsonWarYard: {
-    id:'crimsonWarYard', name:'Ashen War Yard', width:4800, height:2700,
-    background:'assets/environment/crimson-war-yard.png', playerSpawn:{x:2400,y:1840}, enemySpawns:[], ambient:'ash', spawnLane:.61, spawnLaneStep:.05,
-    combatBounds:{x:2400,y:1450,radiusX:1660,radiusY:840}
+    id:'crimsonWarYard', name:'Ashen War Yard', width:6144, height:3840,map:'assets/maps/crimson-dojo/ashen-war-yard.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'crimson_yard',difficulty:5,rewardType:'elite',
+    background:'assets/environment/crimson-war-yard.png', playerSpawn:{x:3072,y:3310}, enemySpawns:[], ambient:'ash', spawnLane:.61, spawnLaneStep:.05,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
   crimsonCinderRooftops: {
-    id:'crimsonCinderRooftops',name:'Cinder Pagoda Rooftops',width:4800,height:2700,background:'assets/environment/crimson-cinder-rooftops.png',playerSpawn:{x:2380,y:1830},enemySpawns:[],ambient:'inferno',spawnLane:.6,spawnLaneStep:.044,
-    combatBounds:{x:2400,y:1435,radiusX:1730,radiusY:890}
+    id:'crimsonCinderRooftops',name:'Cinder Pagoda Rooftops',width:6144,height:3840,map:'assets/maps/crimson-dojo/cinder-pagoda-rooftops.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'crimson_roofs',difficulty:6,rewardType:'shrine',background:'assets/environment/crimson-cinder-rooftops.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'inferno',spawnLane:.6,spawnLaneStep:.044,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
   crimsonDrumFoundry: {
-    id:'crimsonDrumFoundry',name:'Ashen Drum Foundry',width:4800,height:2700,background:'assets/environment/crimson-drum-foundry.png',playerSpawn:{x:2420,y:1840},enemySpawns:[],ambient:'ash',spawnLane:.58,spawnLaneStep:.042,
-    combatBounds:{x:2400,y:1440,radiusX:1710,radiusY:880}
+    id:'crimsonDrumFoundry',name:'Ashen Drum Foundry',width:6144,height:3840,map:'assets/maps/crimson-dojo/ashen-drum-foundry.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'crimson_foundry',difficulty:7,rewardType:'treasure',background:'assets/environment/crimson-drum-foundry.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'ash',spawnLane:.58,spawnLaneStep:.042,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
   crimsonOniGate: {
-    id:'crimsonOniGate', name:'Oni Gate Throne', width:4800, height:2700,
-    background:'assets/environment/crimson-oni-gate.png', playerSpawn:{x:2400,y:1900}, enemySpawns:[], ambient:'inferno', spawnLane:.64, spawnLaneStep:.04,
-    combatBounds:{x:2400,y:1500,radiusX:1550,radiusY:760}
+    id:'crimsonOniGate', name:'Oni Gate Throne', width:6144, height:3840,map:'assets/maps/crimson-dojo/oni-gate-throne.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'crimson_guardian',difficulty:10,rewardType:'guardian',
+    background:'assets/environment/crimson-oni-gate.png', playerSpawn:{x:3072,y:3310}, enemySpawns:[], ambient:'inferno', spawnLane:.64, spawnLaneStep:.04,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   }
   ,crimsonWarProcessional: {
-    id:'crimsonWarProcessional',name:'Shogun War Processional',width:4800,height:2700,background:'assets/environment/crimson-war-processional.png',playerSpawn:{x:2400,y:1870},enemySpawns:[],ambient:'inferno',spawnLane:.61,spawnLaneStep:.04,
-    combatBounds:{x:2400,y:1450,radiusX:1740,radiusY:895}
+    id:'crimsonWarProcessional',name:'Shogun War Processional',width:6144,height:3840,map:'assets/maps/crimson-dojo/shogun-war-processional.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'crimson_siege',difficulty:9,rewardType:'elite',background:'assets/environment/crimson-war-processional.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'inferno',spawnLane:.61,spawnLaneStep:.04,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
+  crimsonFoxfireArchive:{id:'crimsonFoxfireArchive',name:'Foxfire Archive',width:6144,height:3840,map:'assets/maps/crimson-dojo/foxfire-archive.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'crimson_event',difficulty:6,rewardType:'event',background:'assets/environment/crimson-cinder-rooftops.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'inferno',spawnLane:.6,spawnLaneStep:.04,combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}},
+  crimsonAncestorShrine:{id:'crimsonAncestorShrine',name:'Ancestor Flame Shrine',width:6144,height:3840,map:'assets/maps/crimson-dojo/ancestor-flame-shrine.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'crimson_shrine',difficulty:7,rewardType:'shrine',background:'assets/environment/crimson-bell-court.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'bells',spawnLane:.6,spawnLaneStep:.04,combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}},
+  crimsonExecutionYard:{id:'crimsonExecutionYard',name:'Execution Yard',width:6144,height:3840,map:'assets/maps/crimson-dojo/execution-yard.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'crimson_elite',difficulty:8,rewardType:'elite',background:'assets/environment/crimson-war-yard.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'ash',spawnLane:.6,spawnLaneStep:.04,combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}},
   stormTempestHarbor:{
     id:'stormTempestHarbor',name:'Tempest Harbor',width:4800,height:2700,background:'assets/environment/storm-tempest-harbor-v1.png',playerSpawn:{x:2400,y:1840},enemySpawns:[],ambient:'storm',spawnLane:.62,spawnLaneStep:.042,
     combatBounds:{x:2400,y:1440,radiusX:1880,radiusY:990}

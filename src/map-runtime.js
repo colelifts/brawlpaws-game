@@ -26,7 +26,20 @@ const BAMBOO_MAPS=[
   ['bambooHunterCamp','reedblade-hunter-camp']
 ].map(([roomId,file])=>({roomId,key:`bamboo-${file}`,path:`assets/maps/bamboo-hollow/${file}.json`,tilesetName:'bamboo-ground',tilesetKey:'bamboo-ground'}));
 
-const LAYERED_MAPS=[...JADE_MAPS.map((entry)=>({...entry,tilesetName:'jade-ground',tilesetKey:'jade-ground'})),...BAMBOO_MAPS];
+const CRIMSON_MAPS=[
+  ['crimsonDojo','first-bell-dojo'],
+  ['crimsonBellCourt','ember-bell-court'],
+  ['crimsonWarYard','ashen-war-yard'],
+  ['crimsonCinderRooftops','cinder-pagoda-rooftops'],
+  ['crimsonDrumFoundry','ashen-drum-foundry'],
+  ['crimsonWarProcessional','shogun-war-processional'],
+  ['crimsonOniGate','oni-gate-throne'],
+  ['crimsonFoxfireArchive','foxfire-archive'],
+  ['crimsonAncestorShrine','ancestor-flame-shrine'],
+  ['crimsonExecutionYard','execution-yard']
+].map(([roomId,file])=>({roomId,key:`crimson-${file}`,path:`assets/maps/crimson-dojo/${file}.json`,tilesetName:'crimson-ground',tilesetKey:'crimson-ground'}));
+
+const LAYERED_MAPS=[...JADE_MAPS.map((entry)=>({...entry,tilesetName:'jade-ground',tilesetKey:'jade-ground'})),...BAMBOO_MAPS,...CRIMSON_MAPS];
 
 const objectProperties=(object)=>Object.fromEntries((object.properties||[]).map((entry)=>[entry.name,entry.value]));
 
@@ -45,6 +58,7 @@ export class LayeredMapRuntime {
         for(const definition of LAYERED_MAPS)this.load.tilemapTiledJSON(definition.key,definition.path);
         this.load.image('jade-ground','assets/tilesets/jade-grove/jade-ground.svg');
         this.load.image('bamboo-ground','assets/tilesets/bamboo-hollow/bamboo-ground.svg');
+        this.load.image('crimson-ground','assets/tilesets/crimson-dojo/crimson-ground.svg');
         this.load.image('jade-props','assets/environment/jade-props.png');
         this.load.spritesheet('spirit-wisp','assets/environment/animated/spirit-wisp.png',{frameWidth:512,frameHeight:512});
         this.load.spritesheet('lantern-flame','assets/environment/animated/lantern-flame.png',{frameWidth:512,frameHeight:512});
