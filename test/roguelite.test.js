@@ -537,7 +537,7 @@ test('Hopscotch is an earned directional archer with a timed piercing release',(
   assert.match(game,/weapon\.releaseDelay/);
   assert.match(game,/shot\.pierces--/);
   assert.match(game,/shot\.arrow\?assets\.hopscotchArrow/);
-  assert.match(game,/const attackMotion=heroAttackMotion\(entity\);const fireStage = firing \? attackMotion\.stage : 0/);
+  assert.match(game,/const attackMotion=heroAttackMotion\(entity\),castMotion=stateName==='cast'\?heroCastMotion\(entity\):null;const fireStage = firing \? attackMotion\.stage : 0/);
   for(const id of ['moonPiercer','perfectDraw','glassFang','spiritMomentum','guardianHunter','deepReserves'])assert.match(game,new RegExp(`id:'${id}'`));
   for(const relic of ['moonPearl','phoenixPlume','riverMirror','guardianFang'])assert.match(game,new RegExp(`id:'${relic}'`));
   assert.match(game,/guardianDamageMultiplier/);
@@ -778,6 +778,19 @@ test('ability casts and evolved expiry behavior dispatch through data hooks',()=
   assert.doesNotMatch(game,/if \(id === 'undertowWell'\)/);
 });
 
+test('ability mechanics release on authored animation timing',()=>{
+  for(const id of ['undertowWell','foxfireVolley','wildHeart','shockPaws'])assert.match(data,new RegExp(`${id}: \\{[^\\n]+castDuration:[^,]+, releaseAt:`));
+  assert.match(game,/function updateAbilityCast\(dt\)/);
+  assert.match(game,/player\.castPending=\{definition,direction,evolved:abilityEvolutionActive\(definition\),released:false\}/);
+  assert.match(game,/player\.castElapsed>=pending\.definition\.releaseAt/);
+  assert.match(game,/function heroCastMotion\(entity\)/);
+  assert.match(game,/function cancelAbilityCast\(\)/);
+  assert.match(game,/pending\.direction=\{x:Math\.cos\(player\.facing\),y:Math\.sin\(player\.facing\)\}/);
+  assert.match(game,/player\.attack = null; cancelAbilityCast\(\);/);
+  assert.match(game,/stage:'anticipation'/);
+  assert.match(game,/stage:p>.72\?'recovery':'release'/);
+});
+
 test('late armies and guardians escalate pressure without changing the tutorial opening',()=>{
   assert.equal(encounterActiveLimit({waveIndex:0,chapterIndex:0,difficultyId:'ferocious'}),8);
   assert.equal(encounterActiveLimit({waveIndex:5,chapterIndex:2,difficultyId:'ferocious'}),24);
@@ -823,7 +836,7 @@ test('every playable hero owns authored ability and reaction poses',()=>{
   }
   assert.match(game,/const specialFrames=\{undertowWell:0,foxfireVolley:1,wildHeart:2,shockPaws:3,hit:4,stun:5,death:6,victory:7\}/);
   assert.match(game,/player\.castAbility=id/);
-  assert.match(game,/if\(player\.castTime<=0\)player\.castAbility=null/);
+  assert.match(game,/if\(player\.castTime<=0\)cancelAbilityCast\(\)/);
   assert.match(game,/entity\.stunTime > 0 \? 'stun'/);
   assert.match(game,/state==='won' \? 'victory'/);
   assert.match(game,/sheet\.naturalHeight \/ \(authoredState\?2:4\)/);

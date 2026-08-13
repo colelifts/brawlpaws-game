@@ -1,5 +1,5 @@
 import { clamp, lerp, normalize, distance, approachAngle, encounterActiveLimit, campaignPressureCurve, cappedWardPressure, normalizedEnemyScales, enemySpeedCeiling, enemyTelegraphFloor, incomingDamageLimit, guardianAttackTiming } from './math.js?v=20260812-guardians1';
-import { HEROES, WEAPONS, ABILITIES, STATUS_EFFECTS, ELITE_MODIFIERS, BOSS_PATTERNS, BOSS_PROFILES, ENEMIES, ENCOUNTERS, ROOMS, DIFFICULTIES } from './data.js?v=20260813-status1';
+import { HEROES, WEAPONS, ABILITIES, STATUS_EFFECTS, ELITE_MODIFIERS, BOSS_PATTERNS, BOSS_PROFILES, ENEMIES, ENCOUNTERS, ROOMS, DIFFICULTIES } from './data.js?v=20260813-casts1';
 import { createLayeredMapRuntime } from './map-runtime.js?v=20260813-worldgates2';
 import { EXPEDITION_WORLD, EXPEDITION_MILESTONES, expeditionNode, expeditionNeighbors, expeditionWorldPosition, expeditionProgress, expeditionRealmProgress, expeditionThreat, expeditionLoot } from './expedition-world.js?v=20260813-world3';
 import { PROFILE_VERSION, DEFAULT_SETTINGS, DEFAULT_CONTRACT_PROGRESS, createDefaultProfile, defaultHeroMastery, sanitizeProfile, createSaveArchive, parseSaveArchive } from './profile.js?v=20260813-prestige1';
@@ -602,7 +602,7 @@ function serializePlayerCheckpoint(){
   if(!player)return null;
   const worldPosition=expeditionWorldPosition(room.id,player.x,player.y);
   return {
-    ...player,x:room.playerSpawn.x,y:room.playerSpawn.y,worldX:worldPosition.x,worldY:worldPosition.y,currentRegion:room.id,vx:0,vy:0,attack:null,shotCooldown:0,dashTime:0,dashCooldown:0,invulnerable:1.1,flash:0,hurtTime:0,stunTime:0,bleedTime:0,bleedTick:0,curseTime:0,curseMultiplier:1,castTime:0,ultimateFlash:0,wildHeartTime:0,braceTime:0,braced:false,
+    ...player,x:room.playerSpawn.x,y:room.playerSpawn.y,worldX:worldPosition.x,worldY:worldPosition.y,currentRegion:room.id,vx:0,vy:0,attack:null,shotCooldown:0,dashTime:0,dashCooldown:0,invulnerable:1.1,flash:0,hurtTime:0,stunTime:0,bleedTime:0,bleedTick:0,curseTime:0,curseMultiplier:1,castTime:0,castElapsed:0,castPending:null,ultimateFlash:0,wildHeartTime:0,braceTime:0,braced:false,
     unlockedAbilities:[...player.unlockedAbilities],synergies:[...player.synergies],eventHistory:[...player.eventHistory],shopPurchases:[...player.shopPurchases],discoveredRegions:[...(player.discoveredRegions||[])],clearedRegions:[...(player.clearedRegions||[])],mapTriggersSeen:[...(player.mapTriggersSeen||[])]
   };
 }
@@ -664,7 +664,7 @@ function restorePlayerCheckpoint(saved){
   restored.shopPurchases=new Set(Array.isArray(saved.shopPurchases)?saved.shopPurchases:[]);
   restored.discoveredRegions=new Set(Array.isArray(saved.discoveredRegions)?saved.discoveredRegions:[saved.currentRegion||chapter.room]);restored.clearedRegions=new Set(Array.isArray(saved.clearedRegions)?saved.clearedRegions:[]);
   restored.mapTriggersSeen=new Set(Array.isArray(saved.mapTriggersSeen)?saved.mapTriggersSeen:[]);
-  Object.assign(player,restored,{x:room.playerSpawn.x,y:room.playerSpawn.y,vx:0,vy:0,attack:null,dashTime:0,shotCooldown:0,aimFacing:Number.isFinite(restored.aimFacing)?restored.aimFacing:(restored.facing??-Math.PI/2),moveFacing:Number.isFinite(restored.moveFacing)?restored.moveFacing:(restored.facing??-Math.PI/2),aimLockTime:0,invulnerable:1.1,flash:0,hurtTime:0,stunTime:0,bleedTime:0,bleedTick:0,curseTime:0,curseMultiplier:1,castTime:0,ultimateFlash:0,wildHeartTime:0,braceTime:0,braced:false});player.maxSpiritShield=Math.max(0,Number(player.maxSpiritShield)||0);player.spiritShield=clamp(Number(player.spiritShield)||0,0,player.maxSpiritShield);
+  Object.assign(player,restored,{x:room.playerSpawn.x,y:room.playerSpawn.y,vx:0,vy:0,attack:null,dashTime:0,shotCooldown:0,aimFacing:Number.isFinite(restored.aimFacing)?restored.aimFacing:(restored.facing??-Math.PI/2),moveFacing:Number.isFinite(restored.moveFacing)?restored.moveFacing:(restored.facing??-Math.PI/2),aimLockTime:0,invulnerable:1.1,flash:0,hurtTime:0,stunTime:0,bleedTime:0,bleedTick:0,curseTime:0,curseMultiplier:1,castTime:0,castElapsed:0,castPending:null,ultimateFlash:0,wildHeartTime:0,braceTime:0,braced:false});player.maxSpiritShield=Math.max(0,Number(player.maxSpiritShield)||0);player.spiritShield=clamp(Number(player.spiritShield)||0,0,player.maxSpiritShield);
   equipWeapon(WEAPONS[player.weaponId]?player.weaponId:heroDef.weapon);player.health=clamp(Number(player.health)||1,1,player.maxHealth);camera.x=player.x;camera.y=player.y;camera.shake=0;resolveSynergies();
 }
 
@@ -1345,7 +1345,7 @@ function resetGame() {
     heartBonus: 0, stormBonus: 0,guardianBlessings:[],endingVow:null,victoryShardBonus:0,
     gold:legacyGold,goldMultiplier:1,expeditionShards:0,relics:[],shopPurchases:new Set(),discoveredRegions:new Set(profile.worldDiscoveries||[room.id]),clearedRegions:new Set(),regionHistory:[],mapTriggersSeen:new Set(),worldX:0,worldY:0,currentRegion:room.id,killHeal:0,damageTakenMultiplier:heroDef.damageTakenMultiplier,speedMultiplier:masteryBonus.speed,dashCooldownMultiplier:1,
     knockbackResistance:heroDef.knockbackResistance,knockbackMultiplier:1,braceTime:0,braceDelay:.72,braceDamageMultiplier:.8,braced:false,shieldDamageMultiplier:1,eliteDamageMultiplier:contractClaimed('eliteBreakers')?1.08:1,guardianDamageMultiplier:contractClaimed('guardianOath')?1.08:1,eliteGoldMultiplier:1,eliteKillHeal:0,statusDurationMultiplier:1,bleedOnHit:0,bleedSpread:false,curseOnCrit:0,cursePowerMultiplier:1,curseDurationMultiplier:1,spiritShield:0,maxSpiritShield:0,shieldTime:0,bonusProjectiles:0,bonusPierces:0,bonusRicochets:0,ricochetDamageRetention:.78,critBonus:0,critDamageMultiplier:1,arcChainBonus:0,arcChainPower:1,arcChainRange:0,glaiveReturnPower:1,glaiveReturnSpeed:1,glaiveReturnCrit:0,weaponEvolution:null,
-    wildHeartTime: 0, ultimateFlash: 0, castTime: 0, castAbility: null,
+    wildHeartTime: 0, ultimateFlash: 0, castTime: 0, castElapsed:0, castAbility:null, castPending:null,
     hitCount: 0, maxCombo: 0, comboDrop: 0, dashes: 0, hurtTime: 0, stunTime: 0, bleedTime:0, bleedTick:0, curseTime:0, curseMultiplier:1,
     level: 1, xp: 0, xpToNext: 48
   };
@@ -2482,16 +2482,16 @@ function aimDirection() {
 
 const ABILITY_CAST_HOOKS={
   vortex({definition,direction,evolved}){
-    player.castTime=.34;const power=player.abilityPower[definition.id];effects.vortices.push({x:player.x+direction.x*300,y:player.y+direction.y*300,life:definition.duration,maxLife:definition.duration,radius:definition.radius*Math.sqrt(power),pull:definition.pull*power,hit:new Set(),collapsed:false,midCollapsed:false,evolved,definition,rotation:0});effects.rings.push({x:player.x,y:player.y,radius:18,maxRadius:80,color:definition.color,life:.3,maxLife:.3});burst(player.x,player.y,definition.color,25,260,4);playSfx('water',.38,.9);
+    const power=player.abilityPower[definition.id];effects.vortices.push({x:player.x+direction.x*300,y:player.y+direction.y*300,life:definition.duration,maxLife:definition.duration,radius:definition.radius*Math.sqrt(power),pull:definition.pull*power,hit:new Set(),collapsed:false,midCollapsed:false,evolved,definition,rotation:0});effects.rings.push({x:player.x,y:player.y,radius:18,maxRadius:80,color:definition.color,life:.3,maxLife:.3});burst(player.x,player.y,definition.color,25,260,4);playSfx('water',.38,.9);
   },
   flameFan({definition,evolved}){
-    player.castTime=.28;const shots=evolved?9:definition.shots,spread=evolved?definition.spread*.66:definition.spread;for(let i=0;i<shots;i++){const angle=player.facing+(i-(shots-1)/2)*spread;effects.flameBolts.push({x:player.x+Math.cos(angle)*46,y:player.y+Math.sin(angle)*46-7,vx:Math.cos(angle)*definition.speed,vy:Math.sin(angle)*definition.speed,radius:12,life:definition.life,maxLife:definition.life,definition,power:player.abilityPower[definition.id]});}burst(player.x,player.y,definition.color,28,320,5);camera.kick=18;camera.shake=5;playSfx('fire',.42,1.04);
+    const shots=evolved?9:definition.shots,spread=evolved?definition.spread*.66:definition.spread;for(let i=0;i<shots;i++){const angle=player.facing+(i-(shots-1)/2)*spread;effects.flameBolts.push({x:player.x+Math.cos(angle)*46,y:player.y+Math.sin(angle)*46-7,vx:Math.cos(angle)*definition.speed,vy:Math.sin(angle)*definition.speed,radius:12,life:definition.life,maxLife:definition.life,definition,power:player.abilityPower[definition.id]});}burst(player.x,player.y,definition.color,28,320,5);camera.kick=18;camera.shake=5;playSfx('fire',.42,1.04);
   },
   heartWard({definition}){
-    player.wildHeartTime=definition.duration;player.castTime=.34;player.health=Math.min(player.maxHealth,player.health+definition.heal+player.heartBonus);effects.rings.push({x:player.x,y:player.y,radius:18,maxRadius:150,color:definition.color,life:.7,maxLife:.7});effects.blooms.push({x:player.x,y:player.y-24,life:.9,maxLife:.9,color:definition.color});burst(player.x,player.y,definition.color,36,300,5);playSfx('heal',.34,1.12);
+    player.wildHeartTime=definition.duration;player.health=Math.min(player.maxHealth,player.health+definition.heal+player.heartBonus);effects.rings.push({x:player.x,y:player.y,radius:18,maxRadius:150,color:definition.color,life:.7,maxLife:.7});effects.blooms.push({x:player.x,y:player.y-24,life:.9,maxLife:.9,color:definition.color});burst(player.x,player.y,definition.color,36,300,5);playSfx('heal',.34,1.12);
   },
   globalStorm({definition,evolved}){
-    player.castTime=.5;player.ultimateFlash=.12;player.invulnerable=Math.max(player.invulnerable,.45);effects.shockStorms.push({x:player.x,y:player.y,life:definition.duration+player.stormBonus,maxLife:definition.duration+player.stormBonus,tick:0,pulse:0,definition,power:player.abilityPower[definition.id],verdict:evolved,verdictResolved:false});effects.spriteEffects.push({asset:'shockImpactVfx',x:player.x,y:player.y-26,width:190,height:170,life:.6,maxLife:.6,glow:definition.color});effects.rings.push({x:player.x,y:player.y,radius:20,maxRadius:230,color:definition.color,life:.7,maxLife:.7});camera.kick=24;camera.shake=8;hitStop=.05;playSfx('lightning',.5,.92);
+    player.ultimateFlash=.12;player.invulnerable=Math.max(player.invulnerable,.45);effects.shockStorms.push({x:player.x,y:player.y,life:definition.duration+player.stormBonus,maxLife:definition.duration+player.stormBonus,tick:0,pulse:0,definition,power:player.abilityPower[definition.id],verdict:evolved,verdictResolved:false});effects.spriteEffects.push({asset:'shockImpactVfx',x:player.x,y:player.y-26,width:190,height:170,life:.6,maxLife:.6,glow:definition.color});effects.rings.push({x:player.x,y:player.y,radius:20,maxRadius:230,color:definition.color,life:.7,maxLife:.7});camera.kick=24;camera.shake=8;hitStop=.05;playSfx('lightning',.5,.92);
   }
 };
 
@@ -2502,7 +2502,15 @@ function abilityEvolutionActive(definition){return Boolean(definition.evolutionH
 function useAbility(id) {
   const definition=ABILITIES[id];
   if (!definition || !player.unlockedAbilities.has(id) || player.abilityCooldowns[id] > 0 || player.hurtTime > .08 || player.stunTime > 0 || player.dashTime > 0 || !['playing','dojo'].includes(state)) return;
-  const hook=ABILITY_CAST_HOOKS[definition.castHook];if(!hook)return;const direction=aimDirection();setActionFacing(direction);player.abilityCooldowns[id]=definition.cooldown;player.castAbility=id;hook({definition,direction,evolved:abilityEvolutionActive(definition)});
+  const hook=ABILITY_CAST_HOOKS[definition.castHook];if(!hook)return;const direction=aimDirection();setActionFacing(direction);player.abilityCooldowns[id]=definition.cooldown;player.castAbility=id;player.castTime=definition.castDuration||.4;player.castElapsed=0;player.castPending={definition,direction,evolved:abilityEvolutionActive(definition),released:false};
+}
+
+function cancelAbilityCast(){
+  player.castAbility=null;player.castTime=0;player.castElapsed=0;player.castPending=null;
+}
+
+function updateAbilityCast(dt){
+  const pending=player.castPending;if(!pending)return;player.castElapsed+=dt;player.castTime=Math.max(0,(pending.definition.castDuration||.4)-player.castElapsed);if(!pending.released){pending.direction={x:Math.cos(player.facing),y:Math.sin(player.facing)};if(player.castElapsed>=pending.definition.releaseAt){pending.released=true;ABILITY_CAST_HOOKS[pending.definition.castHook]?.(pending);}}if(player.castTime<=0)cancelAbilityCast();
 }
 
 function triggerGuardianBloom(){
@@ -2529,7 +2537,7 @@ function updatePlayer(dt) {
   player.shotCooldown = Math.max(0, player.shotCooldown - dt);
   player.aimLockTime = Math.max(0, (player.aimLockTime || 0) - dt);
   player.ultimateFlash = Math.max(0, player.ultimateFlash - dt);
-  player.castTime=Math.max(0,player.castTime-dt);if(player.castTime<=0)player.castAbility=null;const wildHeartWasActive=player.wildHeartTime>0;player.wildHeartTime=Math.max(0,player.wildHeartTime-dt);const heartDefinition=ABILITIES.wildHeart;if(wildHeartWasActive&&player.wildHeartTime<=0&&abilityEvolutionActive(heartDefinition))ABILITY_EXPIRY_HOOKS[heartDefinition.expiryHook]?.();
+  updateAbilityCast(dt);const wildHeartWasActive=player.wildHeartTime>0;player.wildHeartTime=Math.max(0,player.wildHeartTime-dt);const heartDefinition=ABILITIES.wildHeart;if(wildHeartWasActive&&player.wildHeartTime<=0&&abilityEvolutionActive(heartDefinition))ABILITY_EXPIRY_HOOKS[heartDefinition.expiryHook]?.();
   for(const id of Object.keys(player.abilityCooldowns)) player.abilityCooldowns[id]=Math.max(0,player.abilityCooldowns[id]-dt*recoveryRate);
   player.comboDrop = Math.max(0, player.comboDrop - dt);
   if (player.comboDrop <= 0) player.hitCount = 0;
@@ -2778,7 +2786,7 @@ function hurtPlayer(amount, source, stunDuration = 0) {
   amount=Math.min(amount,incomingDamageLimit({maxHealth:player.maxHealth,kind,chapterIndex,difficultyId:selectedDifficulty}));
   const wardDamage=Math.min(player.spiritShield||0,amount);player.spiritShield=Math.max(0,(player.spiritShield||0)-wardDamage);const healthDamage=Math.max(0,amount-wardDamage);player.health = Math.max(0, player.health - healthDamage);
   if(wardDamage>0){effects.rings.push({x:player.x,y:player.y,radius:42,maxRadius:78,color:'#72f0a0',life:.3,maxLife:.3});burst(player.x,player.y-8,'#9affc0',10,220,3);if(player.spiritShield<=0){player.shieldTime=0;spawnWord(player.x,player.y-82,'WARD BREAK!','#baffcf');playSfx('heavyImpact',.2,1.24);}}
-  player.invulnerable = .72; player.flash = .22; player.hurtTime = .28; player.attack = null;
+  player.invulnerable = .72; player.flash = .22; player.hurtTime = .28; player.attack = null; cancelAbilityCast();
   if (stunDuration > 0 && healthDamage > 0) {
     player.stunTime = Math.max(player.stunTime, stunDuration);
     effects.rings.push({ x: player.x, y: player.y, radius: 16, maxRadius: 92, color: '#ffd33d', life: .55, maxLife: .55 });
@@ -3855,6 +3863,10 @@ function guardianAttackMotion(enemy){
   return {scaleX:1,scaleY:1,rotation:0,offsetX:0,offsetY:0};
 }
 
+function heroCastMotion(entity){
+  const pending=entity.castPending,definition=pending?.definition;if(!pending||!definition)return {offsetX:0,offsetY:0,scaleX:1,scaleY:1,rotation:0,stage:'idle'};const elapsed=entity.castElapsed||0,release=Math.max(.04,definition.releaseAt||.2),duration=Math.max(release+.08,definition.castDuration||.4),facing=entity.facing;if(elapsed<release){const p=clamp(elapsed/release,0,1),ease=p*p*(3-2*p);return {offsetX:-Math.cos(facing)*9*ease,offsetY:-Math.sin(facing)*6*ease-4*Math.sin(p*Math.PI),scaleX:1-.07*ease,scaleY:1+.1*ease,rotation:-Math.cos(facing)*.065*ease,stage:'anticipation'};}const p=clamp((elapsed-release)/(duration-release),0,1),kick=Math.sin(Math.min(1,p*1.6)*Math.PI);return {offsetX:Math.cos(facing)*12*kick,offsetY:Math.sin(facing)*7*kick-5*Math.sin(p*Math.PI),scaleX:1+.13*kick,scaleY:1-.09*kick,rotation:Math.cos(facing)*.075*kick,stage:p>.72?'recovery':'release'};
+}
+
 function drawHero(entity, alpha = 1, afterimage = false) {
   const moveSheet=assets[heroDef.moveAsset];const fireSheet=assets[heroDef.fireAsset];const stateSheet=assets[heroDef.stateAsset];
   if(!moveSheet?.complete||!moveSheet.naturalWidth)return;
@@ -3870,7 +3882,7 @@ function drawHero(entity, alpha = 1, afterimage = false) {
   const sheet=authoredState?stateSheet:firing?fireSheet:moveSheet;
   const sw = sheet.naturalWidth / 4; const sh = sheet.naturalHeight / (authoredState?2:4);
   const useRunFrame = !firing && (stateName === 'dash' || (stateName === 'run' && Math.floor(time * 10) % 2 === 1));
-  const attackMotion=heroAttackMotion(entity);const fireStage = firing ? attackMotion.stage : 0;
+  const attackMotion=heroAttackMotion(entity),castMotion=stateName==='cast'?heroCastMotion(entity):null;const fireStage = firing ? attackMotion.stage : 0;
   const sx = authoredState?(specialFrame%4)*sw:(direction % 4) * sw; const sy = authoredState?Math.floor(specialFrame/4)*sh:(Math.floor(direction / 4) + (firing ? fireStage : useRunFrame ? 2 : 0)) * sh;
   const runBob = stateName === 'run' ? Math.sin(time * animation.fps * Math.PI*(entity.sprinting?1.5:1)) * (entity.sprinting?5:3) : 0;
   const speedLean = clamp(moving / heroDef.speed, 0, 1) * .06;
@@ -3880,6 +3892,7 @@ function drawHero(entity, alpha = 1, afterimage = false) {
   if (firing) {
     scaleX = attackMotion.scaleX; scaleY = attackMotion.scaleY; rotation = attackMotion.rotation;
   }
+  if(castMotion){scaleX=castMotion.scaleX;scaleY=castMotion.scaleY;rotation=castMotion.rotation;}
   if (!authoredState&&stateName === 'hit') rotation = Math.sin(time * 45) * .08;
   const bamboo=selectedHeroId==='bamboo';const hopscotch=selectedHeroId==='hopscotch';const rusty=selectedHeroId==='rusty';const zap=selectedHeroId==='zap';const nomi=selectedHeroId==='nomi';const baseH=bamboo?(firing?142:136):hopscotch?(firing?126:122):rusty?(firing?124:120):zap?(firing?126:122):nomi?(firing?140:132):(firing?112:108);const h=authoredState?(bamboo?154:hopscotch?142:rusty?140:zap?142:nomi?152:136):baseH;const w=h*(sw/sh);
   drawContactShadow(entity.x,entity.y+(bamboo?15:hopscotch||rusty||zap||nomi?13:12),entity.dashTime>0?(bamboo?16:hopscotch||rusty||zap||nomi?12:13):(bamboo?24:hopscotch?18:rusty?19:zap?18:nomi?18:19),entity.dashTime>0?(bamboo?4.4:3.5):(bamboo?6.4:hopscotch?5:rusty?5.2:zap?4.8:nomi?4.9:5.5),.34*alpha);
@@ -3893,7 +3906,7 @@ function drawHero(entity, alpha = 1, afterimage = false) {
       ctx.beginPath(); ctx.arc(0, 0, 31 + Math.sin(time * 6) * 3, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
     }
   }
-  ctx.save(); ctx.globalAlpha = alpha; ctx.translate(entity.x+attackMotion.offsetX, entity.y+attackMotion.offsetY);
+  const actionMotion=castMotion||attackMotion;ctx.save(); ctx.globalAlpha = alpha; ctx.translate(entity.x+actionMotion.offsetX, entity.y+actionMotion.offsetY);
   ctx.translate(0, runBob); ctx.rotate(rotation); ctx.scale((authoredState&&Math.cos(entity.facing)<0?-1:1)*scaleX, scaleY);
   ctx.shadowColor=afterimage?'#8f3dff':entity.dashTime>0?heroDef.accent:(bamboo?'#63ef79':hopscotch?'#ff4fa5':rusty?'#ff9b32':'#ff4d76');ctx.shadowBlur=afterimage?24:entity.dashTime>0?16:4;
   ctx.filter = afterimage ? 'hue-rotate(68deg) saturate(1.8) brightness(1.4)' : entity.flash > 0 ? 'brightness(2.4) saturate(.4)' : 'none';

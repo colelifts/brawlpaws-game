@@ -166,10 +166,10 @@ export const WEAPONS = {
 };
 
 export const ABILITIES = {
-  undertowWell: { id: 'undertowWell', name: 'Undertow Well', castHook:'vortex', evolutionHook:'doubleCollapse', unlockLevel: 2, cooldown: 8, damage: 8, collapseDamage: 26, radius: 250, pull: 920, duration: 2.4, wetDuration: 5.5, slow: .42, holdRadius: .3, holdDuration: .5, color: '#35e7ff', purpose:'Aim a whirlpool into a dangerous pack. It drags enemies into one firing lane, holds them together, Soaks and slows them, then crushes the trapped group. Wet enemies trigger Foxfire Steam Bursts and take 50% more Shock damage.' },
-  foxfireVolley: { id: 'foxfireVolley', name: 'Foxfire Volley', castHook:'flameFan', evolutionHook:'nineTail', unlockLevel: 4, cooldown: 6, damage: 18, speed: 680, life: .95, spread: .18, shots: 5, burnDamage: 6, burnDuration: 4, color: '#ff6a24' },
-  wildHeart: { id: 'wildHeart', name: 'Wild Heart', castHook:'heartWard', evolutionHook:'guardianBloom', expiryHook:'guardianBloom', unlockLevel: 6, cooldown: 12, heal: 30, duration: 5, damageReduction: .35, color: '#68ef50' },
-  shockPaws: { id: 'shockPaws', name: 'Shock Paws', castHook:'globalStorm', evolutionHook:'heavensVerdict', unlockLevel: 8, cooldown: 23, damage: 16, duration: 5.4, tickRate: .48, wetBonus: .5, color: '#d94cff' }
+  undertowWell: { id: 'undertowWell', name: 'Undertow Well', castHook:'vortex', evolutionHook:'doubleCollapse', castDuration:.46, releaseAt:.24, unlockLevel: 2, cooldown: 8, damage: 8, collapseDamage: 26, radius: 250, pull: 920, duration: 2.4, wetDuration: 5.5, slow: .42, holdRadius: .3, holdDuration: .5, color: '#35e7ff', purpose:'Aim a whirlpool into a dangerous pack. It drags enemies into one firing lane, holds them together, Soaks and slows them, then crushes the trapped group. Wet enemies trigger Foxfire Steam Bursts and take 50% more Shock damage.' },
+  foxfireVolley: { id: 'foxfireVolley', name: 'Foxfire Volley', castHook:'flameFan', evolutionHook:'nineTail', castDuration:.4, releaseAt:.19, unlockLevel: 4, cooldown: 6, damage: 18, speed: 680, life: .95, spread: .18, shots: 5, burnDamage: 6, burnDuration: 4, color:'#ff6a24' },
+  wildHeart: { id: 'wildHeart', name: 'Wild Heart', castHook:'heartWard', evolutionHook:'guardianBloom', expiryHook:'guardianBloom', castDuration:.5, releaseAt:.28, unlockLevel: 6, cooldown: 12, heal: 30, duration: 5, damageReduction: .35, color:'#68ef50' },
+  shockPaws: { id: 'shockPaws', name: 'Shock Paws', castHook:'globalStorm', evolutionHook:'heavensVerdict', castDuration:.7, releaseAt:.43, unlockLevel: 8, cooldown: 23, damage: 16, duration: 5.4, tickRate: .48, wetBonus: .5, color:'#d94cff' }
 };
 
 export const STATUS_EFFECTS = {
