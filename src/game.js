@@ -1100,9 +1100,11 @@ function showRoomTransition(waveIndex,subtitle=''){
 }
 
 const JADE_OPTIONAL_ROOMS={event:'jadeBrokenPavilion',secret:'jadeBrokenPavilion',shop:'jadeBrokenPavilion',elite:'jadeCrystalClearing',shrine:'jadeCrystalClearing',heal:'jadeTrainingYard',treasure:'jadeTrainingYard'};
+const BAMBOO_OPTIONAL_ROOMS={event:'bambooWhisperingGrotto',secret:'bambooWhisperingGrotto',shop:'bambooHunterCamp',elite:'bambooHunterCamp',shrine:'bambooLotusSanctuary',heal:'bambooLotusSanctuary',treasure:'bambooWhisperingGrotto'};
 function roomForWave(index,nodeType='combat'){
   const rooms=chapter.rooms||[chapter.room];
   if(chapter.id==='jadeChapter'&&index>0&&index<rooms.length&&JADE_OPTIONAL_ROOMS[nodeType])return JADE_OPTIONAL_ROOMS[nodeType];
+  if(chapter.id==='bambooChapter'&&index>0&&index<rooms.length&&BAMBOO_OPTIONAL_ROOMS[nodeType])return BAMBOO_OPTIONAL_ROOMS[nodeType];
   return rooms[Math.min(rooms.length-1,index%rooms.length)];
 }
 
@@ -2033,6 +2035,7 @@ function begin() {
     player.maxHealth=900;player.health=900;startWave(0);setTimeout(()=>{for(const enemy of enemies)enemy.dead=true;beginWaveTransition();const gate=layeredMapRuntime.forwardGate();if(gate){gate.sealed=false;player.x=gate.x+gate.width/2;player.y=gate.y+gate.height/2;camera.x=player.x;camera.y=player.y;}},300);
     return;
   }
+  if(debugSystem==='bambooRoute'){setChapter(1);player.maxHealth=1600;player.health=1600;startWave(2,{nodeType:['elite','shrine','event'].includes(debugParams.get('node'))?debugParams.get('node'):'elite'});return;}
   if(debugSystem==='specialists'){startSpecialistShowcase();return;}
   if(debugSystem==='statuses'){startStatusShowcase();return;}
   if(debugSystem==='capstone'){player.level=10;player.maxHealth=1200;player.health=1200;player.damageMultiplier=2.4;player.weaponEvolution=selectedHeroId==='kitsune'?'phaseNova':selectedHeroId==='bamboo'?'siegeLotus':selectedHeroId==='hopscotch'?'moonConstellation':selectedHeroId==='rusty'?'deadeyeCircuit':selectedHeroId==='nomi'?'skyfeatherConstellation':'thunderheadArray';player.bonusPierces=selectedHeroId==='hopscotch'?2:player.bonusPierces;player.bonusRicochets=selectedHeroId==='rusty'?2:player.bonusRicochets;player.arcChainBonus=selectedHeroId==='zap'?3:player.arcChainBonus;refreshSynergyHud();startWave(4);return;}

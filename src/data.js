@@ -564,39 +564,42 @@ export const ROOMS = {
   jadeTrainingYard:{id:'jadeTrainingYard',name:'Abandoned Training Yard',width:6144,height:3840,map:'assets/maps/jade-grove/abandoned-training-yard.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'jade_combat',difficulty:2,rewardType:'standard',background:'assets/environment/jade-grove-arena.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'dojo',spawnLane:.6,spawnLaneStep:.04,combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
   bambooHollow: {
-    id: 'bambooHollow', name: 'Bamboo Hollow', width: 4800, height: 2700,
+    id: 'bambooHollow', name: 'Bamboo Hollow Gate', width: 6144, height: 3840,map:'assets/maps/bamboo-hollow/hollow-gate.json',mapRuntime:'phaser-tiled',exits:['north'],enemySet:'bamboo_scouts',difficulty:2,rewardType:'standard',
     background: 'assets/environment/bamboo-hollow-arena.png',
-    playerSpawn: { x: 2400, y: 1540 },
+    playerSpawn: { x: 3072, y: 3310 },
     enemySpawns: [],
-    combatBounds: { x: 2400, y: 1420, radiusX: 1900, radiusY: 1040 }
+    combatBounds: { x: 3072, y: 1940, radiusX: 2700, radiusY: 1600 }
   },
   bambooMoonbridge: {
-    id:'bambooMoonbridge', name:'Moonlit Reedbridge', width:4800, height:2700,
-    background:'assets/environment/bamboo-moonbridge.png', playerSpawn:{x:2050,y:1790}, enemySpawns:[], ambient:'moonriver', spawnLane:.63, spawnLaneStep:.045,
-    combatBounds:{x:2400,y:1430,radiusX:1540,radiusY:790}
+    id:'bambooMoonbridge', name:'Moonlit Reedbridge', width:6144, height:3840,map:'assets/maps/bamboo-hollow/moonlit-reedbridge.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'bamboo_bridge',difficulty:3,rewardType:'standard',
+    background:'assets/environment/bamboo-moonbridge.png', playerSpawn:{x:3072,y:3310}, enemySpawns:[], ambient:'moonriver', spawnLane:.63, spawnLaneStep:.045,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
   bambooSporeMarsh: {
-    id:'bambooSporeMarsh', name:'Spore Shrine Marsh', width:4800, height:2700,
-    background:'assets/environment/bamboo-spore-marsh.png', playerSpawn:{x:2400,y:1810}, enemySpawns:[], ambient:'spores', spawnLane:.58, spawnLaneStep:.05,
-    combatBounds:{x:2400,y:1440,radiusX:1640,radiusY:840}
+    id:'bambooSporeMarsh', name:'Spore Shrine Marsh', width:6144, height:3840,map:'assets/maps/bamboo-hollow/spore-shrine-marsh.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'bamboo_spores',difficulty:4,rewardType:'elite',
+    background:'assets/environment/bamboo-spore-marsh.png', playerSpawn:{x:3072,y:3310}, enemySpawns:[], ambient:'spores', spawnLane:.58, spawnLaneStep:.05,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
   bambooMoonlotusReservoir: {
-    id:'bambooMoonlotusReservoir',name:'Moonlotus Reservoir',width:4800,height:2700,background:'assets/environment/bamboo-moonlotus-reservoir.png',playerSpawn:{x:2360,y:1810},enemySpawns:[],ambient:'moonriver',spawnLane:.59,spawnLaneStep:.045,
-    combatBounds:{x:2400,y:1430,radiusX:1710,radiusY:885}
+    id:'bambooMoonlotusReservoir',name:'Moonlotus Reservoir',width:6144,height:3840,map:'assets/maps/bamboo-hollow/moonlotus-reservoir.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'bamboo_reservoir',difficulty:5,rewardType:'shrine',background:'assets/environment/bamboo-moonlotus-reservoir.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'moonriver',spawnLane:.59,spawnLaneStep:.045,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
   bambooSporelightMonastery: {
-    id:'bambooSporelightMonastery',name:'Sporelight Monastery',width:4800,height:2700,background:'assets/environment/bamboo-sporelight-monastery.png',playerSpawn:{x:2420,y:1820},enemySpawns:[],ambient:'spores',spawnLane:.57,spawnLaneStep:.043,
-    combatBounds:{x:2400,y:1430,radiusX:1690,radiusY:870}
+    id:'bambooSporelightMonastery',name:'Sporelight Monastery',width:6144,height:3840,map:'assets/maps/bamboo-hollow/sporelight-monastery.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'bamboo_monastery',difficulty:6,rewardType:'treasure',background:'assets/environment/bamboo-sporelight-monastery.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'spores',spawnLane:.57,spawnLaneStep:.043,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
   bambooMoonfangBurrow: {
-    id:'bambooMoonfangBurrow', name:'Moonfang Burrow', width:4800, height:2700,
-    background:'assets/environment/bamboo-moonfang-burrow.png', playerSpawn:{x:2400,y:1880}, enemySpawns:[], ambient:'mooncurse', spawnLane:.64, spawnLaneStep:.04,
-    combatBounds:{x:2400,y:1500,radiusX:1540,radiusY:760}
+    id:'bambooMoonfangBurrow', name:'Moonfang Burrow', width:6144, height:3840,map:'assets/maps/bamboo-hollow/moonfang-burrow.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'bamboo_guardian',difficulty:8,rewardType:'guardian',
+    background:'assets/environment/bamboo-moonfang-burrow.png', playerSpawn:{x:3072,y:3310}, enemySpawns:[], ambient:'mooncurse', spawnLane:.64, spawnLaneStep:.04,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
   bambooMoonstoneCauseway: {
-    id:'bambooMoonstoneCauseway',name:'Hollow Moonstone Causeway',width:4800,height:2700,background:'assets/environment/bamboo-moonstone-causeway.png',playerSpawn:{x:2400,y:1860},enemySpawns:[],ambient:'mooncurse',spawnLane:.61,spawnLaneStep:.04,
-    combatBounds:{x:2400,y:1450,radiusX:1720,radiusY:885}
+    id:'bambooMoonstoneCauseway',name:'Hollow Moonstone Causeway',width:6144,height:3840,map:'assets/maps/bamboo-hollow/moonstone-causeway.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'bamboo_siege',difficulty:7,rewardType:'elite',background:'assets/environment/bamboo-moonstone-causeway.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'mooncurse',spawnLane:.61,spawnLaneStep:.04,
+    combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}
   },
+  bambooWhisperingGrotto:{id:'bambooWhisperingGrotto',name:'Whispering Grotto',width:6144,height:3840,map:'assets/maps/bamboo-hollow/whispering-grotto.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'bamboo_event',difficulty:4,rewardType:'event',background:'assets/environment/bamboo-spore-marsh.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'spores',spawnLane:.6,spawnLaneStep:.04,combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}},
+  bambooLotusSanctuary:{id:'bambooLotusSanctuary',name:'Moonlotus Sanctuary',width:6144,height:3840,map:'assets/maps/bamboo-hollow/lotus-sanctuary.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'bamboo_shrine',difficulty:5,rewardType:'shrine',background:'assets/environment/bamboo-moonlotus-reservoir.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'moonriver',spawnLane:.6,spawnLaneStep:.04,combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}},
+  bambooHunterCamp:{id:'bambooHunterCamp',name:'Reedblade Hunter Camp',width:6144,height:3840,map:'assets/maps/bamboo-hollow/reedblade-hunter-camp.json',mapRuntime:'phaser-tiled',exits:['north','south'],enemySet:'bamboo_elite',difficulty:5,rewardType:'elite',background:'assets/environment/bamboo-hollow-arena.png',playerSpawn:{x:3072,y:3310},enemySpawns:[],ambient:'mooncurse',spawnLane:.6,spawnLaneStep:.04,combatBounds:{x:3072,y:1940,radiusX:2700,radiusY:1600}},
   crimsonDojo: {
     id: 'crimsonDojo', name: 'Crimson Dojo', width: 4800, height: 2700,
     background: 'assets/environment/crimson-dojo-arena.png',

@@ -13,6 +13,21 @@ const JADE_MAPS=[
   ['jadeTrainingYard','abandoned-training-yard']
 ].map(([roomId,file])=>({roomId,key:`jade-${file}`,path:`assets/maps/jade-grove/${file}.json`}));
 
+const BAMBOO_MAPS=[
+  ['bambooHollow','hollow-gate'],
+  ['bambooMoonbridge','moonlit-reedbridge'],
+  ['bambooSporeMarsh','spore-shrine-marsh'],
+  ['bambooMoonlotusReservoir','moonlotus-reservoir'],
+  ['bambooSporelightMonastery','sporelight-monastery'],
+  ['bambooMoonstoneCauseway','moonstone-causeway'],
+  ['bambooMoonfangBurrow','moonfang-burrow'],
+  ['bambooWhisperingGrotto','whispering-grotto'],
+  ['bambooLotusSanctuary','lotus-sanctuary'],
+  ['bambooHunterCamp','reedblade-hunter-camp']
+].map(([roomId,file])=>({roomId,key:`bamboo-${file}`,path:`assets/maps/bamboo-hollow/${file}.json`,tilesetName:'bamboo-ground',tilesetKey:'bamboo-ground'}));
+
+const LAYERED_MAPS=[...JADE_MAPS.map((entry)=>({...entry,tilesetName:'jade-ground',tilesetKey:'jade-ground'})),...BAMBOO_MAPS];
+
 const objectProperties=(object)=>Object.fromEntries((object.properties||[]).map((entry)=>[entry.name,entry.value]));
 
 export class LayeredMapRuntime {
@@ -27,8 +42,9 @@ export class LayeredMapRuntime {
     class JadeGroveScene extends Phaser.Scene{
       constructor(){super('JadeGroveLayeredMaps');}
       preload(){
-        for(const definition of JADE_MAPS)this.load.tilemapTiledJSON(definition.key,definition.path);
+        for(const definition of LAYERED_MAPS)this.load.tilemapTiledJSON(definition.key,definition.path);
         this.load.image('jade-ground','assets/tilesets/jade-grove/jade-ground.svg');
+        this.load.image('bamboo-ground','assets/tilesets/bamboo-hollow/bamboo-ground.svg');
         this.load.image('jade-props','assets/environment/jade-props.png');
         this.load.spritesheet('spirit-wisp','assets/environment/animated/spirit-wisp.png',{frameWidth:512,frameHeight:512});
         this.load.spritesheet('lantern-flame','assets/environment/animated/lantern-flame.png',{frameWidth:512,frameHeight:512});
@@ -42,7 +58,7 @@ export class LayeredMapRuntime {
     this.scene=scene;
     scene.anims.create({key:'map-wisp',frames:scene.anims.generateFrameNumbers('spirit-wisp',{start:0,end:5}),frameRate:8,repeat:-1});
     scene.anims.create({key:'map-flame',frames:scene.anims.generateFrameNumbers('lantern-flame',{start:0,end:5}),frameRate:9,repeat:-1});
-    for(const definition of JADE_MAPS)this.buildMap(scene,definition);
+    for(const definition of LAYERED_MAPS)this.buildMap(scene,definition);
     this.ready=true;window.dispatchEvent(new CustomEvent('brawlpaws-map-ready',{detail:{runtime:this}}));
   }
 
@@ -51,7 +67,7 @@ export class LayeredMapRuntime {
     const missing=REQUIRED_LAYERS.filter((name)=>!mapData.layers.some((layer)=>layer.name===name));
     if(missing.length)throw new Error(`${definition.roomId} is missing Tiled layers: ${missing.join(', ')}`);
     const entry={...definition,map,mapData,layers:{},objects:{},collision:[],gates:[],display:[],debugGraphics:null,visible:false};
-    const tiles=map.addTilesetImage('jade-ground','jade-ground',256,256,0,0);
+    const tiles=map.addTilesetImage(definition.tilesetName,definition.tilesetKey,256,256,0,0);
     for(const [name,depth] of [['Ground',-3000],['Ground Detail',-2900],['Walls',-2400]]){
       const layer=map.createLayer(name,tiles,0,0).setDepth(depth).setVisible(false);entry.layers[name]=layer;entry.display.push(layer);
     }

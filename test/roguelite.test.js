@@ -101,6 +101,19 @@ test('Jade Grove owns ten real Phaser and Tiled layered map templates',()=>{
   assert.equal(shrineMap.height*shrineMap.tileheight,3840);
 });
 
+test('Bamboo Hollow owns ten distinct layered expedition maps',()=>{
+  const required=['Ground','Ground Detail','Walls','Props Below Player','Collision','Props / Interactive','Doors / Gates','Enemy Spawns','Player Spawn','Triggers','Foreground / Occlusion','VFX Anchors'];
+  const mapFiles=readdirSync(new URL('../assets/maps/bamboo-hollow/',import.meta.url)).filter((file)=>file.endsWith('.json'));
+  assert.equal(mapFiles.length,10);
+  for(const file of mapFiles){const map=JSON.parse(readFileSync(new URL(`../assets/maps/bamboo-hollow/${file}`,import.meta.url),'utf8'));for(const name of required)assert.ok(map.layers.some((layer)=>layer.name===name),`${file} missing ${name}`);assert.equal(map.width*map.tilewidth,6144);assert.equal(map.height*map.tileheight,3840);assert.ok(map.layers.find((layer)=>layer.name==='Enemy Spawns').objects.length>=14);assert.equal(map.properties.find((property)=>property.name==='biome')?.value,'bamboo');}
+  assert.match(mapRuntime,/BAMBOO_MAPS=/);
+  assert.match(mapRuntime,/LAYERED_MAPS=/);
+  assert.match(mapRuntime,/bamboo-ground/);
+  for(const optionalRoom of ['bambooWhisperingGrotto','bambooLotusSanctuary','bambooHunterCamp'])assert.match(game,new RegExp(optionalRoom));
+  assert.match(game,/BAMBOO_OPTIONAL_ROOMS/);
+  assert.match(game,/chapter\.id==='bambooChapter'.*BAMBOO_OPTIONAL_ROOMS/);
+});
+
 test('Chrome performance, adaptive audio, and readable choice art are production-wired',()=>{
   assert.match(game,/Math\.min\(window\.devicePixelRatio \|\| 1, 1\.25\)/);
   assert.match(game,/window\.__BRAWLPAWS_PERF__/);
@@ -528,7 +541,7 @@ test('every campaign wave advances into its own production-painted combat locati
   for(const [chapter,rooms] of Object.entries(chapterRooms)){
     assert.match(data,new RegExp(`id:\\s*'${chapter}'[\\s\\S]{0,260}rooms:\\s*\\[${rooms.map(room=>`'${room}'`).join(',')}\\]`));
     for(const room of rooms){
-      if(chapter==='jadeChapter')assert.match(data,new RegExp(`${room}:\\s*\\{[\\s\\S]{0,520}width:\\s*6144[\\s\\S]{0,80}height:\\s*3840`));
+      if(['jadeChapter','bambooChapter'].includes(chapter))assert.match(data,new RegExp(`${room}:\\s*\\{[\\s\\S]{0,620}width:\\s*6144[\\s\\S]{0,80}height:\\s*3840`));
       else assert.match(data,new RegExp(`${room}:\\s*\\{[\\s\\S]{0,360}width:\\s*4800[\\s\\S]{0,80}height:\\s*2700`));
       assert.match(data,new RegExp(`${room}:\\s*\\{[\\s\\S]{0,1600}combatBounds:`));
     }

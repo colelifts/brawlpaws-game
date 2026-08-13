@@ -1,6 +1,6 @@
 # BrawlPaws layered map pipeline
 
-BrawlPaws maps are Tiled JSON maps rendered by the pinned local Phaser 3.90 runtime. Jade Grove now ships with ten 6144×3840 handcrafted templates loaded by one reusable runtime. Its source generator is `scripts/build-shrine-map.mjs`.
+BrawlPaws maps are Tiled JSON maps rendered by the pinned local Phaser 3.90 runtime. Jade Grove and Bamboo Hollow each ship with ten 6144×3840 layered templates loaded by one reusable runtime. Their source generators are `scripts/build-shrine-map.mjs` and `scripts/build-bamboo-maps.mjs`.
 
 ## Jade Grove template library
 
@@ -17,6 +17,21 @@ BrawlPaws maps are Tiled JSON maps rendered by the pinned local Phaser 3.90 runt
 
 The six main chapter regions are selected in authored campaign order. Optional templates are registered for later branch selection. Every combat region owns its own collision, spawn, trigger, gate, interactive, foreground, and VFX data; no region uses its old generated painting as the active gameplay floor.
 
+## Bamboo Hollow template library
+
+- `hollow-gate.json` — broad opening woodland corridor
+- `moonlit-reedbridge.json` — narrow bridge between deep river blockers
+- `spore-shrine-marsh.json` — split marsh pools and a central spore isle
+- `moonlotus-reservoir.json` — reservoir shores, piers, and ward island
+- `sporelight-monastery.json` — large monastery hall and meditation court
+- `moonstone-causeway.json` — fortified late-run causeway and moon-chain pillars
+- `moonfang-burrow.json` — Moonfang Komainu guardian court and boss trigger
+- `whispering-grotto.json` — optional event cavern and echo chamber
+- `lotus-sanctuary.json` — optional recovery/shrine region
+- `reedblade-hunter-camp.json` — optional elite/shop hunting camp
+
+Bamboo’s main and optional routes use separate enemy spawn geometry, destructibles, moon gates, collision silhouettes, VFX anchors, and story triggers. Spore Bloom pressure remains a combat system and now lands inside real navigable geometry.
+
 The current migration keeps the proven combat/HUD canvas above Phaser while Phaser owns tilemap loading, camera culling, map art, authored world objects, collision geometry, gates, VFX anchors, and the F3 debug view. Combat actors consume the same map collision data now; actors, projectiles, and remaining effects move into Phaser incrementally without throwing away working game logic.
 
 ## Open and edit a room in Tiled
@@ -27,7 +42,7 @@ The current migration keeps the proven combat/HUD canvas above Phaser while Phas
 4. Export as JSON over the same file. Do not enable compressed layer data; Phaser's Tiled parser deliberately receives readable integer arrays.
 5. Run `npm.cmd test` and load `?system=tutorial&step=6` for a combat check.
 
-Running `node scripts/build-shrine-map.mjs` regenerates all ten authored Jade templates and will overwrite manual Tiled edits. Once a room becomes hand-edited, copy or retire its generator first.
+Running `npm.cmd run build:maps` regenerates both ten-map biome packs and will overwrite manual Tiled edits. Once a room becomes hand-edited, copy or retire its generator first.
 
 Enemy creation consumes the `Enemy Spawns` layer in authored order, cycling through those points with small offsets only when a wave contains more enemies than points. Clearing combat opens the physical north gate; progression waits until the player walks through its exit trigger.
 

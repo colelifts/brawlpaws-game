@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.mjs",
     "test": "node --test",
+    "build:maps": "node scripts/build-shrine-map.mjs && node scripts/build-bamboo-maps.mjs",
     "deploy": "npm test && git push origin main"
   },
   "dependencies": {

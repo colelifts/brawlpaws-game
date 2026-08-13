@@ -1,0 +1,2732 @@
+{
+  "compressionlevel": -1,
+  "height": 15,
+  "width": 24,
+  "infinite": false,
+  "layers": [
+    {
+      "id": 1,
+      "name": "Ground",
+      "type": "tilelayer",
+      "width": 24,
+      "height": 15,
+      "x": 0,
+      "y": 0,
+      "opacity": 1,
+      "visible": true,
+      "data": [
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        5,
+        5,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        5,
+        5,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        5,
+        5,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        5,
+        5,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        5,
+        5,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        5,
+        5,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        5,
+        5,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        5,
+        5,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        5,
+        5,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        5,
+        5,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        5,
+        5,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        5,
+        5,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Ground Detail",
+      "type": "tilelayer",
+      "width": 24,
+      "height": 15,
+      "x": 0,
+      "y": 0,
+      "opacity": 1,
+      "visible": true,
+      "data": [
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Walls",
+      "type": "tilelayer",
+      "width": 24,
+      "height": 15,
+      "x": 0,
+      "y": 0,
+      "opacity": 1,
+      "visible": true,
+      "data": [
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Props Below Player",
+      "type": "objectgroup",
+      "draworder": "topdown",
+      "opacity": 1,
+      "visible": true,
+      "objects": [
+        {
+          "id": 1,
+          "name": "reedbridge_bamboo_w",
+          "type": "prop",
+          "x": 820,
+          "y": 2390,
+          "width": 340,
+          "height": 430,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "cropX",
+              "type": "float",
+              "value": 35
+            },
+            {
+              "name": "cropY",
+              "type": "float",
+              "value": 535
+            },
+            {
+              "name": "cropW",
+              "type": "float",
+              "value": 340
+            },
+            {
+              "name": "cropH",
+              "type": "float",
+              "value": 430
+            },
+            {
+              "name": "scale",
+              "type": "float",
+              "value": 0.82
+            },
+            {
+              "name": "originY",
+              "type": "float",
+              "value": 1
+            },
+            {
+              "name": "collisionRadius",
+              "type": "float",
+              "value": 62
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "name": "reedbridge_bamboo_e",
+          "type": "prop",
+          "x": 5324,
+          "y": 2390,
+          "width": 340,
+          "height": 430,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "cropX",
+              "type": "float",
+              "value": 35
+            },
+            {
+              "name": "cropY",
+              "type": "float",
+              "value": 535
+            },
+            {
+              "name": "cropW",
+              "type": "float",
+              "value": 340
+            },
+            {
+              "name": "cropH",
+              "type": "float",
+              "value": 430
+            },
+            {
+              "name": "scale",
+              "type": "float",
+              "value": 0.82
+            },
+            {
+              "name": "originY",
+              "type": "float",
+              "value": 1
+            },
+            {
+              "name": "collisionRadius",
+              "type": "float",
+              "value": 62
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "name": "reedbridge_lantern_w",
+          "type": "prop",
+          "x": 1280,
+          "y": 1080,
+          "width": 300,
+          "height": 420,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "cropX",
+              "type": "float",
+              "value": 55
+            },
+            {
+              "name": "cropY",
+              "type": "float",
+              "value": 65
+            },
+            {
+              "name": "cropW",
+              "type": "float",
+              "value": 300
+            },
+            {
+              "name": "cropH",
+              "type": "float",
+              "value": 420
+            },
+            {
+              "name": "scale",
+              "type": "float",
+              "value": 0.57
+            },
+            {
+              "name": "originY",
+              "type": "float",
+              "value": 1
+            },
+            {
+              "name": "collisionRadius",
+              "type": "float",
+              "value": 44
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "name": "reedbridge_lantern_e",
+          "type": "prop",
+          "x": 4864,
+          "y": 1080,
+          "width": 300,
+          "height": 420,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "cropX",
+              "type": "float",
+              "value": 55
+            },
+            {
+              "name": "cropY",
+              "type": "float",
+              "value": 65
+            },
+            {
+              "name": "cropW",
+              "type": "float",
+              "value": 300
+            },
+            {
+              "name": "cropH",
+              "type": "float",
+              "value": 420
+            },
+            {
+              "name": "scale",
+              "type": "float",
+              "value": 0.57
+            },
+            {
+              "name": "originY",
+              "type": "float",
+              "value": 1
+            },
+            {
+              "name": "collisionRadius",
+              "type": "float",
+              "value": 44
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "name": "reedbridge_spore_bush",
+          "type": "prop",
+          "x": 3940,
+          "y": 760,
+          "width": 400,
+          "height": 390,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "cropX",
+              "type": "float",
+              "value": 1040
+            },
+            {
+              "name": "cropY",
+              "type": "float",
+              "value": 570
+            },
+            {
+              "name": "cropW",
+              "type": "float",
+              "value": 400
+            },
+            {
+              "name": "cropH",
+              "type": "float",
+              "value": 390
+            },
+            {
+              "name": "scale",
+              "type": "float",
+              "value": 0.54
+            },
+            {
+              "name": "originY",
+              "type": "float",
+              "value": 1
+            },
+            {
+              "name": "collisionRadius",
+              "type": "float",
+              "value": 55
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Collision",
+      "type": "objectgroup",
+      "draworder": "topdown",
+      "opacity": 1,
+      "visible": false,
+      "objects": [
+        {
+          "id": 6,
+          "name": "boundary_north_west",
+          "type": "collision",
+          "x": 0,
+          "y": 0,
+          "width": 2800,
+          "height": 220,
+          "rotation": 0,
+          "visible": true,
+          "properties": []
+        },
+        {
+          "id": 7,
+          "name": "boundary_north_east",
+          "type": "collision",
+          "x": 3344,
+          "y": 0,
+          "width": 2800,
+          "height": 220,
+          "rotation": 0,
+          "visible": true,
+          "properties": []
+        },
+        {
+          "id": 8,
+          "name": "boundary_south_west",
+          "type": "collision",
+          "x": 0,
+          "y": 3620,
+          "width": 2800,
+          "height": 220,
+          "rotation": 0,
+          "visible": true,
+          "properties": []
+        },
+        {
+          "id": 9,
+          "name": "boundary_south_east",
+          "type": "collision",
+          "x": 3344,
+          "y": 3620,
+          "width": 2800,
+          "height": 220,
+          "rotation": 0,
+          "visible": true,
+          "properties": []
+        },
+        {
+          "id": 10,
+          "name": "boundary_west",
+          "type": "collision",
+          "x": 0,
+          "y": 0,
+          "width": 260,
+          "height": 3840,
+          "rotation": 0,
+          "visible": true,
+          "properties": []
+        },
+        {
+          "id": 11,
+          "name": "boundary_east",
+          "type": "collision",
+          "x": 5884,
+          "y": 0,
+          "width": 260,
+          "height": 3840,
+          "rotation": 0,
+          "visible": true,
+          "properties": []
+        },
+        {
+          "id": 12,
+          "name": "river_w",
+          "type": "collision",
+          "x": 260,
+          "y": 610,
+          "width": 1850,
+          "height": 2280,
+          "rotation": 0,
+          "visible": true,
+          "properties": []
+        },
+        {
+          "id": 13,
+          "name": "river_e",
+          "type": "collision",
+          "x": 4034,
+          "y": 610,
+          "width": 1850,
+          "height": 2280,
+          "rotation": 0,
+          "visible": true,
+          "properties": []
+        },
+        {
+          "id": 14,
+          "name": "broken_rail_w",
+          "type": "collision",
+          "x": 2600,
+          "y": 1180,
+          "width": 240,
+          "height": 520,
+          "rotation": 0,
+          "visible": true,
+          "properties": []
+        },
+        {
+          "id": 15,
+          "name": "broken_rail_e",
+          "type": "collision",
+          "x": 3304,
+          "y": 2050,
+          "width": 240,
+          "height": 500,
+          "rotation": 0,
+          "visible": true,
+          "properties": []
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Props / Interactive",
+      "type": "objectgroup",
+      "draworder": "topdown",
+      "opacity": 1,
+      "visible": true,
+      "objects": [
+        {
+          "id": 16,
+          "name": "reedbridge_supply_a",
+          "type": "prop",
+          "x": 1760,
+          "y": 2780,
+          "width": 330,
+          "height": 350,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "cropX",
+              "type": "float",
+              "value": 1100
+            },
+            {
+              "name": "cropY",
+              "type": "float",
+              "value": 155
+            },
+            {
+              "name": "cropW",
+              "type": "float",
+              "value": 330
+            },
+            {
+              "name": "cropH",
+              "type": "float",
+              "value": 350
+            },
+            {
+              "name": "scale",
+              "type": "float",
+              "value": 0.58
+            },
+            {
+              "name": "originY",
+              "type": "float",
+              "value": 1
+            },
+            {
+              "name": "destructible",
+              "type": "bool",
+              "value": true
+            },
+            {
+              "name": "kind",
+              "type": "string",
+              "value": "crate"
+            },
+            {
+              "name": "health",
+              "type": "float",
+              "value": 28
+            },
+            {
+              "name": "collisionRadius",
+              "type": "float",
+              "value": 52
+            }
+          ]
+        },
+        {
+          "id": 17,
+          "name": "reedbridge_spore_pots",
+          "type": "prop",
+          "x": 4380,
+          "y": 2790,
+          "width": 420,
+          "height": 410,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "cropX",
+              "type": "float",
+              "value": 665
+            },
+            {
+              "name": "cropY",
+              "type": "float",
+              "value": 125
+            },
+            {
+              "name": "cropW",
+              "type": "float",
+              "value": 420
+            },
+            {
+              "name": "cropH",
+              "type": "float",
+              "value": 410
+            },
+            {
+              "name": "scale",
+              "type": "float",
+              "value": 0.46
+            },
+            {
+              "name": "originY",
+              "type": "float",
+              "value": 1
+            },
+            {
+              "name": "destructible",
+              "type": "bool",
+              "value": true
+            },
+            {
+              "name": "kind",
+              "type": "string",
+              "value": "pot"
+            },
+            {
+              "name": "health",
+              "type": "float",
+              "value": 16
+            },
+            {
+              "name": "collisionRadius",
+              "type": "float",
+              "value": 45
+            }
+          ]
+        },
+        {
+          "id": 18,
+          "name": "reedbridge_supply_b",
+          "type": "prop",
+          "x": 4660,
+          "y": 1770,
+          "width": 330,
+          "height": 350,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "cropX",
+              "type": "float",
+              "value": 1100
+            },
+            {
+              "name": "cropY",
+              "type": "float",
+              "value": 155
+            },
+            {
+              "name": "cropW",
+              "type": "float",
+              "value": 330
+            },
+            {
+              "name": "cropH",
+              "type": "float",
+              "value": 350
+            },
+            {
+              "name": "scale",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "originY",
+              "type": "float",
+              "value": 1
+            },
+            {
+              "name": "destructible",
+              "type": "bool",
+              "value": true
+            },
+            {
+              "name": "kind",
+              "type": "string",
+              "value": "crate"
+            },
+            {
+              "name": "health",
+              "type": "float",
+              "value": 28
+            },
+            {
+              "name": "collisionRadius",
+              "type": "float",
+              "value": 50
+            }
+          ]
+        },
+        {
+          "id": 19,
+          "name": "reedbridge_moon_shrine",
+          "type": "prop",
+          "x": 3072,
+          "y": 930,
+          "width": 360,
+          "height": 415,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "cropX",
+              "type": "float",
+              "value": 700
+            },
+            {
+              "name": "cropY",
+              "type": "float",
+              "value": 535
+            },
+            {
+              "name": "cropW",
+              "type": "float",
+              "value": 360
+            },
+            {
+              "name": "cropH",
+              "type": "float",
+              "value": 415
+            },
+            {
+              "name": "scale",
+              "type": "float",
+              "value": 0.8
+            },
+            {
+              "name": "originY",
+              "type": "float",
+              "value": 1
+            },
+            {
+              "name": "interaction",
+              "type": "string",
+              "value": "moonShrine"
+            },
+            {
+              "name": "collisionRadius",
+              "type": "float",
+              "value": 110
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Doors / Gates",
+      "type": "objectgroup",
+      "draworder": "topdown",
+      "opacity": 1,
+      "visible": true,
+      "objects": [
+        {
+          "id": 20,
+          "name": "gate_forward",
+          "type": "door",
+          "x": 2800,
+          "y": 260,
+          "width": 544,
+          "height": 260,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "state",
+              "type": "string",
+              "value": "combat-sealed"
+            },
+            {
+              "name": "direction",
+              "type": "string",
+              "value": "forward"
+            },
+            {
+              "name": "destination",
+              "type": "string",
+              "value": "bambooSporeMarsh"
+            },
+            {
+              "name": "collision",
+              "type": "bool",
+              "value": true
+            },
+            {
+              "name": "sealColor",
+              "type": "string",
+              "value": "#76ffd2"
+            }
+          ]
+        },
+        {
+          "id": 21,
+          "name": "gate_return",
+          "type": "door",
+          "x": 2800,
+          "y": 3570,
+          "width": 544,
+          "height": 150,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "state",
+              "type": "string",
+              "value": "open"
+            },
+            {
+              "name": "direction",
+              "type": "string",
+              "value": "back"
+            },
+            {
+              "name": "destination",
+              "type": "string",
+              "value": "previous"
+            },
+            {
+              "name": "collision",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Enemy Spawns",
+      "type": "objectgroup",
+      "draworder": "topdown",
+      "opacity": 1,
+      "visible": true,
+      "objects": [
+        {
+          "id": 22,
+          "name": "enemy_spawn_01",
+          "type": "enemySpawn",
+          "x": 3072,
+          "y": 2940,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 0
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "ranged"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 0
+            }
+          ]
+        },
+        {
+          "id": 23,
+          "name": "enemy_spawn_02",
+          "type": "enemySpawn",
+          "x": 2580,
+          "y": 3260,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 1
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "ranged"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 0.15
+            }
+          ]
+        },
+        {
+          "id": 24,
+          "name": "enemy_spawn_03",
+          "type": "enemySpawn",
+          "x": 5524,
+          "y": 3260,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 2
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "ranged"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 0.3
+            }
+          ]
+        },
+        {
+          "id": 25,
+          "name": "enemy_spawn_04",
+          "type": "enemySpawn",
+          "x": 3072,
+          "y": 1220,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 3
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "ranged"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 0.45
+            }
+          ]
+        },
+        {
+          "id": 26,
+          "name": "enemy_spawn_05",
+          "type": "enemySpawn",
+          "x": 2580,
+          "y": 2250,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 4
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "ranged"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 0.6
+            }
+          ]
+        },
+        {
+          "id": 27,
+          "name": "enemy_spawn_06",
+          "type": "enemySpawn",
+          "x": 620,
+          "y": 3260,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 5
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "ranged"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 0.75
+            }
+          ]
+        },
+        {
+          "id": 28,
+          "name": "enemy_spawn_07",
+          "type": "enemySpawn",
+          "x": 3564,
+          "y": 3260,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 6
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "flank"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 0.9
+            }
+          ]
+        },
+        {
+          "id": 29,
+          "name": "enemy_spawn_08",
+          "type": "enemySpawn",
+          "x": 3072,
+          "y": 620,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 7
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "flank"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 1.05
+            }
+          ]
+        },
+        {
+          "id": 30,
+          "name": "enemy_spawn_09",
+          "type": "enemySpawn",
+          "x": 3072,
+          "y": 1550,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "flank"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 1.2
+            }
+          ]
+        },
+        {
+          "id": 31,
+          "name": "enemy_spawn_10",
+          "type": "enemySpawn",
+          "x": 2580,
+          "y": 2600,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 9
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "flank"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 1.35
+            }
+          ]
+        },
+        {
+          "id": 32,
+          "name": "enemy_spawn_11",
+          "type": "enemySpawn",
+          "x": 1380,
+          "y": 3260,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 10
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "flank"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 1.5
+            }
+          ]
+        },
+        {
+          "id": 33,
+          "name": "enemy_spawn_12",
+          "type": "enemySpawn",
+          "x": 4364,
+          "y": 3260,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 11
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "flank"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 1.65
+            }
+          ]
+        },
+        {
+          "id": 34,
+          "name": "enemy_spawn_13",
+          "type": "enemySpawn",
+          "x": 2580,
+          "y": 900,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 12
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "flank"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 1.8
+            }
+          ]
+        },
+        {
+          "id": 35,
+          "name": "enemy_spawn_14",
+          "type": "enemySpawn",
+          "x": 2580,
+          "y": 1900,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 13
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "center"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 1.95
+            }
+          ]
+        },
+        {
+          "id": 36,
+          "name": "enemy_spawn_15",
+          "type": "enemySpawn",
+          "x": 2580,
+          "y": 2940,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 14
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "center"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 2.1
+            }
+          ]
+        },
+        {
+          "id": 37,
+          "name": "enemy_spawn_16",
+          "type": "enemySpawn",
+          "x": 2180,
+          "y": 3260,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "spawnIndex",
+              "type": "float",
+              "value": 15
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "value": "center"
+            },
+            {
+              "name": "delay",
+              "type": "float",
+              "value": 2.25
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Player Spawn",
+      "type": "objectgroup",
+      "draworder": "topdown",
+      "opacity": 1,
+      "visible": true,
+      "objects": [
+        {
+          "id": 38,
+          "name": "player_spawn",
+          "type": "playerSpawn",
+          "x": 3072,
+          "y": 3310,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "facing",
+              "type": "string",
+              "value": "north"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "Triggers",
+      "type": "objectgroup",
+      "draworder": "topdown",
+      "opacity": 1,
+      "visible": false,
+      "objects": [
+        {
+          "id": 39,
+          "name": "reedbridge_encounter",
+          "type": "trigger",
+          "x": 650,
+          "y": 520,
+          "width": 4844,
+          "height": 2750,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "triggerType",
+              "type": "string",
+              "value": "encounter"
+            },
+            {
+              "name": "encounterId",
+              "type": "string",
+              "value": "bambooMoonbridge_encounter"
+            },
+            {
+              "name": "once",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        },
+        {
+          "id": 40,
+          "name": "reedbridge_arrival",
+          "type": "trigger",
+          "x": 2440,
+          "y": 3020,
+          "width": 1264,
+          "height": 480,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "triggerType",
+              "type": "string",
+              "value": "cutscene"
+            },
+            {
+              "name": "cutsceneId",
+              "type": "string",
+              "value": "bambooMoonbridge_arrival"
+            },
+            {
+              "name": "once",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        },
+        {
+          "id": 41,
+          "name": "reedbridge_exit",
+          "type": "trigger",
+          "x": 2700,
+          "y": 240,
+          "width": 744,
+          "height": 430,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "triggerType",
+              "type": "string",
+              "value": "roomExit"
+            },
+            {
+              "name": "destination",
+              "type": "string",
+              "value": "bambooSporeMarsh"
+            },
+            {
+              "name": "requiresClear",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "name": "Foreground / Occlusion",
+      "type": "objectgroup",
+      "draworder": "topdown",
+      "opacity": 1,
+      "visible": true,
+      "objects": [
+        {
+          "id": 42,
+          "name": "reedbridge_canopy_w",
+          "type": "prop",
+          "x": 320,
+          "y": 1840,
+          "width": 340,
+          "height": 430,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "cropX",
+              "type": "float",
+              "value": 35
+            },
+            {
+              "name": "cropY",
+              "type": "float",
+              "value": 535
+            },
+            {
+              "name": "cropW",
+              "type": "float",
+              "value": 340
+            },
+            {
+              "name": "cropH",
+              "type": "float",
+              "value": 430
+            },
+            {
+              "name": "scale",
+              "type": "float",
+              "value": 1.28
+            },
+            {
+              "name": "originY",
+              "type": "float",
+              "value": 0.75
+            },
+            {
+              "name": "foreground",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        },
+        {
+          "id": 43,
+          "name": "reedbridge_canopy_e",
+          "type": "prop",
+          "x": 5824,
+          "y": 1840,
+          "width": 340,
+          "height": 430,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "cropX",
+              "type": "float",
+              "value": 35
+            },
+            {
+              "name": "cropY",
+              "type": "float",
+              "value": 535
+            },
+            {
+              "name": "cropW",
+              "type": "float",
+              "value": 340
+            },
+            {
+              "name": "cropH",
+              "type": "float",
+              "value": 430
+            },
+            {
+              "name": "scale",
+              "type": "float",
+              "value": 1.28
+            },
+            {
+              "name": "originY",
+              "type": "float",
+              "value": 0.75
+            },
+            {
+              "name": "foreground",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        },
+        {
+          "id": 44,
+          "name": "reedbridge_roof",
+          "type": "prop",
+          "x": 3072,
+          "y": 620,
+          "width": 380,
+          "height": 430,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "cropX",
+              "type": "float",
+              "value": 690
+            },
+            {
+              "name": "cropY",
+              "type": "float",
+              "value": 520
+            },
+            {
+              "name": "cropW",
+              "type": "float",
+              "value": 380
+            },
+            {
+              "name": "cropH",
+              "type": "float",
+              "value": 430
+            },
+            {
+              "name": "scale",
+              "type": "float",
+              "value": 1.35
+            },
+            {
+              "name": "originY",
+              "type": "float",
+              "value": 0.82
+            },
+            {
+              "name": "foreground",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "name": "VFX Anchors",
+      "type": "objectgroup",
+      "draworder": "topdown",
+      "opacity": 1,
+      "visible": true,
+      "objects": [
+        {
+          "id": 45,
+          "name": "reedbridge_wisp_w",
+          "type": "vfx",
+          "x": 1100,
+          "y": 1660,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "effect",
+              "type": "string",
+              "value": "spiritWisp"
+            },
+            {
+              "name": "color",
+              "type": "string",
+              "value": "#79ffd0"
+            }
+          ]
+        },
+        {
+          "id": 46,
+          "name": "reedbridge_wisp_e",
+          "type": "vfx",
+          "x": 5044,
+          "y": 1660,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "effect",
+              "type": "string",
+              "value": "spiritWisp"
+            },
+            {
+              "name": "color",
+              "type": "string",
+              "value": "#bc65ff"
+            }
+          ]
+        },
+        {
+          "id": 47,
+          "name": "reedbridge_spores",
+          "type": "vfx",
+          "x": 3072,
+          "y": 1940,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "effect",
+              "type": "string",
+              "value": "fallingPetals"
+            },
+            {
+              "name": "radius",
+              "type": "float",
+              "value": 1350
+            }
+          ]
+        },
+        {
+          "id": 48,
+          "name": "reedbridge_moon_glow",
+          "type": "vfx",
+          "x": 3072,
+          "y": 690,
+          "width": 1,
+          "height": 1,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "effect",
+              "type": "string",
+              "value": "lanternGlow"
+            },
+            {
+              "name": "color",
+              "type": "string",
+              "value": "#79ffe5"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "nextlayerid": 13,
+  "nextobjectid": 49,
+  "orientation": "orthogonal",
+  "renderorder": "right-down",
+  "tiledversion": "1.11.2",
+  "tileheight": 256,
+  "tilewidth": 256,
+  "type": "map",
+  "version": "1.10",
+  "properties": [
+    {
+      "name": "roomId",
+      "type": "string",
+      "value": "bambooMoonbridge"
+    },
+    {
+      "name": "displayName",
+      "type": "string",
+      "value": "Moonlit Reedbridge"
+    },
+    {
+      "name": "template",
+      "type": "string",
+      "value": "reedbridge"
+    },
+    {
+      "name": "isOptional",
+      "type": "bool",
+      "value": false
+    },
+    {
+      "name": "isBoss",
+      "type": "bool",
+      "value": false
+    },
+    {
+      "name": "biome",
+      "type": "string",
+      "value": "bamboo"
+    }
+  ],
+  "tilesets": [
+    {
+      "firstgid": 1,
+      "columns": 6,
+      "image": "../../../tilesets/bamboo-hollow/bamboo-ground.svg",
+      "imageheight": 256,
+      "imagewidth": 1536,
+      "margin": 0,
+      "name": "bamboo-ground",
+      "spacing": 0,
+      "tilecount": 6,
+      "tileheight": 256,
+      "tilewidth": 256
+    }
+  ]
+}
