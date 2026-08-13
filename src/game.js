@@ -1780,11 +1780,21 @@ function preparePhysicalRoute(nextWave,{restoring=false}={}){
 
 function updatePhysicalRoute(dt){
   encounter.routeGateLock=Math.max(0,(encounter.routeGateLock||0)-dt);if(encounter.routeGateLock>0)return;
+  if(encounter.routeTravel){updateRouteTravel(dt);return;}
   const choices=encounter.routeGateChoices||[];let nearest=null,nearestDistance=Infinity;
-  for(const choice of choices){const d=distance(player,choice);if(d<nearestDistance){nearest=choice;nearestDistance=d;}if(d<=choice.radius+player.radius*.72){if(coop.connected&&!coopIsHost()){spawnWord(player.x,player.y-78,'HOST CHOOSES THE ROAD','#9cf4ff');encounter.routeGateLock=1;return;}encounter.awaitingRouteChoice=false;encounter.routeGateChoices=[];player.vx=0;player.vy=0;if(choice.extract)extractExpedition({fromWorld:true});else if(choice.backtrack)returnToClearedRegion(choice.destination);else commitRouteChoice(choice);return;}}
+  for(const choice of choices){const d=distance(player,choice);if(d<nearestDistance){nearest=choice;nearestDistance=d;}if(d<=choice.radius+player.radius*.72){if(coop.connected&&!coopIsHost()){spawnWord(player.x,player.y-78,'HOST CHOOSES THE ROAD','#9cf4ff');encounter.routeGateLock=1;return;}beginRouteTravel(choice);return;}}
   if(nearest?.destination&&nearestDistance<620){const preview=layeredMapRuntime.previewNeighbor(nearest.destination);encounter.routeCameraTarget=preview?{x:preview.entryX,y:preview.entryY,blend:clamp(1-nearestDistance/720,.12,.82)}:null;}else{layeredMapRuntime.clearPreview();encounter.routeCameraTarget=null;}
   if(nearest&&nearestDistance<340)ui.objective.textContent=nearest.extract?`ENTER TO EXTRACT  ·  BANK ${player.expeditionShards||0} SHARDS`:`${nearest.name.toUpperCase()}  ·  ${ROOMS[nearest.destination]?.name.toUpperCase()||'SPIRIT ROAD'}`;
   else ui.objective.textContent=coop.connected&&!coopIsHost()?'FOLLOW THE HOST TO THE NEXT ROAD':'WALK INTO A SPIRIT ROAD  ·  M OPENS WORLD MAP';
+}
+
+function beginRouteTravel(choice){
+  encounter.routeTravel={choice,elapsed:0,duration:choice.extract?.45:.78,startX:player.x,startY:player.y,endX:choice.x,endY:choice.y-118};player.vx=0;player.vy=0;player.invulnerable=Math.max(player.invulnerable,1);player.facing=-Math.PI/2;player.aimFacing=player.facing;player.moveFacing=player.facing;ui.objective.textContent=choice.extract?'RETURNING TO SPIRIT LANTERN VILLAGE':`TRAVELLING TO ${(ROOMS[choice.destination]?.name||'THE NEXT REGION').toUpperCase()}`;playSfx('dash',.14,.82);
+}
+
+function updateRouteTravel(dt){
+  const travel=encounter.routeTravel;if(!travel)return;travel.elapsed+=dt;const t=clamp(travel.elapsed/travel.duration,0,1),ease=t*t*(3-2*t);player.x=lerp(travel.startX,travel.endX,ease);player.y=lerp(travel.startY,travel.endY,ease)-Math.sin(t*Math.PI)*16;player.moveFacing=Math.atan2(travel.endY-travel.startY,travel.endX-travel.startX);player.facing=player.moveFacing;player.aimFacing=player.facing;camera.kick=lerp(camera.kick,10,dt*3);if(Math.floor(travel.elapsed*12)!==Math.floor((travel.elapsed-dt)*12))effects.afterimages.push({x:player.x,y:player.y,facing:player.facing,life:.18,maxLife:.18});if(t<1)return;
+  const choice=travel.choice;encounter.routeTravel=null;encounter.awaitingRouteChoice=false;encounter.routeGateChoices=[];layeredMapRuntime.clearPreview();encounter.routeCameraTarget=null;if(choice.extract)extractExpedition({fromWorld:true});else if(choice.backtrack)returnToClearedRegion(choice.destination);else commitRouteChoice(choice);
 }
 
 function returnToClearedRegion(destination){

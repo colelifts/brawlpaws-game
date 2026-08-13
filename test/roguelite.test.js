@@ -331,6 +331,9 @@ test('branching exits grow authored traversal roads through the live terrain',()
   assert.match(game,/function routeRoadPalette\(\)/);
   assert.match(game,/spiritRoads:\s*'assets\/environment\/spirit-roads-v1\.png'/);
   assert.match(game,/drawImage\(assets\.spiritRoads/);
+  assert.match(game,/function beginRouteTravel\(choice\)/);
+  assert.match(game,/function updateRouteTravel\(dt\)/);
+  assert.match(game,/travel\.elapsed\/travel\.duration/);
 });
 
 test('Tiled cutscene triggers launch saved one-time world dialogue',()=>{
