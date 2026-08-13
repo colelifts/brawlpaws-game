@@ -2618,7 +2618,7 @@ function updatePlayer(dt) {
   // Twin-stick ownership: movement always controls the feet, while a live attack/cast
   // owns body facing. The short lock bridges weapon cooldown gaps without letting an
   // idle mouse permanently override the direction of travel.
-  const pointerAiming=input.pointer.active&&(firingInput||Boolean(player.attack)||player.castTime>0||(player.aimLockTime||0)>0);
+  const pointerAiming=input.pointer.active;
   if(input.gamepad.aim.magnitude>.18){const aim=aimDirection();setActionFacing(aim,input.gamepad.held.has('attack')||Boolean(player.attack));}
   else if(pointerAiming)updatePointerAim(firingInput||Boolean(player.attack)||player.castTime>0);
   const actionOwnsFacing = input.gamepad.aim.magnitude>.18||pointerAiming||(player.aimLockTime||0)>0||firingInput||Boolean(player.attack)||player.castTime>0;
