@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#080817" />
   <link rel="icon" href="data:," />
   <title>BrawlPaws — Six-Chapter Roguelite Campaign</title>
-  <link rel="stylesheet" href="styles.css?v=20260812-guardians1" />
+  <link rel="stylesheet" href="styles.css?v=20260812-tutorial1" />
 </head>
 <body>
   <main id="game-shell" aria-label="BrawlPaws roguelite campaign">
@@ -267,15 +267,21 @@
     </section>
 
     <section id="story-screen" class="overlay story-screen" aria-labelledby="story-title">
+      <div class="tutorial-hero-art" id="tutorial-hero-art" aria-hidden="true"></div>
       <div class="story-panel brush-panel">
         <p id="story-kicker">CHAPTER I · THE SILENT BELLS</p>
         <h2 id="story-title">THE GROVE IS LISTENING</h2>
         <p id="story-copy">The guardian bells have gone silent. Something ancient is gathering every corrupted spirit beneath the moonlit shrine.</p>
         <blockquote id="story-quote">“Break the curse before the Jadeguard wakes.”</blockquote>
         <div class="story-directive"><span id="story-progress">SEAL 0 / 6</span><strong id="story-objective">NEXT: ENTER JADE GROVE</strong></div>
-        <button id="story-button">BEGIN THE CHAPTER <span>›</span></button>
+        <div class="story-actions"><button id="story-button">BEGIN THE CHAPTER <span>›</span></button><button id="tutorial-skip" class="tutorial-skip" type="button">SKIP TUTORIAL</button></div>
       </div>
     </section>
+
+    <aside id="tutorial-tracker" class="tutorial-tracker" aria-live="polite">
+      <span id="tutorial-step">LESSON 1 / 6</span><strong id="tutorial-task">MOVE THROUGH THE GROVE</strong>
+      <p id="tutorial-hint">Use W A S D. Follow any direction that feels natural.</p><i><em id="tutorial-progress"></em></i><button id="tutorial-live-skip" type="button">SKIP LESSON</button>
+    </aside>
 
     <section id="route-screen" class="overlay route-screen" aria-labelledby="route-title">
       <div class="route-panel">
@@ -357,6 +363,6 @@
 
     <div id="loading">AWAKENING THE GROVE…</div>
   </main>
-  <script type="module" src="src/game.js?v=20260812-guardians1"></script>
+  <script type="module" src="src/game.js?v=20260812-tutorial1"></script>
 </body>
 </html>

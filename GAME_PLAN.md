@@ -292,3 +292,5 @@ The room-route prototype is now migration material, not the final campaign shape
 3. Add distance-based threat/XP/loot bands, exploration discoveries, extraction, and death banking.
 4. Place Jade Grove, Bamboo Hollow, Crimson Dojo, Storm Coast, Neon City, and Shadow Realm as regions within Expedition World I, with a far-edge guardian citadel.
 5. Gate Expedition World II behind the World I guardian clear and preserve the continue-or-extract choice.
+
+Tutorial director milestone implemented: new profiles now receive six saved, character-led lessons for movement, ranged fire, sprinting, Fox Step, cache loot, and the first scouts. Dialogue types onto a portrait-led cutscene, live tasks track the actual input/result, enemies remain dormant until combat training, and every lesson has both a visible skip and a timeout fallback.

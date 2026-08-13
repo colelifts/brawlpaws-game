@@ -669,6 +669,21 @@ test('combat effects preserve readable player and enemy silhouettes',()=>{
   assert.match(game,/Attack art belongs in the world, behind readable character silhouettes/);
 });
 
+test('first-run tutorial explains, verifies, saves, skips, and cannot soft-lock',()=>{
+  for(const id of ['move','fire','sprint','dash','loot','fight'])assert.match(game,new RegExp(`id:'${id}'`));
+  assert.match(game,/tutorialComplete:false,tutorialStep:0/);
+  assert.match(game,/function showTutorialLesson\(index=0\)/);
+  assert.match(game,/function updateTutorial\(dt\)/);
+  assert.match(game,/function typeTutorialCopy\(copy\)/);
+  assert.match(game,/tutorialActive\.elapsed>=lesson\.timeout/);
+  assert.match(game,/function skipTutorialLesson\(/);
+  assert.match(game,/function skipTutorial\(/);
+  assert.match(game,/enemy\.tutorialDormant/);
+  assert.match(game,/debugSystem==='tutorial'/);
+  assert.match(styles,/\.story-screen\.tutorial-mode/);
+  assert.match(styles,/\.tutorial-tracker\.active/);
+});
+
 test('level five paths and level ten masteries create distinct combat loops',()=>{
   for(const id of ['pathGunner','pathElementalist','pathVanguard'])assert.match(game,new RegExp(`id:'${id}'[\\s\\S]{0,260}LEVEL 5 FIGHTING STYLE`));
   for(const id of ['masterGunner','masterElementalist','masterVanguard'])assert.match(game,new RegExp(`id:'${id}'[\\s\\S]{0,260}LEVEL 10 PATH MASTERY`));

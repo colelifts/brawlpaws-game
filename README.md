@@ -60,6 +60,7 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - Hit-stop, damage numbers, impact rings, sparks, comic attack words, directional whole-body enemy reactions, speed-scaled run cycles, and recorded combat SFX with anti-stacking mix limits
 - Adaptive licensed soundtrack with an upbeat menu, peaceful hub, six realm-specific combat identities—Jade orchestral, Bamboo melodic fantasy, Crimson percussion rush, Storm ocean tension, Neon aggressive machinery, and Shadow dark techno—and guardian-tuned heavy variants; master, music, weapon/impact, ability, and UI buses remain independently adjustable and persist across refreshes
 - Chrome startup now prioritizes the opening hero, arena, enemy, and weapon art, then streams later-chapter sheets after the overlay clears; cached-image/error handling and a 3.2-second ceiling prevent one delayed asset from stranding the game
+- New profiles receive six skippable, saved field lessons. Portrait-led cutscenes type out the instruction, then live play verifies movement, ranged fire, sprint, dash, loot, and the first scouts; every lesson includes a timeout fallback so onboarding cannot soft-lock.
 - Ability hits drive target-specific burn recoil, wet squash, and shock jitter/tint reactions instead of placing the whole effect over the enemy body
 - Grounded fade-and-rise enemy entrances, reduced normal-enemy scale, and authored locomotion cycles for every enemy family and all six guardians
 - Compact illustrated upgrade cards with a dedicated nine-emblem atlas and one-line outcome summaries

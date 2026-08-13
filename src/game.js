@@ -11,6 +11,7 @@ const resultScreen = document.querySelector('#result-screen');
 const levelupScreen = document.querySelector('#levelup-screen');
 const upgradeGrid = document.querySelector('#upgrade-grid');
 const storyScreen = document.querySelector('#story-screen');
+const tutorialTracker=document.querySelector('#tutorial-tracker');
 const routeScreen = document.querySelector('#route-screen');
 const routeGrid = document.querySelector('#route-grid');
 const shopScreen = document.querySelector('#shop-screen');
@@ -198,7 +199,7 @@ const ui = {
   waveLabel: document.querySelector('#wave-label'), bossPanel: document.querySelector('#boss-panel'),
   bossHealthFill: document.querySelector('#boss-health-fill'), bossHealthText: document.querySelector('#boss-health-text'), bossPhase: document.querySelector('#boss-phase'),
   bossReadout:document.querySelector('#boss-readout'),bossIntentKicker:document.querySelector('#boss-intent-kicker'),bossIntentName:document.querySelector('#boss-intent-name'),bossIntentTime:document.querySelector('#boss-intent-time'),bossIntentHint:document.querySelector('#boss-intent-hint'),bossIntentFill:document.querySelector('#boss-intent-fill'),
-  storyKicker: document.querySelector('#story-kicker'), storyTitle: document.querySelector('#story-title'), storyCopy: document.querySelector('#story-copy'), storyQuote: document.querySelector('#story-quote'), storyProgress:document.querySelector('#story-progress'),storyObjective:document.querySelector('#story-objective'),storyButton: document.querySelector('#story-button'),
+  storyKicker: document.querySelector('#story-kicker'), storyTitle: document.querySelector('#story-title'), storyCopy: document.querySelector('#story-copy'), storyQuote: document.querySelector('#story-quote'), storyProgress:document.querySelector('#story-progress'),storyObjective:document.querySelector('#story-objective'),storyButton: document.querySelector('#story-button'),tutorialHeroArt:document.querySelector('#tutorial-hero-art'),tutorialStep:document.querySelector('#tutorial-step'),tutorialTask:document.querySelector('#tutorial-task'),tutorialHint:document.querySelector('#tutorial-hint'),tutorialProgress:document.querySelector('#tutorial-progress'),
   biomeTitle: document.querySelector('#biome-title'), routeBiome: document.querySelector('#route-biome'), bossName: document.querySelector('#boss-name'),
   abilityCards: {
     undertowWell: { card: document.querySelector('#undertow-card'), fill: document.querySelector('#undertow-cooldown') },
@@ -230,7 +231,7 @@ const RUN_KEY='brawlpaws-run-v1';
 const RUN_VERSION=1;
 const DEFAULT_SETTINGS={screenShake:1,flashIntensity:1,damageNumbers:true,ambientMotion:true,minimap:true,masterVolume:.8,musicVolume:.55,sfxVolume:.85,abilityVolume:.85,uiVolume:.7};
 const DEFAULT_CONTRACT_PROGRESS={spiritCull:0,eliteBreakers:0,foxfireHunt:0,sealRunner:0,guardianOath:0};
-const DEFAULT_PROFILE={spiritShards:0,campaignClears:0,runsStarted:0,bestDifficulty:'',lastDifficulty:'ferocious',selectedHero:'kitsune',highestLevel:1,vitalityRank:0,forgeRank:0,attunementRank:0,purseRank:0,ascensionRank:1,ascensionClears:0,unlockedHeroes:['kitsune','bamboo'],collectedWeapons:[],boundArsenal:{},discoveredEnemies:['groveMinion'],discoveredGuardians:[],contractProgress:DEFAULT_CONTRACT_PROGRESS,claimedContracts:[],settings:DEFAULT_SETTINGS};
+const DEFAULT_PROFILE={spiritShards:0,campaignClears:0,runsStarted:0,bestDifficulty:'',lastDifficulty:'ferocious',selectedHero:'kitsune',highestLevel:1,tutorialComplete:false,tutorialStep:0,vitalityRank:0,forgeRank:0,attunementRank:0,purseRank:0,ascensionRank:1,ascensionClears:0,unlockedHeroes:['kitsune','bamboo'],collectedWeapons:[],boundArsenal:{},discoveredEnemies:['groveMinion'],discoveredGuardians:[],contractProgress:DEFAULT_CONTRACT_PROGRESS,claimedContracts:[],settings:DEFAULT_SETTINGS};
 function loadProfile(){
   try{
     const loaded={...DEFAULT_PROFILE,...JSON.parse(localStorage.getItem(PROFILE_KEY)||'{}')};
@@ -481,6 +482,8 @@ let pendingRouteWave = 0;
 let activeRouteEvent = null;
 let roomInteractable = null;
 let destructibles = [];
+let tutorialActive=null;
+let tutorialTypeTimer=null;
 let roomMission = null;
 let missionCheckpointClock = 0;
 let defeatReason = '';
@@ -1243,7 +1246,7 @@ function resetGame() {
   encounter = { wave:-1, transitioning:false, transitionTime:0,bossActive:false,bossDefeated:false,storyBeat:'intro',rewardScale:1,nodeType:'combat',startWaveAfterUpgrade:null };roomMission=null;missionCheckpointClock=0;defeatReason='';corruptionDirector=null;
   runTime = 0; runReward=0; hitStop = 0; clearDelay = -1; comboUiTimer = 0; pendingLevelUps = 0; currentUpgradeChoices = [];
   levelupScreen.classList.remove('active');
-  storyScreen.classList.remove('active');routeScreen.classList.remove('active');shopScreen.classList.remove('active');eventScreen.classList.remove('active');guardianRewardScreen.classList.remove('active');relicDraftScreen.classList.remove('active');ui.bossPanel.classList.remove('active');currentGuardianRewards=[];pendingGuardianReward=null;currentRelicChoices=[];relicDraftContinuation=null;
+  tutorialActive=null;tutorialTracker.classList.remove('active','complete');storyScreen.classList.remove('active','tutorial-mode');routeScreen.classList.remove('active');shopScreen.classList.remove('active');eventScreen.classList.remove('active');guardianRewardScreen.classList.remove('active');relicDraftScreen.classList.remove('active');ui.bossPanel.classList.remove('active');currentGuardianRewards=[];pendingGuardianReward=null;currentRelicChoices=[];relicDraftContinuation=null;
   ui.waveLabel.textContent = `CHAPTER ${chapterIndex+1}  WAVE 1 / ${chapter.waves.length}`;
   ui.roomState.textContent = 'ENCOUNTER'; ui.roomState.style.color = '#ff38b5';
   ui.objective.textContent = 'BRACE  SPIRITS APPROACH';
@@ -1341,7 +1344,7 @@ function renderCampaignStory(beat){
 }
 
 function showStory(beat) {
-  encounter.storyBeat = beat; state = 'story'; storyScreen.classList.add('active');
+  tutorialTracker.classList.remove('active');storyScreen.classList.remove('tutorial-mode');encounter.storyBeat = beat; state = 'story'; storyScreen.classList.add('active');
   if(renderCampaignStory(beat)){saveRunCheckpoint({kind:'story',beat});return;}
   const bamboo = chapter.id === 'bambooChapter';
   const crimson = chapter.id === 'crimsonChapter';
@@ -1393,8 +1396,55 @@ function showStory(beat) {
 
 function continueStory() {
   storyScreen.classList.remove('active');
-  if(encounter.storyBeat==='epilogue')endGame(true);else if(encounter.storyBeat==='boss')spawnBoss();else if(encounter.storyBeat==='interlude2')openRoute(2);else if(encounter.storyBeat==='interlude4')openRoute(4);else startWave(0);
+  if(encounter.storyBeat==='epilogue')endGame(true);else if(encounter.storyBeat==='boss')spawnBoss();else if(encounter.storyBeat==='interlude2')openRoute(2);else if(encounter.storyBeat==='interlude4')openRoute(4);else if(chapterIndex===0&&!profile.tutorialComplete){startWave(0);showTutorialLesson(clamp(profile.tutorialStep||0,0,TUTORIAL_LESSONS.length-1));}else startWave(0);
 }
+
+const TUTORIAL_LESSONS=[
+  {id:'move',title:'FIND YOUR FOOTING',copy:'The grove is wide, and standing still is how spirits surround you. Move in any direction until your paws remember the road.',quote:'Use W A S D to move.',task:'MOVE THROUGH THE GROVE',hint:'Use W A S D  ·  travel 420 distance',goal:420,timeout:30},
+  {id:'fire',title:'ANSWER WITH SPIRIT FIRE',copy:'Aim with the mouse. Your starter is a real ranged weapon: keep space between you and danger, then fire down the open lane.',quote:'Aim with the mouse. Fire with Left Click or J.',task:'FIRE THE SPIRIT BLASTER',hint:'Aim anywhere  ·  fire 5 shots',goal:5,timeout:30},
+  {id:'sprint',title:'MAKE YOUR OWN SPACE',copy:'Running is not another attack. Hold it to leave a closing pack, cross open ground, or reach loot before the next threat arrives.',quote:'Move while holding Space to sprint.',task:'SPRINT THROUGH THE COURTYARD',hint:'Hold Space while moving  ·  sprint for 2 seconds',goal:2,timeout:30},
+  {id:'dash',title:'STEP THROUGH DANGER',copy:'Fox Step is your precise escape. Pick a direction, wait for the warning, then cut through the danger instead of spending every second dashing.',quote:'Press Shift while moving to Fox Step.',task:'PERFORM ONE FOX STEP',hint:'Move in a direction  ·  press Shift once',goal:1,timeout:30},
+  {id:'loot',title:'EVERY RUIN HIDES POWER',copy:'Break caches and collect what they carry. Gold buys temporary run power; experience unlocks stronger choices during this expedition.',quote:'Shoot the marked cache and collect its reward.',task:'BREAK THE TRAINING CACHE',hint:'Fire at the gold-marked cache',goal:1,timeout:40},
+  {id:'fight',title:'THE GROVE FIGHTS BACK',copy:'Now combine what you learned. Keep range, sprint before you are boxed in, and save Fox Step for a committed attack.',quote:'Defeat the first slow scouts. You can always retreat.',task:'DEFEAT THE FIRST SCOUTS',hint:'Shoot from range  ·  sprint for space  ·  dash on warning',goal:4,timeout:90}
+];
+
+function tutorialHeroImage(){return `url('${heroDef.portrait}')`;}
+function typeTutorialCopy(copy){clearInterval(tutorialTypeTimer);ui.storyCopy.textContent='';let index=0;tutorialTypeTimer=setInterval(()=>{index=Math.min(copy.length,index+2);ui.storyCopy.textContent=copy.slice(0,index)+(index<copy.length?' ▮':'');if(index>=copy.length)clearInterval(tutorialTypeTimer);},22);}
+
+function showTutorialLesson(index=0){
+  const lesson=TUTORIAL_LESSONS[index];if(!lesson){finishTutorial();return;}tutorialActive={index,id:lesson.id,progress:0,elapsed:0,lastX:player.x,lastY:player.y,startShots:player.shotsFired,startDashes:player.dashes,startKills:0,phase:'explain'};
+  state='story';storyScreen.classList.add('active','tutorial-mode');storyScreen.style.setProperty('--story-accent',index<2?'#45eaff':index<4?'#ff4d9b':'#ffd13a');storyScreen.style.setProperty('--tutorial-art',tutorialHeroImage());ui.storyKicker.textContent=`FIELD LESSON ${index+1} / ${TUTORIAL_LESSONS.length}`;ui.storyTitle.textContent=lesson.title;typeTutorialCopy(lesson.copy);ui.storyQuote.textContent=lesson.quote;ui.storyProgress.textContent='TRACKED IN LIVE GAMEPLAY';ui.storyObjective.textContent=lesson.task;ui.storyButton.innerHTML=`TRY IT NOW <span>›</span>`;ui.tutorialProgress.style.width='0%';
+}
+
+function startTutorialLesson(){
+  clearInterval(tutorialTypeTimer);const lesson=TUTORIAL_LESSONS[tutorialActive.index];storyScreen.classList.remove('active','tutorial-mode');state='playing';tutorialActive.phase='live';tutorialActive.elapsed=0;tutorialActive.lastX=player.x;tutorialActive.lastY=player.y;tutorialActive.startShots=player.shotsFired;tutorialActive.startDashes=player.dashes;tutorialActive.startKills=enemies.filter((enemy)=>enemy.dead).length;
+  ui.tutorialStep.textContent=`LESSON ${tutorialActive.index+1} / ${TUTORIAL_LESSONS.length}`;ui.tutorialTask.textContent=lesson.task;ui.tutorialHint.textContent=lesson.hint;tutorialTracker.classList.add('active');tutorialTracker.classList.remove('complete');ui.tutorialProgress.style.width='0%';ui.objective.textContent=lesson.task;
+  for(const enemy of enemies)enemy.tutorialDormant=lesson.id!=='fight';
+  if(lesson.id==='loot')spawnTutorialCache();
+}
+
+function spawnTutorialCache(){
+  if(destructibles.some((prop)=>prop.tutorial))return;const x=player.x+Math.cos(player.facing)*330,y=player.y+Math.sin(player.facing)*330;destructibles.push({id:'tutorial-cache',kind:'crate',tutorial:true,x,y,radius:50,health:18,maxHealth:18,broken:false,col:3,row:0,scale:.4});effects.rings.push({x,y,radius:18,maxRadius:92,color:'#ffd13a',life:1.2,maxLife:1.2});spawnWord(x,y-65,'TRAINING CACHE','#ffd13a');
+}
+
+function updateTutorial(dt){
+  if(!tutorialActive||tutorialActive.phase!=='live')return;const lesson=TUTORIAL_LESSONS[tutorialActive.index];tutorialActive.elapsed+=dt;
+  if(lesson.id==='move'){tutorialActive.progress+=distance(player,{x:tutorialActive.lastX,y:tutorialActive.lastY});tutorialActive.lastX=player.x;tutorialActive.lastY=player.y;}
+  else if(lesson.id==='fire')tutorialActive.progress=player.shotsFired-tutorialActive.startShots;
+  else if(lesson.id==='sprint'&&player.sprinting)tutorialActive.progress+=dt;
+  else if(lesson.id==='dash')tutorialActive.progress=player.dashes-tutorialActive.startDashes;
+  else if(lesson.id==='loot')tutorialActive.progress=destructibles.some((prop)=>prop.tutorial&&prop.broken)?1:0;
+  else if(lesson.id==='fight')tutorialActive.progress=enemies.filter((enemy)=>enemy.dead).length-tutorialActive.startKills;
+  const ratio=clamp(tutorialActive.progress/lesson.goal,0,1);ui.tutorialProgress.style.width=`${ratio*100}%`;ui.objective.textContent=lesson.task;document.documentElement.dataset.tutorialStep=lesson.id;document.documentElement.dataset.tutorialProgress=ratio.toFixed(2);if(ratio>=1)completeTutorialLesson();else if(tutorialActive.elapsed>=lesson.timeout)skipTutorialLesson('TIMEOUT SAFETY');
+}
+
+function completeTutorialLesson(){
+  if(!tutorialActive||tutorialActive.phase!=='live')return;const completedIndex=tutorialActive.index;tutorialActive.phase='complete';tutorialTracker.classList.add('complete');ui.tutorialTask.textContent='LESSON COMPLETE';ui.tutorialHint.textContent='The spirit road remembers.';ui.tutorialProgress.style.width='100%';playSfx('upgrade',.22,1.18);profile.tutorialStep=completedIndex+1;saveProfile();if(completedIndex===TUTORIAL_LESSONS.length-1){finishTutorial();return;}setTimeout(()=>{if(!tutorialActive)return;showTutorialLesson(completedIndex+1);},650);
+}
+
+function skipTutorialLesson(reason='SKIPPED'){if(!tutorialActive)return;spawnWord(player.x,player.y-80,reason,'#9b94a7');completeTutorialLesson();}
+function finishTutorial(){clearInterval(tutorialTypeTimer);profile.tutorialComplete=true;profile.tutorialStep=TUTORIAL_LESSONS.length;saveProfile();tutorialActive=null;tutorialTracker.classList.remove('active','complete');storyScreen.classList.remove('active','tutorial-mode');for(const enemy of enemies)enemy.tutorialDormant=false;state='playing';ui.objective.textContent='DEFEAT THE OPENING SCOUTS';delete document.documentElement.dataset.tutorialStep;delete document.documentElement.dataset.tutorialProgress;}
+function skipTutorial(){clearInterval(tutorialTypeTimer);profile.tutorialComplete=true;profile.tutorialStep=TUTORIAL_LESSONS.length;saveProfile();tutorialActive=null;tutorialTracker.classList.remove('active','complete');storyScreen.classList.remove('active','tutorial-mode');for(const enemy of enemies)enemy.tutorialDormant=false;state='playing';ui.objective.textContent='DEFEAT THE OPENING SCOUTS';delete document.documentElement.dataset.tutorialStep;delete document.documentElement.dataset.tutorialProgress;}
 
 function startWave(index,modifiers={}) {
   const wave = chapter.waves[index];
@@ -1945,6 +1995,7 @@ function begin() {
   if(debugSystem==='forgeCollection'){profile.collectedWeapons=ARSENAL_BLUEPRINTS.map((entry)=>entry.id);profile.boundArsenal={...profile.boundArsenal,[selectedHeroId]:debugParams.get('weapon')||'frostbiteNeedle'};enterHub();openHubStation(HUB_STATIONS.find((station)=>station.id==='forge'));return;}
   if(debugSystem==='contracts'){if(debugParams.has('restore')){profile.spiritShards=764;profile.contractProgress={...DEFAULT_CONTRACT_PROGRESS};profile.claimedContracts=[];saveProfile();}if(debugParams.has('ready'))for(const contract of CAMPAIGN_CONTRACTS)profile.contractProgress[contract.id]=contract.target;enterHub();openHubStation(HUB_STATIONS.find((station)=>station.id==='missionBoard'));return;}
   if(debugSystem==='story'){const storyBeat=['intro','interlude2','interlude4','boss'].includes(debugParams.get('beat'))?debugParams.get('beat'):'interlude2';showStory(storyBeat);return;}
+  if(debugSystem==='tutorial'){startWave(0);showTutorialLesson(clamp(Number(debugParams.get('step')||1)-1,0,TUTORIAL_LESSONS.length-1));return;}
   if(debugSystem==='dojo'){enterDojo();return;}
   if(debugSystem==='crossfire'){
     player.maxHealth=600;player.health=600;spawnBoss();const boss=enemies[0];const profile=BOSS_PROFILES[boss.def.id];boss.bossPhase=3;boss.health=boss.maxHealth*.3;boss.state='bossWindupCrossfire';boss.patternWindup=guardianAttackTiming({baseWindup:BOSS_PATTERNS.crossfire.windup,tempo:profile.phaseTempo[3],phase:3,difficultyId:selectedDifficulty}).windup;boss.stateTime=boss.patternWindup;boss.activePattern='crossfire';boss.patternTargetX=player.x;boss.patternTargetY=player.y;boss.patternAngle=Math.atan2(player.y-boss.y,player.x-boss.x)+.51;ui.bossPhase.textContent=profile.phaseNames[3];return;
@@ -2658,6 +2709,7 @@ function updateEnemies(dt) {
     enemy.hitReactTime=Math.max(0,(enemy.hitReactTime||0)-dt);
     enemy.cooldown = Math.max(0, enemy.cooldown - dt*campaignPressure.attackTempo);
     enemy.bob += dt * 5;
+    if(enemy.tutorialDormant){enemy.vx*=Math.exp(-12*dt);enemy.vy*=Math.exp(-12*dt);continue;}
     if (enemy.state === 'waiting') {
       enemy.stateTime -= dt*campaignPressure.reserveRate;
       if (enemy.stateTime <= 0 && activationSlots > 0) {
@@ -3089,11 +3141,13 @@ function update(dt, screen) {
     if (hitStop > 0) hitStop -= dt;
     else {
       updatePlayer(dt);
+      updateTutorial(dt);
       updateEnemies(dt);
       updateCorruptionDirector(dt);
       updateChapterWarpack(dt);
       updateBiomePressure(dt);
       updateEncounter(dt);
+      if(tutorialActive?.phase==='live')ui.objective.textContent=TUTORIAL_LESSONS[tutorialActive.index].task;
       if (clearDelay >= 0) { clearDelay -= dt; if (clearDelay <= 0){clearDelay=-1;openGuardianReward(encounter.defeatedGuardianId||chapter.boss);} }
     }
     comboUiTimer = Math.max(0, comboUiTimer - dt);
@@ -3821,7 +3875,7 @@ window.addEventListener('keydown', (event) => {
   if(state==='codex'&&(key==='escape'||key==='k')){closeCodex();event.preventDefault();return;}
   if(key==='k'&&['preview','hub','playing','dojo'].includes(state)){openCodex(state==='preview'?'heroes':'enemies');event.preventDefault();return;}
   if(state==='hubMenu'&&(key==='escape'||key==='enter')){closeHubMenu();event.preventDefault();return;}
-  if(state==='story'&&key==='enter'){continueStory();event.preventDefault();return;}
+  if(state==='story'&&key==='enter'){tutorialActive?.phase==='explain'?startTutorialLesson():continueStory();event.preventDefault();return;}
   if(state==='route'&&['1','2','3'].includes(key)){selectRoute(Number(key)-1);event.preventDefault();return;}
   if(state==='event'&&['1','2'].includes(key)){chooseRouteEvent(Number(key)-1);event.preventDefault();return;}
   if(state==='guardianReward'&&['1','2','3'].includes(key)){chooseGuardianReward(Number(key)-1);event.preventDefault();return;}
@@ -3860,7 +3914,9 @@ for(const button of settingsScreen.querySelectorAll('[data-setting]'))button.add
 document.querySelector('#close-codex').addEventListener('click',closeCodex);
 for(const button of document.querySelectorAll('[data-codex-tab]'))button.addEventListener('click',()=>{activeCodexId=null;renderCodex(button.dataset.codexTab);});
 document.querySelector('#restart-button').addEventListener('click', begin);
-document.querySelector('#story-button').addEventListener('click', continueStory);
+document.querySelector('#story-button').addEventListener('click',()=>tutorialActive?.phase==='explain'?startTutorialLesson():continueStory());
+document.querySelector('#tutorial-skip').addEventListener('click',skipTutorial);
+document.querySelector('#tutorial-live-skip').addEventListener('click',()=>skipTutorialLesson('LESSON SKIPPED'));
 document.querySelector('#leave-shop').addEventListener('click', leaveShop);
 document.querySelector('#close-hub-menu').addEventListener('click',closeHubMenu);
 document.querySelector('#dojo-cycle-target').addEventListener('click',cycleDojoTarget);
