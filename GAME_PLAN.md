@@ -123,9 +123,9 @@ Current unlockable loadout:
 
 Next ability work:
 
-- Balance the completed seven-condition registry across later chapter armies, guardians, and co-op snapshots
+- Balance the completed nine-condition registry across later chapter armies, guardians, and co-op snapshots. Burn, Wet, Shock, Chill, Freeze, Stun, Bleed, Curse, and Ward now share data-driven duration, reaction, expiry, Codex, enemy, player, guardian, and co-op serialization contracts.
 - Add per-ability upgrade hooks rather than branching logic inside the player controller
-- Move remaining duration ticks and VFX routing fully behind the shared status registry
+- Move remaining duration ticks and VFX routing fully behind the shared status registry. **Duration and expiry routing complete:** all non-damage-over-time conditions tick through one registry loop; Burn and Bleed retain their shared damage tick handlers, while Chill-to-Freeze now applies through the same status API.
 - Extend the landed hero state atlases into multi-frame cast/action/recovery sequences after gameplay timing is locked; the current dedicated cast silhouettes already replace movement-pose reuse for every hero ability.
 - Continue balancing evolution availability and damage against chapter corruption, guardian health, and high-rank Ascension armies
 

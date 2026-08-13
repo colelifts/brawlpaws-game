@@ -135,7 +135,7 @@ test('the starter ability loadout is complete and data-driven', () => {
 });
 
 test('statuses and elite mutations have complete combat data',()=>{
-  assert.deepEqual(Object.keys(STATUS_EFFECTS),['burn','wet','shock','stun','bleed','curse','shield']);
+  assert.deepEqual(Object.keys(STATUS_EFFECTS),['burn','wet','shock','chill','freeze','stun','bleed','curse','shield']);
   assert.deepEqual(Object.keys(ELITE_MODIFIERS),['swift','bulwark','frenzied','volatile','splitter']);
   for(const status of Object.values(STATUS_EFFECTS)){assert.ok(status.field.endsWith('Time'));assert.match(status.color,/^#[0-9a-f]{6}$/i);assert.ok(status.targets.length>=1);}
   assert.deepEqual(STATUS_EFFECTS.bleed.targets,['player','enemy']);

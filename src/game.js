@@ -1,5 +1,5 @@
 import { clamp, lerp, normalize, distance, approachAngle, encounterActiveLimit, campaignPressureCurve, cappedWardPressure, normalizedEnemyScales, enemySpeedCeiling, enemyTelegraphFloor, incomingDamageLimit, guardianAttackTiming } from './math.js?v=20260812-guardians1';
-import { HEROES, WEAPONS, ABILITIES, STATUS_EFFECTS, ELITE_MODIFIERS, BOSS_PATTERNS, BOSS_PROFILES, ENEMIES, ENCOUNTERS, ROOMS, DIFFICULTIES } from './data.js?v=20260813-expedition6';
+import { HEROES, WEAPONS, ABILITIES, STATUS_EFFECTS, ELITE_MODIFIERS, BOSS_PATTERNS, BOSS_PROFILES, ENEMIES, ENCOUNTERS, ROOMS, DIFFICULTIES } from './data.js?v=20260813-status1';
 import { createLayeredMapRuntime } from './map-runtime.js?v=20260813-worldgates2';
 import { EXPEDITION_WORLD, EXPEDITION_MILESTONES, expeditionNode, expeditionNeighbors, expeditionWorldPosition, expeditionProgress, expeditionRealmProgress, expeditionThreat, expeditionLoot } from './expedition-world.js?v=20260813-world3';
 import { PROFILE_VERSION, DEFAULT_SETTINGS, DEFAULT_CONTRACT_PROGRESS, createDefaultProfile, defaultHeroMastery, sanitizeProfile, createSaveArchive, parseSaveArchive } from './profile.js?v=20260813-prestige1';
@@ -1367,11 +1367,12 @@ function applyEnemyStatus(enemy,id,duration,power=1){
   const beforeElements=activeElementCount(enemy);
   duration*=player?.statusDurationMultiplier||1;
   enemy[status.field]=Math.max(enemy[status.field]||0,duration);
-  enemy.abilityReactType=id;enemy.abilityReactTime=Math.max(enemy.abilityReactTime||0,id==='shock'?.48:id==='burn'?.38:.44);
+  enemy.abilityReactType=status.reaction||id;enemy.abilityReactTime=Math.max(enemy.abilityReactTime||0,id==='shock'?.48:id==='burn'?.38:.44);
   if(id==='burn'){enemy.burnTick=Math.min(enemy.burnTick||.45,.45);enemy.burnPower=Math.max(enemy.burnPower||1,power);}
   if(id==='bleed'){enemy.bleedTick=Math.min(enemy.bleedTick||.55,.55);enemy.bleedPower=Math.max(enemy.bleedPower||1,power);}
   if(id==='curse'){enemy.curseMultiplier=Math.max(enemy.curseMultiplier||1,Math.max(1.12,power));}
   if(id==='shield'){const capacity=Math.max(1,Math.round(power));enemy.maxShield=Math.max(enemy.maxShield||0,capacity);enemy.shield=Math.max(enemy.shield||0,capacity);}
+  if(id==='chill')enemy.chillStacks=Math.max(enemy.chillStacks||0,Math.max(1,Math.round(power)));
   if(id==='stun'){enemy.stunTime=Math.max(enemy.stunTime||0,duration);}
   if(player?.buildMastery==='elementalist'&&beforeElements<2&&activeElementCount(enemy)>=2&&(enemy.elementalRuptureCooldown||0)<=0)triggerPrismaticRupture(enemy,power);
   return true;
@@ -1383,6 +1384,21 @@ function applyPlayerStatus(id,duration,power=1){
   if(id==='bleed'){player.bleedTick=Math.min(player.bleedTick||.65,.65);player.bleedPower=Math.max(player.bleedPower||1,power);}
   if(id==='shield'){const capacity=Math.max(1,Math.round(power));player.maxSpiritShield=Math.max(player.maxSpiritShield||0,capacity);player.spiritShield=Math.max(player.spiritShield||0,capacity);}
   if(id==='stun')player.stunTime=Math.max(player.stunTime||0,duration);return true;
+}
+
+function expireStatus(entity,id){
+  if(id==='curse')entity.curseMultiplier=1;
+  if(id==='chill')entity.chillStacks=0;
+  if(id==='shield'){
+    if(entity===player)entity.spiritShield=0;
+    else if(entity.def?.behavior!=='shield'){entity.shield=0;entity.maxShield=0;}
+  }
+}
+
+function tickStatusDurations(entity,dt,{skip=[]}={}){
+  for(const status of Object.values(STATUS_EFFECTS)){
+    if(skip.includes(status.id))continue;const previous=Math.max(0,Number(entity[status.field])||0);if(previous<=0)continue;entity[status.field]=Math.max(0,previous-dt);if(entity[status.field]<=0)expireStatus(entity,status.id);
+  }
 }
 
 function consumeEnemyCurse(enemy,damage){
@@ -2512,9 +2528,7 @@ function updatePlayer(dt) {
   player.invulnerable = Math.max(0, player.invulnerable - dt);
   player.flash = Math.max(0, player.flash - dt);
   player.hurtTime = Math.max(0, player.hurtTime - dt);
-  player.stunTime = Math.max(0, player.stunTime - dt);
-  player.curseTime=Math.max(0,(player.curseTime||0)-dt);
-  player.shieldTime=Math.max(0,(player.shieldTime||0)-dt);if(player.shieldTime<=0)player.spiritShield=0;
+  tickStatusDurations(player,dt,{skip:['bleed']});
   if(player.bleedTime>0){player.bleedTime=Math.max(0,player.bleedTime-dt);player.bleedTick-=dt;if(player.bleedTick<=0){player.bleedTick=player.sprinting?.44:.72;const bleedDamage=Math.max(1,Math.round((player.bleedPower||1)*(player.sprinting?4:2)));player.health=Math.max(0,player.health-bleedDamage);player.flash=.12;effects.numbers.push({x:player.x,y:player.y-42,vx:0,vy:-60,text:`-${bleedDamage}`,color:'#ff365f',life:.55,maxLife:.55,size:19});burst(player.x,player.y-10,'#ff365f',6,130,2);if(player.health<=0&&state==='dojo'){player.health=player.maxHealth;player.bleedTime=0;player.invulnerable=1.5;spawnWord(player.x,player.y-78,'PRACTICE RESET','#72ef5b');}else if(player.health<=0){player.hurtTime=99;setTimeout(()=>endGame(false),600);}}}
   const recoveryRate=state==='dojo'?4:1;
   player.dashCooldown = Math.max(0, player.dashCooldown - dt*recoveryRate);
@@ -2648,9 +2662,9 @@ function hitEnemyWithShot(enemy, shot) {
 }
 
 function applyFrostbite(enemy,shot){
-  if(enemy.dead)return;const threshold=Math.max(2,(WEAPONS.frostbiteNeedle.chillThreshold||3)-(player.upgradeRanks.permafrost>0?1:0));enemy.chillStacks=Math.min(threshold,(enemy.chillStacks||0)+1);enemy.chillTime=4.2;enemy.abilityReactType='frost';enemy.abilityReactTime=Math.max(enemy.abilityReactTime||0,.44);
+  if(enemy.dead)return;const threshold=Math.max(2,(WEAPONS.frostbiteNeedle.chillThreshold||3)-(player.upgradeRanks.permafrost>0?1:0)),nextStacks=Math.min(threshold,(enemy.chillStacks||0)+1);applyEnemyStatus(enemy,'chill',4.2,nextStacks);
   if(enemy.chillStacks<threshold){spawnWord(enemy.x,enemy.y-65,`${enemy.chillStacks} / ${threshold} CHILL`,'#80f3ff');return;}
-  enemy.chillStacks=0;enemy.chillTime=0;enemy.freezeTime=Math.max(enemy.freezeTime||0,(enemy.def.behavior==='boss'?.38:WEAPONS.frostbiteNeedle.freezeDuration)+player.upgradeRanks.permafrost*.25);enemy.abilityReactType='freeze';enemy.abilityReactTime=Math.max(enemy.abilityReactTime||0,.55);spawnWord(enemy.x,enemy.y-78,'FROZEN!','#d9fdff');effects.rings.push({x:enemy.x,y:enemy.y,radius:18,maxRadius:130,color:'#67edff',life:.52,maxLife:.52});effects.spriteEffects.push({asset:'arsenalReactionsVfx',fixedFrame:2,x:enemy.x,y:enemy.y-25,width:enemy.radius*4.4,height:enemy.radius*4.9,life:.62,maxLife:.62,glow:'#67edff'});burst(enemy.x,enemy.y-12,'#bffaff',26,390,6);playSfx('water',.26,1.32);
+  enemy.chillTime=0;expireStatus(enemy,'chill');applyEnemyStatus(enemy,'freeze',(enemy.def.behavior==='boss'?.38:WEAPONS.frostbiteNeedle.freezeDuration)+player.upgradeRanks.permafrost*.25);enemy.abilityReactTime=Math.max(enemy.abilityReactTime||0,.55);spawnWord(enemy.x,enemy.y-78,'FROZEN!','#d9fdff');effects.rings.push({x:enemy.x,y:enemy.y,radius:18,maxRadius:130,color:'#67edff',life:.52,maxLife:.52});effects.spriteEffects.push({asset:'arsenalReactionsVfx',fixedFrame:2,x:enemy.x,y:enemy.y-25,width:enemy.radius*4.4,height:enemy.radius*4.9,life:.62,maxLife:.62,glow:'#67edff'});burst(enemy.x,enemy.y-12,'#bffaff',26,390,6);playSfx('water',.26,1.32);
   const rank=player.upgradeRanks.shatterpoint||0;if(rank>0){const radius=125+rank*18,damage=Math.max(1,Math.round(shot.damage*.45*rank));for(const target of enemies){if(target===enemy||target.dead||target.state==='waiting'||distance(enemy,target)>radius+target.radius)continue;const away=normalize(target.x-enemy.x,target.y-enemy.y);damageEnemyFromAbility(target,damage,145,away,'#bffaff',null);}effects.rings.push({x:enemy.x,y:enemy.y,radius:20,maxRadius:radius,color:'#d9fdff',life:.42,maxLife:.42});}
 }
 
@@ -3026,13 +3040,9 @@ function updateEnemies(dt) {
       }
     }
     if(enemy.bleedTime>0){enemy.bleedTime=Math.max(0,enemy.bleedTime-dt);enemy.bleedTick-=dt;if(enemy.bleedTick<=0){const moving=Math.hypot(enemy.vx||0,enemy.vy||0)>42,bleedDamage=Math.max(1,Math.round((3+player.upgradeRanks.razorFang*1.5)*(enemy.bleedPower||1)*(moving?1.75:1)*(enemy.practiceArmor??1)*(enemy.eliteId?player.eliteDamageMultiplier:1)));recordDojoDamage(enemy,bleedDamage);const resolved=resolveEnemyDamage(enemy,bleedDamage,null,{consumeCurse:false});enemy.bleedTick=moving?.46:.72;enemy.flash=Math.max(enemy.flash,.08);enemy.abilityReactType='bleed';enemy.abilityReactTime=Math.max(enemy.abilityReactTime||0,.36);burst(enemy.x,enemy.y-8,'#ff365f',7,145,3);effects.numbers.push({x:enemy.x,y:enemy.y-34,vx:0,vy:-62,text:resolved.shieldDamage&&!resolved.healthDamage?String(Math.round(resolved.total)):String(bleedDamage),color:resolved.shieldDamage?'#9aff8b':'#ff526f',life:.55,maxLife:.55,size:18});if(enemy.health<=0){killEnemy(enemy,normalize(enemy.x-player.x,enemy.y-player.y));continue;}}}
-    enemy.wetTime = Math.max(0, enemy.wetTime - dt);
-    enemy.shockTime = Math.max(0, enemy.shockTime - dt);
-    enemy.curseTime=Math.max(0,(enemy.curseTime||0)-dt);if(enemy.curseTime<=0)enemy.curseMultiplier=1;
-    enemy.shieldTime=Math.max(0,(enemy.shieldTime||0)-dt);if(enemy.shieldTime<=0&&enemy.def.behavior!=='shield'){enemy.shield=0;enemy.maxShield=0;}
-    enemy.chillTime=Math.max(0,(enemy.chillTime||0)-dt);if(enemy.chillTime<=0)enemy.chillStacks=0;
-    enemy.freezeTime=Math.max(0,(enemy.freezeTime||0)-dt);if(enemy.freezeTime>0){enemy.vx*=Math.exp(-18*dt);enemy.vy*=Math.exp(-18*dt);continue;}
-    enemy.stunTime=Math.max(0,(enemy.stunTime||0)-dt);if(enemy.stunTime>0){enemy.vx*=Math.exp(-16*dt);enemy.vy*=Math.exp(-16*dt);continue;}
+    tickStatusDurations(enemy,dt,{skip:['burn','bleed']});
+    if(enemy.freezeTime>0){enemy.vx*=Math.exp(-18*dt);enemy.vy*=Math.exp(-18*dt);continue;}
+    if(enemy.stunTime>0){enemy.vx*=Math.exp(-16*dt);enemy.vy*=Math.exp(-16*dt);continue;}
     enemy.huntTime = Math.max(0, (enemy.huntTime||0) - dt);
     enemy.conductiveTime=Math.max(0,(enemy.conductiveTime||0)-dt);if(enemy.conductiveTime<=0)enemy.conductiveStacks=0;
     if(definition.behavior==='shield'&&enemy.shield<=0&&enemy.maxShield>0){enemy.guardCooldown=Math.max(0,enemy.guardCooldown-dt);if(enemy.guardCooldown<=0){enemy.shield=enemy.maxShield;spawnWord(enemy.x,enemy.y-84,'GUARD RESTORED!','#ff6a48');effects.rings.push({x:enemy.x,y:enemy.y,radius:24,maxRadius:118,color:definition.color,life:.42,maxLife:.42});}}

@@ -173,13 +173,15 @@ export const ABILITIES = {
 };
 
 export const STATUS_EFFECTS = {
-  burn: { id:'burn', name:'Burn', field:'burnTime', color:'#ff6a24', icon:'♨', targets:['enemy'], description:'Takes repeated fire damage until the flame expires.' },
-  wet: { id:'wet', name:'Wet', field:'wetTime', color:'#35e7ff', icon:'◉', targets:['enemy'], description:'Movement is slowed and lightning deals bonus damage.' },
-  shock: { id:'shock', name:'Shock', field:'shockTime', color:'#d94cff', icon:'ϟ', targets:['enemy'], description:'Conducting spirit lightning is visibly active.' },
-  stun: { id:'stun', name:'Stun', field:'stunTime', color:'#ffd33d', icon:'✦', targets:['player','enemy'], description:'Actions and movement are briefly interrupted.' },
-  bleed: { id:'bleed', name:'Bleed', field:'bleedTime', color:'#ff365f', icon:'〽', targets:['player','enemy'], description:'Movement tears the spirit wound open and triggers recurring damage.' },
-  curse: { id:'curse', name:'Curse', field:'curseTime', color:'#b84dff', icon:'☾', targets:['player','enemy'], description:'The next incoming strike shatters the mark for amplified damage.' },
-  shield: { id:'shield', name:'Ward', field:'shieldTime', color:'#72f0a0', icon:'⬡', targets:['player','enemy'], description:'A visible spirit barrier absorbs damage before health is lost.' }
+  burn: { id:'burn', name:'Burn', field:'burnTime', color:'#ff6a24', icon:'♨', reaction:'burn', vfx:'burn', targets:['enemy'], description:'Takes repeated fire damage until the flame expires.' },
+  wet: { id:'wet', name:'Wet', field:'wetTime', color:'#35e7ff', icon:'◉', reaction:'wet', vfx:'wet', targets:['enemy'], description:'Movement is slowed and lightning deals bonus damage.' },
+  shock: { id:'shock', name:'Shock', field:'shockTime', color:'#d94cff', icon:'ϟ', reaction:'shock', vfx:'shock', targets:['enemy'], description:'Conducting spirit lightning is visibly active.' },
+  chill: { id:'chill', name:'Chill', field:'chillTime', color:'#67edff', icon:'❄', reaction:'frost', vfx:'chill', targets:['enemy'], description:'Ice stacks reduce movement. Enough stacks become Freeze.' },
+  freeze: { id:'freeze', name:'Freeze', field:'freezeTime', color:'#d9fdff', icon:'✧', reaction:'freeze', vfx:'freeze', targets:['enemy'], description:'Movement and actions stop briefly while the frozen body remains visible.' },
+  stun: { id:'stun', name:'Stun', field:'stunTime', color:'#ffd33d', icon:'✦', reaction:'stun', targets:['player','enemy'], description:'Actions and movement are briefly interrupted.' },
+  bleed: { id:'bleed', name:'Bleed', field:'bleedTime', color:'#ff365f', icon:'〽', reaction:'bleed', vfx:'bleed', targets:['player','enemy'], description:'Movement tears the spirit wound open and triggers recurring damage.' },
+  curse: { id:'curse', name:'Curse', field:'curseTime', color:'#b84dff', icon:'☾', reaction:'curse', vfx:'curse', targets:['player','enemy'], description:'The next incoming strike shatters the mark for amplified damage.' },
+  shield: { id:'shield', name:'Ward', field:'shieldTime', color:'#72f0a0', icon:'⬡', reaction:'shield', targets:['player','enemy'], description:'A visible spirit barrier absorbs damage before health is lost.' }
 };
 
 export const ELITE_MODIFIERS = {

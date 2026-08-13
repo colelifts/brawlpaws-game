@@ -416,6 +416,15 @@ test('shared combat statuses support player and enemy ownership plus build choic
   assert.match(game,/debugSystem==='statuses'/);
 });
 
+test('the shared status registry owns duration expiry reactions and elemental visuals',()=>{
+  for(const id of ['burn','wet','shock','chill','freeze','stun','bleed','curse','shield'])assert.match(data,new RegExp(`${id}: \\{ id:'${id}'`));
+  for(const fn of ['expireStatus','tickStatusDurations'])assert.match(game,new RegExp(`function ${fn}\\(`));
+  assert.match(game,/tickStatusDurations\(player,dt,\{skip:\['bleed'\]\}\)/);
+  assert.match(game,/tickStatusDurations\(enemy,dt,\{skip:\['burn','bleed'\]\}\)/);
+  assert.match(game,/applyEnemyStatus\(enemy,'chill'/);
+  assert.match(game,/applyEnemyStatus\(enemy,'freeze'/);
+});
+
 test('the startup loader cannot strand Chrome behind nonessential late-game art',()=>{
   assert.match(game,/const STARTUP_LOADING_LIMIT_MS=3200/);
   assert.match(game,/deferredAssetSources\.push\(\[key,source\]\)/);
