@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { BOSS_PATTERNS, BOSS_PROFILES, ENCOUNTERS } from '../src/data.js';
 import { encounterActiveLimit } from '../src/math.js';
-import { EXPEDITION_WORLD } from '../src/expedition-world.js';
+import { EXPEDITION_WORLD, expeditionThreat } from '../src/expedition-world.js';
 
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const game=readFileSync(new URL('../src/game.js',import.meta.url),'utf8');
@@ -176,11 +176,20 @@ test('all sixty authored regions belong to one persistent expedition topology',(
   assert.equal(new Set(EXPEDITION_WORLD.nodes.map((node)=>node.roomId)).size,60);
   assert.equal(EXPEDITION_WORLD.links.filter((link)=>link.kind==='realm').length,5);
   assert.equal(EXPEDITION_WORLD.chapters.every((chapter)=>chapter.rooms.length===7&&chapter.branches.length===3),true);
-  assert.match(game,/discoveredRegions:new Set\(\[room\.id\]\)/);
+  assert.match(game,/discoveredRegions:new Set\(profile\.worldDiscoveries\|\|\[room\.id\]\)/);
   assert.match(game,/clearedRegions:new Set\(\)/);
   assert.match(game,/world:\{id:EXPEDITION_WORLD\.id,discovered:/);
   assert.match(game,/worldX:worldPosition\.x,worldY:worldPosition\.y/);
   assert.match(game,/sendCoop\('presence',\{x:player\.x,y:player\.y,worldX:/);
+});
+
+test('expedition distance drives danger, loot quality, discoveries, and safe extraction',()=>{
+  for(const helper of ['EXPEDITION_THREAT_BANDS','EXPEDITION_LOOT_TIERS','expeditionThreat','expeditionLoot'])assert.match(expeditionWorld,new RegExp(helper));
+  const opening=expeditionThreat('jadeCourtyard'),ending=expeditionThreat('shadowThroneBeyondMoon');
+  assert.equal(opening.name,'LANDING');assert.equal(ending.name,'MYTHIC');assert.ok(ending.enemyDamage>opening.enemyDamage);assert.ok(ending.xp>opening.xp);assert.ok(ending.gold>opening.gold);
+  for(const id of ['expedition-pressure','expedition-threat','expedition-loot','expedition-risk','world-map-risk','route-extract'])assert.match(html,new RegExp(`id="${id}"`));
+  assert.match(game,/function extractExpedition\(/);assert.match(game,/expeditionsExtracted/);assert.match(game,/worldDiscoveries/);assert.match(game,/expeditionShards/);
+  assert.match(game,/regionPressure\.enemyHealth/);assert.match(game,/regionThreat\.gold/);assert.match(game,/Math\.floor\(\(player\.expeditionShards\|\|0\)\*\.35\)/);
 });
 
 test('Chrome performance, adaptive audio, and readable choice art are production-wired',()=>{

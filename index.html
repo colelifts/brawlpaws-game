@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#080817" />
   <link rel="icon" href="data:," />
   <title>BrawlPaws — Six-Chapter Roguelite Campaign</title>
-  <link rel="stylesheet" href="styles.css?v=20260813-mastery2" />
+  <link rel="stylesheet" href="styles.css?v=20260813-expedition7" />
 </head>
 <body>
   <main id="game-shell" aria-label="BrawlPaws roguelite campaign">
@@ -49,6 +49,10 @@
 
       <section class="corruption-panel" id="corruption-panel" aria-label="Corruption pressure">
         <span>CORRUPTION</span><b id="corruption-tier">DORMANT</b><i><em id="corruption-fill"></em></i><small id="corruption-copy">THE GROVE IS QUIET</small>
+      </section>
+
+      <section class="expedition-pressure" id="expedition-pressure" aria-label="Expedition danger and carried loot">
+        <span>REGION THREAT</span><b id="expedition-threat">LANDING</b><small id="expedition-loot">COMMON LOOT</small><em id="expedition-risk">0 AT RISK</em>
       </section>
 
       <section class="minimap-panel" id="minimap-panel" aria-label="Arena minimap">
@@ -269,7 +273,7 @@
       <div class="world-map-panel brush-panel">
         <header><div><p>EXPEDITION WORLD I</p><h2 id="world-map-title">THE SIX-REALM SPIRIT ROAD</h2></div><span id="world-map-progress">1 / 60 REGIONS</span></header>
         <canvas id="world-map" width="1280" height="680" aria-label="Explored expedition regions"></canvas>
-        <footer><span id="world-map-location">CURRENT REGION · JADE GROVE</span><b>BRANCHES REMAIN HIDDEN UNTIL DISCOVERED</b><button id="close-world-map" type="button">RETURN TO THE ROAD <kbd>M</kbd></button></footer>
+        <footer><span id="world-map-location">CURRENT REGION · JADE GROVE</span><b id="world-map-risk">0 ROAD SHARDS AT RISK</b><button id="close-world-map" type="button">RETURN TO THE ROAD <kbd>M</kbd></button></footer>
       </div>
     </section>
 
@@ -305,7 +309,7 @@
         <h2 id="route-title">CHOOSE YOUR PATH</h2>
         <div class="route-progress" id="route-progress"></div>
         <div class="route-grid" id="route-grid"></div>
-        <div class="route-build"><span id="route-health">♥ 120 / 120</span><span id="route-gold">● 0 GOLD</span><span id="route-relics">NO RELICS</span></div>
+        <div class="route-build"><span id="route-health">♥ 120 / 120</span><span id="route-gold">● 0 GOLD</span><span id="route-relics">NO RELICS</span><button id="route-extract" type="button" disabled>EXTRACTION LOCKED · CLEAR 3 REGIONS</button></div>
       </div>
     </section>
 
