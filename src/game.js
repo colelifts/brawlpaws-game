@@ -85,7 +85,7 @@ const assets = {
   crimsonEnemies: new Image(), crimsonEnemiesMove: new Image(), pyreclawShogun: new Image(), pyreclawShogunMove: new Image(), crimsonCombatVfx: new Image(),
   stormEnemies: new Image(), stormEnemiesMove: new Image(), raijinKirin: new Image(), raijinKirinMove: new Image(), stormCoastVfx: new Image(),
   neonEnemies: new Image(), neonEnemiesMove: new Image(), daikyoOni: new Image(), daikyoOniMove: new Image(), neonCityVfx: new Image(),
-  shadowEnemies: new Image(), shadowEnemiesMove: new Image(), tsukikoEmpress: new Image(), tsukikoEmpressMove: new Image(), shadowRealmVfx: new Image(), routeGates: new Image(),
+  shadowEnemies: new Image(), shadowEnemiesMove: new Image(), tsukikoEmpress: new Image(), tsukikoEmpressMove: new Image(), shadowRealmVfx: new Image(), routeGates: new Image(), spiritRoads: new Image(),
   bellweaverCat: new Image(), powderkegToad: new Image(), gatewardenRhino: new Image(), mistclawLynx: new Image(), tidechantHeron: new Image(), kernelHackerTanuki: new Image(), moonveilSeer: new Image(), specialEnemyVfx: new Image(), guardianSignatureVfx: new Image()
 };
 const assetSources = {
@@ -172,7 +172,8 @@ const assetSources = {
   moonveilSeer: 'assets/characters/moonveil-seer-v1.png',
   specialEnemyVfx: 'assets/vfx/special-enemy-vfx.png',
   guardianSignatureVfx: 'assets/vfx/guardian-signatures.png',
-  routeGates: 'assets/environment/route-gates-v1.png'
+  routeGates: 'assets/environment/route-gates-v1.png',
+  spiritRoads: 'assets/environment/spirit-roads-v1.png'
 };
 const STARTUP_LOADING_LIMIT_MS=3200;
 const startupAssetKeys=new Set(['arena','kitsune','kitsuneFire','kitsuneStates','enemies','props','archerMove','archerAttack','raccoonAttack','boarAttack','blasterShotVfx','blasterImpactVfx']);
@@ -3576,23 +3577,31 @@ function routeRoadPalette(){
   return {bed:'#15271f',stone:'#345e48',edge:'#72ef83',glow:'#63efff'};
 }
 
+function routeBezierPoint(startX,startY,controlX,controlY,endX,endY,t){
+  const inv=1-t;return {x:inv*inv*startX+2*inv*t*controlX+t*t*endX,y:inv*inv*startY+2*inv*t*controlY+t*t*endY};
+}
+
 function drawAuthoredRouteRoads(){
   if(!encounter?.awaitingRouteChoice||!encounter.routeGateChoices?.length)return;
-  const palette=routeRoadPalette(),time=performance.now()/1000,b=room.combatBounds,startX=b.x,startY=Math.min(b.y-80,Math.max(...encounter.routeGateChoices.map((gate)=>gate.y))+610);
+  const palette=routeRoadPalette(),time=performance.now()/1000,b=room.combatBounds,originX=b.x,startY=b.y+b.radiusY*.48;
   ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
   for(const gate of encounter.routeGateChoices){
     if(gate.backtrack||gate.extract)continue;
-    const endX=gate.x,endY=gate.y+96,controlY=lerp(startY,endY,.48),near=distance(player,gate)<390;
-    const road=new Path2D();road.moveTo(startX,startY);road.bezierCurveTo(startX,controlY,lerp(startX,endX,.66),controlY,endX,endY);
-    ctx.globalAlpha=.82;ctx.strokeStyle='rgba(3,5,11,.82)';ctx.lineWidth=196;ctx.stroke(road);
-    ctx.strokeStyle=palette.bed;ctx.lineWidth=166;ctx.stroke(road);
-    ctx.globalAlpha=.66;ctx.strokeStyle=palette.stone;ctx.lineWidth=126;ctx.setLineDash([92,18,44,16]);ctx.lineDashOffset=gate.index*41;ctx.stroke(road);ctx.setLineDash([]);
-    ctx.globalAlpha=near?.72:.46;ctx.strokeStyle=gate.color||palette.edge;ctx.shadowColor=gate.color||palette.glow;ctx.shadowBlur=near?18:10;ctx.lineWidth=5;ctx.setLineDash([28,46]);ctx.lineDashOffset=-time*26+gate.index*19;ctx.stroke(road);ctx.setLineDash([]);ctx.shadowBlur=0;
+    const startX=lerp(originX,gate.x,.2),endX=gate.x,endY=gate.y+96,controlX=lerp(startX,endX,.58),controlY=lerp(startY,endY,.5),near=distance(player,gate)<390;
+    const road=new Path2D();road.moveTo(startX,startY);road.quadraticCurveTo(controlX,controlY,endX,endY);
+    ctx.globalAlpha=.32;ctx.strokeStyle='rgba(3,5,11,.82)';ctx.lineWidth=146;ctx.stroke(road);
+    ctx.globalAlpha=near?.52:.3;ctx.strokeStyle=gate.color||palette.edge;ctx.shadowColor=gate.color||palette.glow;ctx.shadowBlur=near?16:8;ctx.lineWidth=4;ctx.setLineDash([24,52]);ctx.lineDashOffset=-time*26+gate.index*19;ctx.stroke(road);ctx.setLineDash([]);ctx.shadowBlur=0;
+    const atlasReady=assets.spiritRoads.complete&&assets.spiritRoads.naturalWidth,sw=atlasReady?assets.spiritRoads.naturalWidth/2:0,sh=atlasReady?assets.spiritRoads.naturalHeight/2:0;
+    if(atlasReady)for(let step=0;step<=9;step++){
+      const t=step/9,p=routeBezierPoint(startX,startY,controlX,controlY,endX,endY,t),ahead=routeBezierPoint(startX,startY,controlX,controlY,endX,endY,Math.min(1,t+.025)),angle=Math.atan2(ahead.y-p.y,ahead.x-p.x)-Math.PI/2,frame=(gate.index+step)%5===0?1:0,sx=(frame%2)*sw,sy=0,w=310,h=w*(sh/sw);
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(angle);ctx.globalAlpha=.9;ctx.shadowColor=palette.glow;ctx.shadowBlur=5;ctx.drawImage(assets.spiritRoads,sx,sy,sw,sh,-w/2,-h*.48,w,h);ctx.restore();
+    }
     for(let step=1;step<=5;step++){
-      const t=step/6,inv=1-t,x=inv*inv*inv*startX+3*inv*inv*t*startX+3*inv*t*t*lerp(startX,endX,.66)+t*t*t*endX,y=inv*inv*inv*startY+3*inv*inv*t*controlY+3*inv*t*t*controlY+t*t*t*endY,side=step%2?-1:1;
+      const t=step/6,p=routeBezierPoint(startX,startY,controlX,controlY,endX,endY,t),x=p.x,y=p.y,side=step%2?-1:1;
       ctx.globalAlpha=.68;ctx.fillStyle='#11101e';ctx.strokeStyle=palette.stone;ctx.lineWidth=4;ctx.beginPath();ctx.ellipse(x+side*78,y,20,13,side*.18,0,Math.PI*2);ctx.fill();ctx.stroke();
       const pulse=.55+Math.sin(time*3+step+gate.index)*.18;ctx.globalCompositeOperation='lighter';ctx.globalAlpha=pulse;ctx.fillStyle=gate.color||palette.glow;ctx.shadowColor=gate.color||palette.glow;ctx.shadowBlur=18;ctx.beginPath();ctx.arc(x+side*78,y-16,5,0,Math.PI*2);ctx.fill();ctx.globalCompositeOperation='source-over';ctx.shadowBlur=0;
     }
+    if(atlasReady){const marker=routeBezierPoint(startX,startY,controlX,controlY,endX,endY,.74),frame=gate.index%2?2:3,sx=(frame%2)*sw,sy=Math.floor(frame/2)*sh,w=gate.index%2?160:116,h=w*(sh/sw),side=gate.index%2?-1:1;ctx.save();ctx.translate(marker.x+side*126,marker.y+18);ctx.globalAlpha=.82;ctx.shadowColor=palette.glow;ctx.shadowBlur=12;ctx.drawImage(assets.spiritRoads,sx,sy,sw,sh,-w/2,-h*.78,w,h);ctx.restore();}
   }
   ctx.restore();
 }

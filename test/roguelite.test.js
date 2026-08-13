@@ -325,9 +325,11 @@ test('spirit roads use authored world-gate art instead of abstract portal rings'
 
 test('branching exits grow authored traversal roads through the live terrain',()=>{
   assert.match(game,/function drawAuthoredRouteRoads\(\)/);
-  assert.match(game,/road\.bezierCurveTo\(/);
+  assert.match(game,/road\.quadraticCurveTo\(/);
   assert.match(game,/drawAuthoredRouteRoads\(\);\s*if\(room\.id!==/);
   assert.match(game,/function routeRoadPalette\(\)/);
+  assert.match(game,/spiritRoads:\s*'assets\/environment\/spirit-roads-v1\.png'/);
+  assert.match(game,/drawImage\(assets\.spiritRoads/);
 });
 
 test('Tiled cutscene triggers launch saved one-time world dialogue',()=>{
