@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#080817" />
   <link rel="icon" href="data:," />
   <title>BrawlPaws — Six-Chapter Roguelite Campaign</title>
-  <link rel="stylesheet" href="styles.css?v=20260813-world2" />
+  <link rel="stylesheet" href="styles.css?v=20260813-title1" />
 </head>
 <body>
     <main id="game-shell" aria-label="BrawlPaws roguelite campaign">
@@ -111,7 +111,30 @@
       <span id="room-transition-subtitle">THE FIRST SEAL</span>
     </section>
 
-    <section id="start-screen" class="overlay active">
+    <section id="start-screen" class="overlay active title-screen" data-title-view="home">
+      <div class="title-background" aria-hidden="true"></div>
+      <aside class="title-profile" aria-label="Player profile">
+        <div class="title-profile-portrait" aria-hidden="true"></div>
+        <div><small>ACTIVE BRAWLPAW</small><strong id="title-profile-name">KITSUNE</strong><span id="title-profile-rank">MASTERY RANK 0</span><i><em id="title-profile-fill"></em></i></div>
+        <b id="title-profile-shards">◆ 0</b>
+      </aside>
+      <nav class="title-navigation" aria-label="Main menu">
+        <button type="button" class="selected" data-title-open="play"><span>▶</span><b>PLAY</b><small>CONTINUE OR BEGIN AN EXPEDITION</small></button>
+        <button type="button" data-title-open="heroes"><span>🐾</span><b>BRAWLPAWS</b><small>CHOOSE YOUR HERO</small></button>
+        <button type="button" data-title-open="loadout"><span>⚔</span><b>LOADOUT</b><small>WEAPONS AND FORGE BLUEPRINTS</small></button>
+        <button type="button" data-title-open="progression"><span>✦</span><b>PROGRESSION</b><small>MASTERY AND WORLD RECORDS</small></button>
+        <button type="button" data-title-open="coop"><span>◉</span><b>ONLINE CO-OP</b><small>CREATE OR JOIN A PARTY</small></button>
+        <button type="button" data-title-open="settings"><span>⚙</span><b>SETTINGS</b><small>AUDIO, CONTROLS, ACCESSIBILITY</small></button>
+      </nav>
+      <section class="title-continue-card" aria-label="Current campaign">
+        <small id="title-run-kicker">WORLD I · CHAPTER 1</small><h2>JADE GROVE</h2><p id="title-run-copy">Begin at Spirit Lantern Village, then push deeper into the grove.</p>
+        <div class="title-run-progress"><span><i id="title-run-fill"></i></span><b id="title-run-percent">0% CHARTED</b></div>
+        <div id="home-continue-slot"></div><button id="home-play-button" type="button">ENTER RUN SETUP <span>›</span></button>
+      </section>
+      <button type="button" id="title-back" class="title-back">← MAIN MENU</button>
+      <section class="title-progression-panel" aria-label="Campaign progression">
+        <small>YOUR LEGACY</small><h2>PROGRESSION</h2><div><article><span>WORLD I</span><b id="title-world-progress">0 / 60</b><em>REGIONS CHARTED</em></article><article><span>CAMPAIGN</span><b id="title-clear-count">0</b><em>GUARDIAN CLEARS</em></article><article><span>CURRENCY</span><b id="title-shard-count">0</b><em>SPIRIT SHARDS</em></article><article><span>ASCENSION</span><b id="title-ascension-rank">LOCKED</b><em>HIGHEST RANK</em></article></div><button type="button" id="title-progression-codex">VIEW DISCOVERIES IN CODEX</button>
+      </section>
       <div class="vignette"></div>
       <div class="title-lockup">
         <div class="eyebrow">SIX-CHAPTER CAMPAIGN BUILD</div>
@@ -120,8 +143,9 @@
         <p class="tagline">STRIKE FAST. DASH CLEAN. <strong>LEAVE A MARK.</strong></p>
       </div>
       <div class="start-card brush-panel">
+        <header class="title-view-heading"><button type="button" class="title-card-back">← BACK</button><div><small>RUN SETUP</small><strong>PREPARE YOUR EXPEDITION</strong></div></header>
         <div class="kitsune-mark" id="start-hero-mark" aria-hidden="true"></div>
-        <div>
+        <div class="start-hero-heading">
           <small>PLAYING AS</small>
           <h2 id="start-hero-name">KITSUNE</h2>
           <p id="start-hero-copy">Mobile gunner speedster · Neon spirit blaster</p>
@@ -431,6 +455,6 @@
     <div id="loading">AWAKENING THE GROVE…</div>
   </main>
   <script src="vendor/phaser-3.90.0.min.js"></script>
-  <script type="module" src="src/game.js?v=20260813-cooproads1"></script>
+  <script type="module" src="src/game.js?v=20260813-title1"></script>
 </body>
 </html>

@@ -351,6 +351,7 @@ function updateChapterWarpack(dt){
 function refreshProfileUi(){
   const record=profile.campaignClears?`ASCENSION ${profile.ascensionRank}`:profile.bestDifficulty?`BEST ${profile.bestDifficulty.toUpperCase()}`:'NO CLEARS YET';
   ui.profileSummary.textContent=`SPIRIT SHARDS ${profile.spiritShards} / ${heroDef.name.toUpperCase()} MASTERY ${masteryRank()} / ${record}`;
+  refreshTitleProfile();
   updateHeroMasteryUi();
   for(const button of document.querySelectorAll('[data-difficulty]')){const ascension=button.dataset.difficulty==='ascension';const unlocked=!ascension||profile.campaignClears>0||debugDifficulty==='ascension';button.classList.toggle('selected',button.dataset.difficulty===selectedDifficulty);button.disabled=!unlocked;const label=button.querySelector('small');if(ascension&&label)label.textContent=unlocked?`RANK ${profile.ascensionRank}`:'LOCKED  CLEAR 1 RUN';}
   for(const button of document.querySelectorAll('[data-hero]')){
@@ -374,8 +375,18 @@ function applyHeroUi(){
   ui.comparisonWeapon.textContent=weapon.name.toUpperCase();ui.comparisonWeaponTags.textContent=weapon.tags.join(' / ');ui.comparisonWeaponCopy.textContent=weapon.summary;
   ui.comparisonWeaponStats.innerHTML=`<span><small>DAMAGE</small><b>${weapon.damage}</b></span><span><small>FIRE RATE</small><b>${(1/weapon.fireRate).toFixed(1)}/S</b></span><span><small>SHOTS</small><b>${(weapon.shots||1)*(weapon.baseVolleys||1)}</b></span><span><small>CRIT</small><b>${Math.round(weapon.criticalChance*100)}%</b></span>`;
   updateHeroMasteryUi();
+  refreshTitleProfile();
   for(const button of document.querySelectorAll('[data-hero]'))button.classList.toggle('selected',button.dataset.hero===selectedHeroId);
   renderArsenalContract();
+}
+
+function refreshTitleProfile(){
+  const rank=masteryRank(),record=masteryRecord(),next=masteryXpForRank(Math.min(MASTERY_CAP,rank+1)),previous=masteryXpForRank(rank),ratio=rank>=MASTERY_CAP?1:clamp((record.xp-previous)/Math.max(1,next-previous),0,1),charted=profile.worldDiscoveries?.length||0,progress=Math.round(charted/EXPEDITION_WORLD.nodes.length*100);
+  const set=(selector,value)=>{const element=document.querySelector(selector);if(element)element.textContent=value;};set('#title-profile-name',heroDef.name.toUpperCase());set('#title-profile-rank',`MASTERY RANK ${rank}`);set('#title-profile-shards',`◆ ${profile.spiritShards}`);set('#title-run-percent',`${progress}% CHARTED`);set('#title-world-progress',`${charted} / ${EXPEDITION_WORLD.nodes.length}`);set('#title-clear-count',profile.campaignClears);set('#title-shard-count',profile.spiritShards);set('#title-ascension-rank',profile.campaignClears?`RANK ${profile.ascensionRank}`:'LOCKED');const fill=document.querySelector('#title-profile-fill'),runFill=document.querySelector('#title-run-fill'),portrait=document.querySelector('.title-profile-portrait');if(fill)fill.style.width=`${ratio*100}%`;if(runFill)runFill.style.width=`${progress}%`;if(portrait)portrait.style.backgroundImage=`url('${heroDef.portrait}')`;
+}
+
+function openTitleView(view='home'){
+  if(view==='settings'){openSettings('preview');return;}const active=['play','heroes','loadout','progression','coop'].includes(view)?view:'home';startScreen.dataset.titleView=active;for(const button of document.querySelectorAll('[data-title-open]'))button.classList.toggle('selected',button.dataset.titleOpen===active);const labels={play:['RUN SETUP','PREPARE YOUR EXPEDITION'],heroes:['BRAWLPAW ROSTER','CHOOSE YOUR HERO'],loadout:['FORGE & LOADOUT','READY YOUR ARSENAL'],coop:['ONLINE CO-OP','ASSEMBLE YOUR PARTY']},heading=document.querySelector('.title-view-heading');if(heading&&labels[active]){heading.querySelector('small').textContent=labels[active][0];heading.querySelector('strong').textContent=labels[active][1];}
 }
 
 function equipWeapon(id,{announce=false}={}){
@@ -682,8 +693,8 @@ function checkpointLabel(snapshot){
 }
 
 function refreshContinueRunUi(){
-  const snapshot=loadRunCheckpoint();continueRunButton.hidden=!snapshot;
-  if(snapshot)continueRunCopy.textContent=checkpointLabel(snapshot);
+  const snapshot=loadRunCheckpoint(),slot=document.querySelector('#home-continue-slot');continueRunButton.hidden=!snapshot;if(slot&&continueRunButton.parentElement!==slot)slot.append(continueRunButton);
+  if(snapshot){continueRunCopy.textContent=checkpointLabel(snapshot);const titleRunCopy=document.querySelector('#title-run-copy'),titleRunKicker=document.querySelector('#title-run-kicker');if(titleRunCopy)titleRunCopy.textContent=checkpointLabel(snapshot);if(titleRunKicker)titleRunKicker.textContent=`SAVED ${new Date(snapshot.savedAt).toLocaleDateString()}`;}
 }
 
 function saveRunCheckpoint(checkpoint){
@@ -1795,7 +1806,7 @@ function beginRouteTravel(choice,{remote=false}={}){
 
 function updateRouteTravel(dt){
   const travel=encounter.routeTravel;if(!travel)return;travel.elapsed+=dt;const t=clamp(travel.elapsed/travel.duration,0,1),ease=t*t*(3-2*t);player.x=lerp(travel.startX,travel.endX,ease);player.y=lerp(travel.startY,travel.endY,ease)-Math.sin(t*Math.PI)*16;player.moveFacing=Math.atan2(travel.endY-travel.startY,travel.endX-travel.startX);player.facing=player.moveFacing;player.aimFacing=player.facing;camera.kick=lerp(camera.kick,10,dt*3);if(Math.floor(travel.elapsed*12)!==Math.floor((travel.elapsed-dt)*12))effects.afterimages.push({x:player.x,y:player.y,facing:player.facing,life:.18,maxLife:.18});if(t<1)return;
-  const choice=travel.choice;encounter.routeTravel=null;encounter.awaitingRouteChoice=false;encounter.routeGateChoices=[];layeredMapRuntime.clearPreview();encounter.routeCameraTarget=null;if(travel.remote){ui.objective.textContent='HOST IS OPENING THE NEXT REGION';return;}if(choice.extract)extractExpedition({fromWorld:true});else if(choice.backtrack)returnToClearedRegion(choice.destination);else commitRouteChoice(choice);
+  const choice=travel.choice,connectedForward=choice.destination&&!choice.extract&&!choice.backtrack;encounter.routeTravel=null;encounter.awaitingRouteChoice=false;encounter.routeGateChoices=[];if(!connectedForward)layeredMapRuntime.clearPreview();encounter.routeCameraTarget=null;if(travel.remote){ui.objective.textContent='HOST IS OPENING THE NEXT REGION';return;}if(choice.extract)extractExpedition({fromWorld:true});else if(choice.backtrack)returnToClearedRegion(choice.destination);else commitRouteChoice(choice);
 }
 
 function returnToClearedRegion(destination){
@@ -4452,6 +4463,11 @@ canvas.addEventListener('pointerdown', (event) => { if (event.button === 0) { co
 window.addEventListener('pointerup', (event) => { if (event.button === 0) input.attackHeld = false; });
 canvas.addEventListener('contextmenu', (event) => event.preventDefault());
 document.querySelector('#start-button').addEventListener('click', begin);
+for(const button of document.querySelectorAll('[data-title-open]'))button.addEventListener('click',()=>openTitleView(button.dataset.titleOpen));
+document.querySelector('#home-play-button')?.addEventListener('click',()=>openTitleView('play'));
+document.querySelector('#title-back')?.addEventListener('click',()=>openTitleView('home'));
+document.querySelector('.title-card-back')?.addEventListener('click',()=>openTitleView('home'));
+document.querySelector('#title-progression-codex')?.addEventListener('click',()=>openCodex('heroes'));
 coopCreateButton?.addEventListener('click',()=>{const code=coopRoomCode();coopCodeInput.value=code;connectCoop(code,true);});
 coopJoinButton?.addEventListener('click',()=>connectCoop(coopCodeInput.value));
 coopLeaveButton?.addEventListener('click',()=>leaveCoop());

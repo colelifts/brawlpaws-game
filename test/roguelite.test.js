@@ -341,6 +341,11 @@ test('branching exits grow authored traversal roads through the live terrain',()
   assert.match(game,/beginRouteTravel\(payload\.choice,\{remote:true\}\)/);
   assert.match(game,/if\(travel\.remote\)\{ui\.objective\.textContent='HOST IS OPENING THE NEXT REGION';return;\}/);
   assert.match(game,/encounter\.routeCameraTarget=null;encounter\.routeTravel=null/);
+  assert.match(mapRuntime,/if\(this\.previewRoomId===roomId\)return this\.promotePreview\(roomId\)/);
+  assert.match(mapRuntime,/promotePreview\(destinationRoomId\)/);
+  assert.match(mapRuntime,/this\.trailingRoomId=previous\.roomId/);
+  assert.match(mapRuntime,/transitionTrailUntil=performance\.now\(\)\+1750/);
+  assert.match(game,/if\(!connectedForward\)layeredMapRuntime\.clearPreview\(\)/);
 });
 
 test('Tiled cutscene triggers launch saved one-time world dialogue',()=>{
@@ -625,6 +630,15 @@ test('title and Hero Shrine support persistent hero selection',()=>{
   assert.match(game,/knockbackResistance:heroDef\.knockbackResistance/);
   assert.match(game,/unlockedAbilities: new Set\(\)/);
   assert.doesNotMatch(game,/weapon\.critChance/);
+});
+
+test('production title menu separates play roster loadout progression and co-op flows',()=>{
+  for(const view of ['play','heroes','loadout','progression','coop','settings'])assert.match(html,new RegExp(`data-title-open="${view}"`));
+  assert.match(styles,/title-kitsune-v1\.webp/);
+  assert.match(game,/function openTitleView\(view='home'\)/);
+  assert.match(game,/PREPARE YOUR EXPEDITION/);
+  assert.match(styles,/\.title-navigation/);
+  assert.match(styles,/data-title-view="progression"/);
 });
 
 test('Nomi is an earned returning-glaive hero with a homing capstone',()=>{

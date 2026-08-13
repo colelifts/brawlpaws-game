@@ -170,7 +170,8 @@ export class LayeredMapRuntime {
 
   activateRoom(roomId){
     if(this.activeRoomId===roomId)return this.entries.get(roomId)||null;
-    this.previewRoomId=null;for(const entry of this.entries.values()){this.setEntryOffset(entry,0,0);entry.visible=entry.roomId===roomId;for(const object of entry.display)object.setVisible(entry.visible&&(object!==entry.debugGraphics||this.debug));}
+    if(this.previewRoomId===roomId)return this.promotePreview(roomId);
+    this.previewRoomId=null;this.clearTransitionTrail();for(const entry of this.entries.values()){this.setEntryOffset(entry,0,0);entry.visible=entry.roomId===roomId;for(const object of entry.display)object.setVisible(entry.visible&&(object!==entry.debugGraphics||this.debug));}
     this.activeRoomId=this.entries.has(roomId)?roomId:null;const entry=this.activeEntry();
     if(entry){this.scene.cameras.main.setBounds(0,0,entry.map.widthInPixels,entry.map.heightInPixels);this.scene.physics.world.setBounds(0,0,entry.map.widthInPixels,entry.map.heightInPixels);}
     return entry;
@@ -200,13 +201,23 @@ export class LayeredMapRuntime {
     const minX=Math.min(0,offsetX),minY=Math.min(0,offsetY),maxX=Math.max(current.map.widthInPixels,offsetX+destination.map.widthInPixels),maxY=Math.max(current.map.heightInPixels,offsetY+destination.map.heightInPixels);this.scene.cameras.main.setBounds(minX,minY,maxX-minX,maxY-minY);return {roomId:destinationRoomId,offsetX,offsetY,entryX:entrance.x+entrance.width/2+offsetX,entryY:entrance.y+entrance.height/2+offsetY,minX,minY,maxX,maxY};
   }
 
+  promotePreview(destinationRoomId){
+    const previous=this.activeEntry(),destination=this.entries.get(destinationRoomId);if(!previous||!destination||this.previewRoomId!==destinationRoomId)return null;
+    const shiftX=destination.offsetX||0,shiftY=destination.offsetY||0;this.setEntryOffset(destination,0,0);this.setEntryOffset(previous,-shiftX,-shiftY);previous.visible=true;destination.visible=true;for(const object of previous.display)object.setVisible(object!==previous.debugGraphics||this.debug);for(const object of destination.display)object.setVisible(object!==destination.debugGraphics||this.debug);
+    this.trailingRoomId=previous.roomId;this.transitionTrailUntil=performance.now()+1750;this.activeRoomId=destinationRoomId;this.previewRoomId=null;const bounds=this.viewBounds();if(bounds)this.scene.cameras.main.setBounds(bounds.minX,bounds.minY,bounds.maxX-bounds.minX,bounds.maxY-bounds.minY);this.scene.physics.world.setBounds(0,0,destination.map.widthInPixels,destination.map.heightInPixels);return destination;
+  }
+
+  clearTransitionTrail(){
+    if(!this.trailingRoomId)return;const trailing=this.entries.get(this.trailingRoomId);if(trailing&&trailing.roomId!==this.activeRoomId){trailing.visible=false;this.setEntryOffset(trailing,0,0);for(const object of trailing.display)object.setVisible(false);}this.trailingRoomId=null;this.transitionTrailUntil=0;const active=this.activeEntry();if(active)this.scene.cameras.main.setBounds(0,0,active.map.widthInPixels,active.map.heightInPixels);
+  }
+
   clearPreview(){
     if(!this.previewRoomId)return;const entry=this.entries.get(this.previewRoomId);if(entry&&entry.roomId!==this.activeRoomId){entry.visible=false;this.setEntryOffset(entry,0,0);for(const object of entry.display)object.setVisible(false);}this.previewRoomId=null;const active=this.activeEntry();if(active)this.scene.cameras.main.setBounds(0,0,active.map.widthInPixels,active.map.heightInPixels);
   }
 
   update({roomId,cameraX,cameraY,zoom,width,height,sealed,active=true}){
     const host=document.getElementById(this.parentId);if(host)host.style.visibility=active?'visible':'hidden';
-    if(!this.ready||!active)return;const entry=this.activateRoom(roomId);if(!entry)return;
+    if(!this.ready||!active)return;const entry=this.activateRoom(roomId);if(!entry)return;if(this.trailingRoomId&&performance.now()>=this.transitionTrailUntil)this.clearTransitionTrail();
     const camera=this.scene.cameras.main;if(camera.width!==width||camera.height!==height)this.game.scale.resize(width,height);camera.setZoom(zoom);camera.centerOn(cameraX,cameraY);this.setCombatSealed(sealed);this.renderGateSeals();if(this.debug)this.renderDebug();
   }
 
