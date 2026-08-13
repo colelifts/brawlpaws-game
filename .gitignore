@@ -4,3 +4,7 @@ npm-debug.log*
 .DS_Store
 output/
 tmp/
+assets/map-maker/*-key-v1.png
+assets/map-maker/village-architecture-v1.png
+assets/map-maker/village-props-v1.png
+assets/map-maker/village-terrain-v1.png

@@ -5,6 +5,7 @@ import { EXPEDITION_WORLD, EXPEDITION_MILESTONES, expeditionNode, expeditionNeig
 import { PROFILE_VERSION, DEFAULT_SETTINGS, DEFAULT_CONTRACT_PROGRESS, createDefaultProfile, defaultHeroMastery, sanitizeProfile, createSaveArchive, parseSaveArchive } from './profile.js?v=20260813-prestige1';
 import { DEFAULT_BINDINGS, BINDING_LABELS, keyLabel, gamepadActions } from './controls.js?v=20260813-controls1';
 import { MASTERY_CAP, MASTERY_POWER_CAP, MASTERY_CRESTS, masteryCrest, availableMasteryCrests } from './mastery.js?v=20260813-prestige1';
+import { createMapImages, drawMapGround, drawMapObjects, loadMapDocument, resolveMapCollisions } from './map-document.js?v=20260813-1';
 
 const canvas = document.querySelector('#game');
 const ctx = canvas.getContext('2d', { alpha: true });
@@ -71,6 +72,8 @@ const debugHero = debugParams.get('hero');
 const debugMission = debugParams.get('mission');
 if(debugSystem)document.documentElement.dataset.debugSystem=debugSystem;
 const layeredMapRuntime=createLayeredMapRuntime('phaser-map');
+const villageMap=loadMapDocument();
+const villageMapImages=createMapImages();
 shell.addEventListener('scroll',()=>{if(shell.scrollTop||shell.scrollLeft)scrollShellToOrigin();},{passive:true});
 function scrollShellToOrigin(){shell.scrollTop=0;shell.scrollLeft=0;}
 
@@ -1253,7 +1256,8 @@ function spawnPositionFor(index,total,bounds){
 function enterHub(){
   activateRoom('spiritVillage',{reposition:false});state='hub';enemies=[];roomInteractable=null;roomMission=null;destructibles=[];Object.values(effects).forEach((list)=>list.splice(0));
   corruptionDirector=null;refreshCorruptionHud();
-  player.x=room.playerSpawn.x;player.y=room.playerSpawn.y;player.vx=0;player.vy=0;player.facing=-Math.PI/2;camera.x=player.x;camera.y=player.y;
+  const authoredVillageSpawn=villageMap.spawns.find((spawn)=>spawn.type==='player')||room.playerSpawn;
+  player.x=authoredVillageSpawn.x;player.y=authoredVillageSpawn.y;player.vx=0;player.vy=0;player.facing=-Math.PI/2;camera.x=player.x;camera.y=player.y;
   const qaStation=HUB_STATIONS.find((station)=>station.id===debugHubStation);if(qaStation){player.x=qaStation.x;player.y=qaStation.y+150;camera.x=player.x;camera.y=player.y;}
   canvas.setAttribute('aria-label','Spirit Lantern Village walkable hub');
   ui.biomeTitle.textContent='SPIRIT LANTERN VILLAGE';ui.waveLabel.textContent='HUB  SAFE HAVEN';ui.roomState.textContent='THE SPIRIT ROAD';ui.roomState.style.color='#42eaff';ui.objective.textContent='VISIT A SERVICE OR ENTER THE PORTAL';
@@ -1374,7 +1378,7 @@ function updateDojo(dt){
 }
 
 function updateHub(dt){
-  updatePlayer(dt);const nearby=nearestHubStation();ui.objective.textContent=nearby?`${nearby.station.name}  PRESS ${keyLabel(bound('interact'))} TO ${nearby.station.id==='portal'?'CHOOSE WORLD':'INTERACT'}`:'VISIT A SERVICE OR ENTER THE PORTAL';
+  const previous={x:player.x,y:player.y};updatePlayer(dt);resolveMapCollisions(player,villageMap,previous);const nearby=nearestHubStation();ui.objective.textContent=nearby?`${nearby.station.name}  PRESS ${keyLabel(bound('interact'))} TO ${nearby.station.id==='portal'?'CHOOSE WORLD':'INTERACT'}`:'VISIT A SERVICE OR ENTER THE PORTAL';
   if((keyPressed('interact')||input.pressed.has('enter')||input.gamepad.pressed.has('confirm'))&&nearby){if(nearby.station.id==='dojo')enterDojo();else openHubStation(nearby.station);}
 }
 
@@ -2296,6 +2300,7 @@ function begin() {
   if(debugSystem==='endlessDecision'){if(debugParams.has('restoreShards')){profile.spiritShards=Math.max(0,Number(debugParams.get('restoreShards'))||0);saveProfile();}endlessDebugProfile=structuredClone(profile);player.level=12;player.maxHealth=900;player.health=900;player.damageMultiplier=2;player.endingVow='freedom';runActive=true;for(const id of Object.keys(ABILITIES))player.unlockedAbilities.add(id);endlessRoad={active:true,stage:Math.max(0,Number(debugParams.get('road'))||0),bank:debugParams.has('bank')?Math.max(0,Number(debugParams.get('bank'))||0):84,campaignBanked:true,campaignReward:145,unlocks:[]};openEndlessRoadDecision();return;}
   if(debugSystem==='tutorial'){startWave(0);showTutorialLesson(clamp(Number(debugParams.get('step')||1)-1,0,TUTORIAL_LESSONS.length-1));return;}
   if(debugSystem==='dojo'){enterDojo();return;}
+  if(debugSystem==='hub'){enterHub();return;}
   if(debugSystem==='crossfire'){
     player.maxHealth=600;player.health=600;spawnBoss();const boss=enemies[0];const profile=BOSS_PROFILES[boss.def.id];boss.bossPhase=3;boss.health=boss.maxHealth*.3;boss.state='bossWindupCrossfire';boss.patternWindup=guardianAttackTiming({baseWindup:BOSS_PATTERNS.crossfire.windup,tempo:profile.phaseTempo[3],phase:3,difficultyId:selectedDifficulty}).windup;boss.stateTime=boss.patternWindup;boss.activePattern='crossfire';boss.patternTargetX=player.x;boss.patternTargetY=player.y;boss.patternAngle=Math.atan2(player.y-boss.y,player.x-boss.x)+.51;ui.bossPhase.textContent=profile.phaseNames[3];return;
   }
@@ -3296,7 +3301,7 @@ function updateEnemyProjectiles(dt) {
 
 function keepInArena(entity) {
   const bounds = room.combatBounds;
-  if(room.mapRuntime==='phaser-tiled'){
+  if(room.mapRuntime==='phaser-tiled'||room.id==='spiritVillage'){
     entity.x=clamp(entity.x,entity.radius,room.width-entity.radius);entity.y=clamp(entity.y,entity.radius,room.height-entity.radius);
   }else{
     const nx = (entity.x - bounds.x) / bounds.radiusX;
@@ -3566,6 +3571,10 @@ function setWorldTransform(screen) {
 
 function drawArenaBackdrop(screen){
   if(room.mapRuntime==='phaser-tiled'&&['playing','story'].includes(state))return;
+  if(room.id==='spiritVillage'){
+    const view={left:camera.x-screen.width/(camera.zoom*2)-180,right:camera.x+screen.width/(camera.zoom*2)+180,top:camera.y-screen.height/(camera.zoom*2)-180,bottom:camera.y+screen.height/(camera.zoom*2)+180};
+    drawMapGround(ctx,villageMap,villageMapImages,{view});drawMapObjects(ctx,villageMap,villageMapImages,{view,includeForeground:false});return;
+  }
   if(!assets.arena.complete||!assets.arena.naturalWidth){ctx.fillStyle='#12112a';ctx.fillRect(0,0,room.width,room.height);return;}
   const halfWidth=screen.width/(camera.zoom*2)+160,halfHeight=screen.height/(camera.zoom*2)+160;
   const x=clamp(camera.x-halfWidth,0,room.width),y=clamp(camera.y-halfHeight,0,room.height),width=Math.min(room.width-x,halfWidth*2),height=Math.min(room.height-y,halfHeight*2);
@@ -3681,6 +3690,7 @@ function draw(screen) {
   }
   if(room.id==='jadeCourtyard')for (const prop of props.filter((item) => item.foreground)) drawProp(prop, distance(player,prop)<360?.38:.82);
   if(room.mapRuntime==='phaser-tiled')for(const object of layeredMapRuntime.worldObjects('Foreground / Occlusion'))drawTiledMapObject(object,distance(player,object)<430?.28:.72);
+  if(room.id==='spiritVillage')drawMapObjects(ctx,villageMap,villageMapImages,{view:{left:camera.x-screen.width/(camera.zoom*2)-180,right:camera.x+screen.width/(camera.zoom*2)+180,top:camera.y-screen.height/(camera.zoom*2)-180,bottom:camera.y+screen.height/(camera.zoom*2)+180},includeForeground:true});
   drawRouteForegroundLandmarks();
   drawForegroundHaze();
   drawPhysicalRouteGates();

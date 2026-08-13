@@ -512,7 +512,7 @@ export const ROOMS = {
     background: 'assets/environment/spirit-lantern-village.png',
     playerSpawn: { x: 2400, y: 1480 },
     enemySpawns: [],
-    combatBounds: { x: 2400, y: 1460, radiusX: 1780, radiusY: 980 }
+    combatBounds: { x: 2400, y: 1350, radiusX: 2320, radiusY: 1270 }
   },
   spiritDojo: {
     id:'spiritDojo', name:'Spirit Dojo', width:4800, height:2700,

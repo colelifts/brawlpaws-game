@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>BrawlPaws Village Forge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/map-maker.css?v=20260813-1">
+</head>
+<body>
+  <main class="maker-shell" id="maker-shell">
+    <header class="maker-topbar">
+      <a class="maker-brand" href="index.html"><i>BP</i><span><small>SPIRIT LANTERN WORKSHOP</small><b>VILLAGE FORGE</b></span></a>
+      <label class="map-title"><small>ACTIVE MAP</small><input id="map-name" value="Spirit Lantern Village" maxlength="48"></label>
+      <div class="history-actions">
+        <button id="undo" title="Undo (Ctrl+Z)"><span>↶</span> UNDO</button><button id="redo" title="Redo (Ctrl+Y)"><span>↷</span> REDO</button>
+      </div>
+      <div class="document-actions">
+        <button id="new-map">NEW</button><button id="import-map">IMPORT</button><button id="export-map">EXPORT</button>
+        <button id="playtest" class="playtest"><span>▶</span> PLAYTEST</button><a href="index.html?hub=portal" class="return-game">RETURN TO GAME</a>
+      </div>
+      <input id="map-file" type="file" accept="application/json,.json" hidden>
+    </header>
+
+    <aside class="maker-tools" aria-label="Map tools">
+      <span>TOOLS</span>
+      <button data-tool="select" class="active"><kbd>V</kbd><i>↖</i><b>Select</b></button>
+      <button data-tool="brush"><kbd>B</kbd><i>▦</i><b>Floor</b></button>
+      <button data-tool="object"><kbd>O</kbd><i>◆</i><b>Place</b></button>
+      <button data-tool="erase"><kbd>X</kbd><i>⌫</i><b>Erase</b></button>
+      <button data-tool="collision"><kbd>C</kbd><i>▰</i><b>Collision</b></button>
+      <button data-tool="trigger"><kbd>T</kbd><i>◎</i><b>Trigger</b></button>
+      <button data-tool="spawn"><kbd>P</kbd><i>➤</i><b>Spawn</b></button>
+      <button data-tool="pan"><kbd>H</kbd><i>✥</i><b>Pan</b></button>
+      <hr>
+      <button id="grid-toggle" class="active"><kbd>G</kbd><i>#</i><b>Grid</b></button>
+      <button id="snap-toggle" class="active"><kbd>S</kbd><i>⌗</i><b>Snap</b></button>
+    </aside>
+
+    <section class="maker-stage" id="maker-stage">
+      <canvas id="map-canvas" aria-label="Editable Spirit Lantern Village map"></canvas>
+      <div class="stage-help" id="stage-help"><b>SELECT</b><span>Click an object or shape · drag to move · Delete removes</span></div>
+      <div class="save-state" id="save-state">SAVED LOCALLY</div>
+      <div class="playtest-banner" id="playtest-banner" hidden><b>LIVE COLLISION PLAYTEST</b><span>WASD MOVE · SHIFT SPRINT · ESC EXIT</span></div>
+    </section>
+
+    <aside class="maker-palette">
+      <header><span>ASSET LIBRARY</span><b id="palette-count">16 ASSETS</b></header>
+      <nav><button data-palette="terrain" class="active">FLOORS</button><button data-palette="architecture">BUILDINGS</button><button data-palette="props">PROPS</button></nav>
+      <label class="asset-search"><span>⌕</span><input id="asset-search" placeholder="Search assets"></label>
+      <div id="asset-grid" class="asset-grid"></div>
+      <footer><b>REAL COMPONENT ASSETS</b><span>Floor tiles repeat cleanly. Buildings and props are independent layered objects.</span></footer>
+    </aside>
+
+    <aside class="maker-inspector">
+      <section class="layer-panel">
+        <header><span>LAYERS</span><button id="add-layer" title="Custom layers are coming next">+</button></header>
+        <div id="layer-list" class="layer-list"></div>
+      </section>
+      <section class="inspector-panel">
+        <header><span>INSPECTOR</span><b id="selection-kind">NOTHING SELECTED</b></header>
+        <div id="empty-inspector" class="empty-inspector"><i>◇</i><b>SELECT SOMETHING</b><span>Choose an object, collision shape, trigger, or spawn point on the map.</span></div>
+        <form id="entity-inspector" hidden>
+          <label class="wide">NAME<input id="entity-name"></label>
+          <label>X<input id="entity-x" type="number"></label><label>Y<input id="entity-y" type="number"></label>
+          <label>WIDTH<input id="entity-width" type="number" min="1"></label><label>HEIGHT<input id="entity-height" type="number" min="1"></label>
+          <label id="rotation-field">ROTATION<input id="entity-rotation" type="number" step="1"></label><label id="opacity-field">OPACITY<input id="entity-opacity" type="number" min="0" max="100"></label>
+          <label class="wide">LAYER<select id="entity-layer"></select></label>
+          <div class="inspector-actions"><button id="duplicate-entity" type="button">DUPLICATE <kbd>CTRL+D</kbd></button><button id="delete-entity" type="button" class="danger">DELETE <kbd>DEL</kbd></button></div>
+        </form>
+      </section>
+      <section class="map-settings">
+        <header><span>MAP</span><b id="map-size">4800 × 2700</b></header>
+        <div><span>GRID SIZE</span><b id="grid-size">150 PX</b></div><div><span>OBJECTS</span><b id="object-count">0</b></div><div><span>COLLIDERS</span><b id="collision-count">0</b></div>
+        <button id="reset-map" class="reset-map">RESET TO STARTER VILLAGE</button>
+      </section>
+    </aside>
+
+    <footer class="maker-statusbar">
+      <span id="cursor-position">X 0 · Y 0</span><span id="zoom-level">ZOOM 32%</span><span id="active-layer-label">LAYER GROUND</span>
+      <b>MMB / SPACE DRAG PAN</b><b>WHEEL ZOOM</b><b>CTRL+Z UNDO</b><b>CTRL+S SAVE</b><b>Q / E ROTATE</b>
+    </footer>
+  </main>
+  <script type="module" src="src/map-maker.js?v=20260813-1"></script>
+</body>
+</html>
