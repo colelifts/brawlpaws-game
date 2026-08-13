@@ -1,6 +1,6 @@
 # BrawlPaws — Six-Chapter Roguelite Campaign
 
-A dependency-free playable browser roguelite with a walkable hub, permanent profile progression, six escalating chapters, branching routes, six production heroes, post-clear Ascension ranks, and six giant guardian bosses. Its 4,800×2,700 rooms include a circular live minimap for active threats, mission objectives, co-op allies, rewards, village services, and guardian chambers; players can disable it under Accessibility.
+A dependency-free playable browser roguelite with a walkable hub, permanent profile progression, six escalating regions, branching exploration, six production heroes, post-clear Ascension ranks, and six giant guardian bosses. The current 4,800×2,700 authored spaces are being connected into the first giant expedition world; its live minimap tracks threats, objectives, co-op allies, rewards, village services, and guardian territory, and can be disabled under Accessibility.
 
 Runs begin with the selected hero's signature weapon and earned abilities. At level 3, Arsenal Awakening offers a mandatory three-way pivot: Frostbite Needle (Chill/Freeze), Oni Mortar (area demolition), or Gale War Fan (outward/return control). Level 7 forces a second Legend Arsenal pivot into Embercoil Repeater (burst Burn/rupture), Tempest Chakram (wide outbound/return control), or Moonpiercer Railbow (charged line execution). Each legend weapon has two exclusive upgrade branches and persistent collection discovery, while fresh runs still begin at base power.
 

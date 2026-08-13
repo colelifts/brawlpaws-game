@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#080817" />
   <link rel="icon" href="data:," />
   <title>BrawlPaws — Six-Chapter Roguelite Campaign</title>
-  <link rel="stylesheet" href="styles.css?v=20260812-balance1" />
+  <link rel="stylesheet" href="styles.css?v=20260812-guardians1" />
 </head>
 <body>
   <main id="game-shell" aria-label="BrawlPaws roguelite campaign">
@@ -33,6 +33,11 @@
       <section class="boss-panel" id="boss-panel">
         <div><strong id="boss-name">JADEGUARD TANUKI</strong><em id="boss-phase">AWAKENED GUARDIAN</em></div>
         <div class="boss-health"><i id="boss-health-fill"></i><b id="boss-health-text">2600 / 2600</b></div>
+        <div class="boss-readout" id="boss-readout">
+          <div><span id="boss-intent-kicker">READ THE GUARDIAN</span><b id="boss-intent-name">PREPARING</b><strong id="boss-intent-time"></strong></div>
+          <p id="boss-intent-hint">Watch the weapon, then commit to your escape.</p>
+          <i><em id="boss-intent-fill"></em></i>
+        </div>
       </section>
 
       <section class="objective-panel brush-panel">
@@ -352,6 +357,6 @@
 
     <div id="loading">AWAKENING THE GROVE…</div>
   </main>
-  <script type="module" src="src/game.js?v=20260812-balance1"></script>
+  <script type="module" src="src/game.js?v=20260812-guardians1"></script>
 </body>
 </html>

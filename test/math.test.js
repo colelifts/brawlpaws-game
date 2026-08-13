@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { clamp, normalize, segmentCircleHit, shortestAngle, withinArc, encounterActiveLimit, campaignPressureCurve, cappedWardPressure, COMBAT_BALANCE_TARGETS, normalizedEnemyScales, enemySpeedCeiling, enemyTelegraphFloor, incomingDamageLimit } from '../src/math.js';
+import { clamp, normalize, segmentCircleHit, shortestAngle, withinArc, encounterActiveLimit, campaignPressureCurve, cappedWardPressure, COMBAT_BALANCE_TARGETS, normalizedEnemyScales, enemySpeedCeiling, enemyTelegraphFloor, incomingDamageLimit, guardianAttackTiming } from '../src/math.js';
 import { HEROES, WEAPONS, ABILITIES, STATUS_EFFECTS, ELITE_MODIFIERS, BOSS_PATTERNS, BOSS_PROFILES, ENEMIES, ENCOUNTERS, ROOMS, DIFFICULTIES } from '../src/data.js';
 
 test('math helpers support movement and spatial hit tests', () => {
@@ -45,6 +45,15 @@ test('combat balance contracts bound speed, burst damage, and unreadable late sc
   const starterDps=WEAPONS.spiritBlaster.damage/WEAPONS.spiritBlaster.fireRate;
   const openingTtk=ENEMIES.groveMinion.maxHealth/starterDps;
   assert.ok(openingTtk>=COMBAT_BALANCE_TARGETS.openingTtk[0]&&openingTtk<=COMBAT_BALANCE_TARGETS.openingTtk[1]);
+});
+
+test('guardian phase pressure never erases readable warnings or punish windows',()=>{
+  const finale=guardianAttackTiming({baseWindup:.95,baseRecovery:1.05,tempo:.54,phase:3,difficultyId:'ferocious'});
+  assert.ok(finale.windup>=COMBAT_BALANCE_TARGETS.minimumTelegraph.boss);
+  assert.ok(finale.recovery>=.62);
+  const nightmare=guardianAttackTiming({baseWindup:1.55,baseRecovery:1.3,tempo:.54,phase:3,difficultyId:'nightmare'});
+  assert.ok(nightmare.windup>=enemyTelegraphFloor({behavior:'boss',difficultyId:'nightmare',boss:true}));
+  assert.ok(nightmare.recovery>.8);
 });
 
 test('Phase 1 definitions are internally valid', () => {

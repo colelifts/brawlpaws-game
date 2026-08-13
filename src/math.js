@@ -36,6 +36,15 @@ export function enemyTelegraphFloor({behavior='melee',difficultyId='ferocious',b
   return COMBAT_BALANCE_TARGETS.minimumTelegraph[key]*difficulty;
 }
 
+export function guardianAttackTiming({baseWindup=.95,baseRecovery=1,tempo=1,phase=1,difficultyId='ferocious'}={}){
+  const readableWindup=Math.max(baseWindup*Math.max(.5,tempo),enemyTelegraphFloor({behavior:'boss',difficultyId,boss:true}));
+  const recoveryScale=1-Math.max(0,Math.min(2,phase-1))*.16;
+  return {
+    windup:readableWindup,
+    recovery:Math.max(.62,baseRecovery*recoveryScale)
+  };
+}
+
 export function incomingDamageLimit({maxHealth=100,kind='standard',chapterIndex=0,difficultyId='ferocious'}={}){
   const base=COMBAT_BALANCE_TARGETS.maxHealthPerHit[kind]??COMBAT_BALANCE_TARGETS.maxHealthPerHit.standard;
   const campaign=Math.min(.045,Math.max(0,chapterIndex)*.009);

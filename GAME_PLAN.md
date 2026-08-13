@@ -271,3 +271,24 @@ Implemented audio milestone: all six realms now select their own licensed combat
 Implemented Arsenal blueprint milestone: all six authored Arsenal weapons are permanently discovered through their actual run drafts, displayed as production-art contracts in the Spirit Forge and Portal loadout, persisted per hero, and guaranteed only at level 3 or level 7. Binding never changes the level-1 hero weapon or ability locks, so earned choice expands replayability without weakening the intended low-power opening.
 
 Expand the remaining weapon roster, deepen hero-specific upgrade trees, add further earned evolutions, and tune the full six-chapter difficulty curve from the low-power opening through Tsukiko and Ascension without weakening the current animation, telegraph, and combat-feedback bar. Nomi and her Moonreturn Glaive are complete; the next content milestone is broader arsenal choice and deeper mastery progression.
+
+## Locked campaign direction — giant expedition worlds
+
+The room-route prototype is now migration material, not the final campaign shape. Each campaign must become one very large continuous expedition map whose authored rooms are connected regions rather than disconnected stages.
+
+- A run begins in a protected, low-threat landing area. Threat, XP value, loot rarity, enemy mechanics, and guardian pressure increase as the player travels farther from safety.
+- One expedition contains multiple visually and mechanically distinct biomes, hidden routes, landmarks, roaming packs, treasure spaces, shrines, merchants, extraction gates, and a distant giant final guardian.
+- Enemies reward XP and loot according to visible threat tier. Safer farming remains possible but inefficient; dangerous regions are the fastest route to power.
+- Death returns the player to the village with permanent currencies and discoveries, while temporary run power is lost. Permanent progression is deliberately long: heroes, starting contracts, relic capacity, services, and later worlds require many successful expeditions rather than one clear.
+- Defeating the world guardian offers an explicit choice: continue exploring the cleared world or extract to the village. The next giant world unlocks only after the prior world is cleared.
+- Terrain must be constructed from layered ground, collision, architecture, foreground, ambient animation, interactables, and biome transitions. A single flat background image is never considered a finished map.
+- First-launch onboarding uses skippable character-led cutscenes with typed dialogue, then tracked lessons for move, aim, fire, sprint, dash, loot, upgrades, and extraction. Every lesson verifies the action, offers Skip, and has a timeout/fallback so it cannot soft-lock.
+- Combat readability is non-negotiable: world attacks render behind combatants, telegraph centers remain translucent, impacts animate on the body without replacing it, and a local silhouette plate guarantees that the player and enemies are never hidden by VFX.
+
+### Migration order
+
+1. Add the tracked tutorial director and character-led dialogue presentation.
+2. Convert Jade's authored combat spaces into connected streaming regions with terrain layers and traversal corridors.
+3. Add distance-based threat/XP/loot bands, exploration discoveries, extraction, and death banking.
+4. Place Jade Grove, Bamboo Hollow, Crimson Dojo, Storm Coast, Neon City, and Shadow Realm as regions within Expedition World I, with a far-edge guardian citadel.
+5. Gate Expedition World II behind the World I guardian clear and preserve the continue-or-extract choice.

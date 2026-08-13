@@ -550,7 +550,7 @@ test('late armies and guardians escalate pressure without changing the tutorial 
   for(const guardian of Object.values(BOSS_PROFILES)){assert.ok(guardian.phaseTempo[3]<guardian.phaseTempo[2]);assert.ok(guardian.domainIntervals[3]<guardian.domainIntervals[2]);assert.ok(guardian.domainName);}
   for(const fn of ['bossDomainInterval','triggerBossDomain','updateBossDomain'])assert.match(game,new RegExp(`function ${fn}\\(`));
   assert.match(game,/updateBossDomain\(enemy,profile,dt\)/);
-  assert.match(game,/enemy\.patternWindup=pattern\.windup\*tempo/);
+  assert.match(game,/guardianAttackTiming\(\{baseWindup:pattern\.windup,baseRecovery:pattern\.recovery,tempo,phase:enemy\.bossPhase/);
 });
 
 test('every late chapter and guardian locomotion uses authored pose atlases',()=>{
@@ -657,6 +657,16 @@ test('every guardian exposes a named skill-based counter window',()=>{
   }
   assert.match(game,/openBossCounter\(enemy,profile/);
   assert.match(game,/enemy\.def\.behavior==='boss'&&enemy\.counterTime>0/);
+  assert.match(game,/guardianAttackTiming\(\{baseWindup:pattern\.windup/);
+  assert.match(game,/function updateBossReadout\(boss,profile\)/);
+  assert.match(styles,/\.boss-panel\.counter-open/);
+});
+
+test('combat effects preserve readable player and enemy silhouettes',()=>{
+  assert.match(game,/function drawCombatantReadabilityPlates\(renderables\)/);
+  assert.match(game,/drawCombatantReadabilityPlates\(renderables\)/);
+  assert.match(game,/const signatureAlpha=clamp\(signature\.life\/\.12,0,1\)\*\(impact\?\.58:\.3\)/);
+  assert.match(game,/Attack art belongs in the world, behind readable character silhouettes/);
 });
 
 test('level five paths and level ten masteries create distinct combat loops',()=>{
