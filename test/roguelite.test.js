@@ -761,11 +761,21 @@ test('every unlocked ability earns a behavior-changing late-run evolution',()=>{
   assert.match(game,/abilityEvolutions:\{undertowWell:false,foxfireVolley:false,wildHeart:false,shockPaws:false\}/);
   assert.match(game,/restored\.abilityEvolutions=\{\.\.\.player\.abilityEvolutions,\.\.\.saved\.abilityEvolutions\}/);
   assert.match(game,/vortex\.evolved&&!vortex\.midCollapsed/);
-  assert.match(game,/const shots=player\.abilityEvolutions\.foxfireVolley\?9/);
+  assert.match(game,/const shots=evolved\?9:definition\.shots/);
   assert.match(game,/function triggerGuardianBloom\(/);
   assert.match(game,/function triggerHeavensVerdict\(/);
   assert.match(game,/storm\.verdict&&!storm\.verdictResolved/);
   assert.match(game,/debugSystem==='evolutions'/);
+});
+
+test('ability casts and evolved expiry behavior dispatch through data hooks',()=>{
+  for(const hook of ['vortex','flameFan','heartWard','globalStorm'])assert.match(data,new RegExp(`castHook:'${hook}'`));
+  for(const hook of ['doubleCollapse','nineTail','guardianBloom','heavensVerdict'])assert.match(data,new RegExp(`evolutionHook:'${hook}'`));
+  assert.match(game,/const ABILITY_CAST_HOOKS=/);
+  assert.match(game,/const ABILITY_EXPIRY_HOOKS=/);
+  assert.match(game,/ABILITY_CAST_HOOKS\[definition\.castHook\]/);
+  assert.match(game,/ABILITY_EXPIRY_HOOKS\[heartDefinition\.expiryHook\]/);
+  assert.doesNotMatch(game,/if \(id === 'undertowWell'\)/);
 });
 
 test('late armies and guardians escalate pressure without changing the tutorial opening',()=>{

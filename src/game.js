@@ -2264,6 +2264,7 @@ function begin() {
   if(debugSystem==='room6'){player.level=10;player.maxHealth=50000;player.health=50000;startWave(5);return;}
   if(debugSystem==='pressure'){player.maxHealth=chapter.id==='shadowChapter'?12000:900;player.health=player.maxHealth;player.unlockedAbilities.add('undertowWell');startWave(Math.min(4,chapter.waves.length-1));encounter.biomePressureClock=.35;return;}
   if(debugSystem==='evolutions'){player.level=12;player.maxHealth=1200;player.health=1200;player.damageMultiplier=1.35;for(const id of Object.keys(ABILITIES))player.unlockedAbilities.add(id);for(const id of Object.keys(player.abilityEvolutions))player.abilityEvolutions[id]=true;player.stormBonus=1;refreshSynergyHud();startWave(Math.min(4,chapter.waves.length-1));return;}
+  if(debugSystem==='abilityHooks'){player.level=12;player.maxHealth=1800;player.health=1800;for(const id of Object.keys(ABILITIES)){player.unlockedAbilities.add(id);player.abilityEvolutions[id]=true;}player.stormBonus=1;startWave(1);setTimeout(()=>useAbility(['undertowWell','foxfireVolley','wildHeart','shockPaws'].includes(debugParams.get('ability'))?debugParams.get('ability'):'foxfireVolley'),900);return;}
   if(debugSystem==='mission'){const type=['anchors','rescue','defend'].includes(debugMission)?debugMission:'anchors';const missionWave=chapter.waves.findIndex((wave)=>wave.mission?.type===type);player.maxHealth=900;player.health=900;player.damageMultiplier=type==='anchors'?4:1.6;startWave(Math.max(0,missionWave));if(roomMission?.actors?.[0]){roomMission.actors[0].x=player.x+125;roomMission.actors[0].y=player.y;}if(roomMission?.ward){roomMission.ward.x=player.x+90;roomMission.ward.y=player.y+40;}return;}
   if(debugSystem==='guardianReward'){openGuardianReward(chapter.boss);return;}
   if(debugSystem==='relicDraft'){player.level=6;player.buildPath=['gunner','elementalist','vanguard'].includes(debugParams.get('path'))?debugParams.get('path'):'elementalist';player.unlockedAbilities.add('undertowWell');player.unlockedAbilities.add('foxfireVolley');player.bleedOnHit=4;openRelicDraft({source:'MOON VAULT DISCOVERED'});return;}
@@ -2479,36 +2480,29 @@ function aimDirection() {
   return {x:Math.cos(player.facing),y:Math.sin(player.facing)};
 }
 
+const ABILITY_CAST_HOOKS={
+  vortex({definition,direction,evolved}){
+    player.castTime=.34;const power=player.abilityPower[definition.id];effects.vortices.push({x:player.x+direction.x*300,y:player.y+direction.y*300,life:definition.duration,maxLife:definition.duration,radius:definition.radius*Math.sqrt(power),pull:definition.pull*power,hit:new Set(),collapsed:false,midCollapsed:false,evolved,definition,rotation:0});effects.rings.push({x:player.x,y:player.y,radius:18,maxRadius:80,color:definition.color,life:.3,maxLife:.3});burst(player.x,player.y,definition.color,25,260,4);playSfx('water',.38,.9);
+  },
+  flameFan({definition,evolved}){
+    player.castTime=.28;const shots=evolved?9:definition.shots,spread=evolved?definition.spread*.66:definition.spread;for(let i=0;i<shots;i++){const angle=player.facing+(i-(shots-1)/2)*spread;effects.flameBolts.push({x:player.x+Math.cos(angle)*46,y:player.y+Math.sin(angle)*46-7,vx:Math.cos(angle)*definition.speed,vy:Math.sin(angle)*definition.speed,radius:12,life:definition.life,maxLife:definition.life,definition,power:player.abilityPower[definition.id]});}burst(player.x,player.y,definition.color,28,320,5);camera.kick=18;camera.shake=5;playSfx('fire',.42,1.04);
+  },
+  heartWard({definition}){
+    player.wildHeartTime=definition.duration;player.castTime=.34;player.health=Math.min(player.maxHealth,player.health+definition.heal+player.heartBonus);effects.rings.push({x:player.x,y:player.y,radius:18,maxRadius:150,color:definition.color,life:.7,maxLife:.7});effects.blooms.push({x:player.x,y:player.y-24,life:.9,maxLife:.9,color:definition.color});burst(player.x,player.y,definition.color,36,300,5);playSfx('heal',.34,1.12);
+  },
+  globalStorm({definition,evolved}){
+    player.castTime=.5;player.ultimateFlash=.12;player.invulnerable=Math.max(player.invulnerable,.45);effects.shockStorms.push({x:player.x,y:player.y,life:definition.duration+player.stormBonus,maxLife:definition.duration+player.stormBonus,tick:0,pulse:0,definition,power:player.abilityPower[definition.id],verdict:evolved,verdictResolved:false});effects.spriteEffects.push({asset:'shockImpactVfx',x:player.x,y:player.y-26,width:190,height:170,life:.6,maxLife:.6,glow:definition.color});effects.rings.push({x:player.x,y:player.y,radius:20,maxRadius:230,color:definition.color,life:.7,maxLife:.7});camera.kick=24;camera.shake=8;hitStop=.05;playSfx('lightning',.5,.92);
+  }
+};
+
+const ABILITY_EXPIRY_HOOKS={guardianBloom:triggerGuardianBloom};
+
+function abilityEvolutionActive(definition){return Boolean(definition.evolutionHook&&player.abilityEvolutions[definition.id]);}
+
 function useAbility(id) {
   const definition=ABILITIES[id];
   if (!definition || !player.unlockedAbilities.has(id) || player.abilityCooldowns[id] > 0 || player.hurtTime > .08 || player.stunTime > 0 || player.dashTime > 0 || !['playing','dojo'].includes(state)) return;
-  const direction=aimDirection(); setActionFacing(direction); player.abilityCooldowns[id]=definition.cooldown;player.castAbility=id;
-  if (id === 'undertowWell') {
-    player.castTime=.34;
-    const power=player.abilityPower.undertowWell;
-    effects.vortices.push({x:player.x+direction.x*300,y:player.y+direction.y*300,life:definition.duration,maxLife:definition.duration,radius:definition.radius*Math.sqrt(power),pull:definition.pull*power,hit:new Set(),collapsed:false,midCollapsed:false,evolved:player.abilityEvolutions.undertowWell,definition,rotation:0});
-    effects.rings.push({x:player.x,y:player.y,radius:18,maxRadius:80,color:definition.color,life:.3,maxLife:.3});
-    burst(player.x,player.y,definition.color,25,260,4); playSfx('water',.38,.9);
-  } else if (id === 'foxfireVolley') {
-    player.castTime=.28;
-    const shots=player.abilityEvolutions.foxfireVolley?9:definition.shots;const spread=player.abilityEvolutions.foxfireVolley?definition.spread*.66:definition.spread;
-    for(let i=0;i<shots;i++){
-      const angle=player.facing+(i-(shots-1)/2)*spread;
-      effects.flameBolts.push({x:player.x+Math.cos(angle)*46,y:player.y+Math.sin(angle)*46-7,vx:Math.cos(angle)*definition.speed,vy:Math.sin(angle)*definition.speed,radius:12,life:definition.life,maxLife:definition.life,definition,power:player.abilityPower.foxfireVolley});
-    }
-    burst(player.x,player.y,definition.color,28,320,5); camera.kick=18; camera.shake=5; playSfx('fire',.42,1.04);
-  } else if (id === 'wildHeart') {
-    player.wildHeartTime=definition.duration; player.castTime=.34; player.health=Math.min(player.maxHealth,player.health+definition.heal+player.heartBonus);
-    effects.rings.push({x:player.x,y:player.y,radius:18,maxRadius:150,color:definition.color,life:.7,maxLife:.7});
-    effects.blooms.push({x:player.x,y:player.y-24,life:.9,maxLife:.9,color:definition.color});
-    burst(player.x,player.y,definition.color,36,300,5); playSfx('heal',.34,1.12);
-  } else if (id === 'shockPaws') {
-    player.castTime=.5; player.ultimateFlash=.12; player.invulnerable=Math.max(player.invulnerable,.45);
-    effects.shockStorms.push({x:player.x,y:player.y,life:definition.duration+player.stormBonus,maxLife:definition.duration+player.stormBonus,tick:0,pulse:0,definition,power:player.abilityPower.shockPaws,verdict:player.abilityEvolutions.shockPaws,verdictResolved:false});
-    effects.spriteEffects.push({asset:'shockImpactVfx',x:player.x,y:player.y-26,width:190,height:170,life:.6,maxLife:.6,glow:definition.color});
-    effects.rings.push({x:player.x,y:player.y,radius:20,maxRadius:230,color:definition.color,life:.7,maxLife:.7});
-    camera.kick=24; camera.shake=8; hitStop=.05; playSfx('lightning',.5,.92);
-  }
+  const hook=ABILITY_CAST_HOOKS[definition.castHook];if(!hook)return;const direction=aimDirection();setActionFacing(direction);player.abilityCooldowns[id]=definition.cooldown;player.castAbility=id;hook({definition,direction,evolved:abilityEvolutionActive(definition)});
 }
 
 function triggerGuardianBloom(){
@@ -2535,7 +2529,7 @@ function updatePlayer(dt) {
   player.shotCooldown = Math.max(0, player.shotCooldown - dt);
   player.aimLockTime = Math.max(0, (player.aimLockTime || 0) - dt);
   player.ultimateFlash = Math.max(0, player.ultimateFlash - dt);
-  player.castTime=Math.max(0,player.castTime-dt);if(player.castTime<=0)player.castAbility=null;const wildHeartWasActive=player.wildHeartTime>0;player.wildHeartTime=Math.max(0,player.wildHeartTime-dt);if(wildHeartWasActive&&player.wildHeartTime<=0&&player.abilityEvolutions.wildHeart)triggerGuardianBloom();
+  player.castTime=Math.max(0,player.castTime-dt);if(player.castTime<=0)player.castAbility=null;const wildHeartWasActive=player.wildHeartTime>0;player.wildHeartTime=Math.max(0,player.wildHeartTime-dt);const heartDefinition=ABILITIES.wildHeart;if(wildHeartWasActive&&player.wildHeartTime<=0&&abilityEvolutionActive(heartDefinition))ABILITY_EXPIRY_HOOKS[heartDefinition.expiryHook]?.();
   for(const id of Object.keys(player.abilityCooldowns)) player.abilityCooldowns[id]=Math.max(0,player.abilityCooldowns[id]-dt*recoveryRate);
   player.comboDrop = Math.max(0, player.comboDrop - dt);
   if (player.comboDrop <= 0) player.hitCount = 0;
