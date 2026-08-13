@@ -65,7 +65,20 @@ const NEON_MAPS=[
   ['neonKernelFoundry','kernel-foundry']
 ].map(([roomId,file])=>({roomId,key:`neon-${file}`,path:`assets/maps/neon-city/${file}.json`,tilesetName:'neon-ground',tilesetKey:'neon-ground'}));
 
-const LAYERED_MAPS=[...JADE_MAPS.map((entry)=>({...entry,tilesetName:'jade-ground',tilesetKey:'jade-ground'})),...BAMBOO_MAPS,...CRIMSON_MAPS,...STORM_MAPS,...NEON_MAPS];
+const SHADOW_MAPS=[
+  ['shadowObsidianPath','obsidian-lantern-path'],
+  ['shadowMirrorgraveVillage','mirrorgrave-village'],
+  ['shadowWraithwoodCrossing','wraithwood-crossing'],
+  ['shadowEclipseArchive','eclipse-archive'],
+  ['shadowMoonlessProcessional','moonless-processional'],
+  ['shadowUmbralPalaceSteps','umbral-palace-steps'],
+  ['shadowThroneBeyondMoon','throne-beyond-moon'],
+  ['shadowForsakenMirrorVault','forsaken-mirror-vault'],
+  ['shadowEclipseSanctuary','eclipse-sanctuary'],
+  ['shadowDreadmoonPrison','dreadmoon-prison']
+].map(([roomId,file])=>({roomId,key:`shadow-${file}`,path:`assets/maps/shadow-realm/${file}.json`,tilesetName:'shadow-ground',tilesetKey:'shadow-ground'}));
+
+const LAYERED_MAPS=[...JADE_MAPS.map((entry)=>({...entry,tilesetName:'jade-ground',tilesetKey:'jade-ground'})),...BAMBOO_MAPS,...CRIMSON_MAPS,...STORM_MAPS,...NEON_MAPS,...SHADOW_MAPS];
 
 const objectProperties=(object)=>Object.fromEntries((object.properties||[]).map((entry)=>[entry.name,entry.value]));
 
@@ -87,6 +100,7 @@ export class LayeredMapRuntime {
         this.load.image('crimson-ground','assets/tilesets/crimson-dojo/crimson-ground.svg');
         this.load.image('storm-ground','assets/tilesets/storm-coast/storm-ground.svg');
         this.load.image('neon-ground','assets/tilesets/neon-city/neon-ground.svg');
+        this.load.image('shadow-ground','assets/tilesets/shadow-realm/shadow-ground.svg');
         this.load.image('jade-props','assets/environment/jade-props.png');
         this.load.spritesheet('spirit-wisp','assets/environment/animated/spirit-wisp.png',{frameWidth:512,frameHeight:512});
         this.load.spritesheet('lantern-flame','assets/environment/animated/lantern-flame.png',{frameWidth:512,frameHeight:512});

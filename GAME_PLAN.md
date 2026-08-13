@@ -230,7 +230,7 @@ Only after the complete Jade Grove run is fun and stable:
 - Heroes after completed Bamboo, Hopscotch, and Rusty: Zap and Nomi
 - Weapons: Katana, Bo Staff, Shuriken, Blaster, Paint Roller, Gauntlets, Spear, Twin Daggers
 - Enemy archetypes: summoner, bomb hopper, authored shield bearer, and destination-marked assassin are playable with dedicated assets and behaviors; five elite modifiers apply across the full roster
-- Biomes after completed Crimson Dojo and Storm Coast: Neon City is complete; Shadow Realm remains the next expansion biome
+- All six biome chapters now own complete enemy families, story beats, layered combat regions, optional routes, and dedicated guardian courts; the next phase is continuous-world streaming and cross-chapter visual polish
 - Additional bosses, relics, abilities, synergies, events, missions, cosmetics, difficulties, and challenge modes
 
 Each new hero requires complete directional movement, primary attacks, ability casts, hit/death/victory states, portrait/loadout art, VFX, audio, and gameplay tuning before release.

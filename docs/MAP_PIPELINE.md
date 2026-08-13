@@ -1,6 +1,6 @@
 # BrawlPaws layered map pipeline
 
-BrawlPaws maps are Tiled JSON maps rendered by the pinned local Phaser 3.90 runtime. The first five realms—Jade Grove, Bamboo Hollow, Crimson Dojo, Storm Coast, and Neon City—each ship with ten 6144×3840 layered templates loaded by one reusable runtime. Their source generators live in `scripts/build-*-maps.mjs` plus the original `build-shrine-map.mjs`.
+BrawlPaws maps are Tiled JSON maps rendered by the pinned local Phaser 3.90 runtime. All six realms—Jade Grove, Bamboo Hollow, Crimson Dojo, Storm Coast, Neon City, and Shadow Realm—each ship with ten 6144×3840 layered templates loaded by one reusable runtime. Their source generators live in `scripts/build-*-maps.mjs` plus the original `build-shrine-map.mjs`.
 
 ## Jade Grove template library
 
@@ -76,6 +76,21 @@ Water and sky-drop regions are solid navigation boundaries rather than decoratio
 - `kernel-foundry.json` — optional elite and shop district
 
 Building footprints, skyrail drops, hologram voids, and server walls are actual collision. Firewall Override lanes cross the legal movement corridors; the Shogun Core owns Daikyo’s descent trigger, combat seal, and final-realm gate.
+
+## Shadow Realm template library
+
+- `obsidian-lantern-path.json` — the final realm's broad lantern road
+- `mirrorgrave-village.json` — ruined homes, grave wings, and shattered square
+- `wraithwood-crossing.json` — narrow route between solid haunted forests
+- `eclipse-archive.json` — sealed stacks and the central eclipse dais
+- `moonless-processional.json` — chained approach to the Umbral Palace
+- `umbral-palace-steps.json` — fortified late-run palace climb
+- `throne-beyond-moon.json` — Tsukiko's giant final guardian domain
+- `forsaken-mirror-vault.json` — optional story and relic vault
+- `eclipse-sanctuary.json` — optional recovery and shrine route
+- `dreadmoon-prison.json` — optional elite and shop gauntlet
+
+Void edges, Wraithwood masses, archive wings, prison blocks, and throne chasms are physical collision. Eclipse Rifts target valid combat lanes, while the throne owns Tsukiko's challenge trigger, final combat seal, and campaign-return gate.
 
 The current migration keeps the proven combat/HUD canvas above Phaser while Phaser owns tilemap loading, camera culling, map art, authored world objects, collision geometry, gates, VFX anchors, and the F3 debug view. Combat actors consume the same map collision data now; actors, projectiles, and remaining effects move into Phaser incrementally without throwing away working game logic.
 

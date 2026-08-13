@@ -1,6 +1,6 @@
 import { clamp, lerp, normalize, distance, approachAngle, encounterActiveLimit, campaignPressureCurve, cappedWardPressure, normalizedEnemyScales, enemySpeedCeiling, enemyTelegraphFloor, incomingDamageLimit, guardianAttackTiming } from './math.js?v=20260812-guardians1';
-import { HEROES, WEAPONS, ABILITIES, STATUS_EFFECTS, ELITE_MODIFIERS, BOSS_PATTERNS, BOSS_PROFILES, ENEMIES, ENCOUNTERS, ROOMS, DIFFICULTIES } from './data.js';
-import { createLayeredMapRuntime } from './map-runtime.js?v=20260813-expedition1';
+import { HEROES, WEAPONS, ABILITIES, STATUS_EFFECTS, ELITE_MODIFIERS, BOSS_PATTERNS, BOSS_PROFILES, ENEMIES, ENCOUNTERS, ROOMS, DIFFICULTIES } from './data.js?v=20260813-expedition6';
+import { createLayeredMapRuntime } from './map-runtime.js?v=20260813-expedition6';
 
 const canvas = document.querySelector('#game');
 const ctx = canvas.getContext('2d', { alpha: true });
@@ -1104,6 +1104,7 @@ const BAMBOO_OPTIONAL_ROOMS={event:'bambooWhisperingGrotto',secret:'bambooWhispe
 const CRIMSON_OPTIONAL_ROOMS={event:'crimsonFoxfireArchive',secret:'crimsonFoxfireArchive',shop:'crimsonExecutionYard',elite:'crimsonExecutionYard',shrine:'crimsonAncestorShrine',heal:'crimsonAncestorShrine',treasure:'crimsonFoxfireArchive'};
 const STORM_OPTIONAL_ROOMS={event:'stormPearlCove',secret:'stormPearlCove',shop:'stormRaiderWreck',elite:'stormRaiderWreck',shrine:'stormTidekeeperShrine',heal:'stormTidekeeperShrine',treasure:'stormPearlCove'};
 const NEON_OPTIONAL_ROOMS={event:'neonMemoryBazaar',secret:'neonMemoryBazaar',shop:'neonKernelFoundry',elite:'neonKernelFoundry',shrine:'neonPulseShrine',heal:'neonPulseShrine',treasure:'neonMemoryBazaar'};
+const SHADOW_OPTIONAL_ROOMS={event:'shadowForsakenMirrorVault',secret:'shadowForsakenMirrorVault',shop:'shadowDreadmoonPrison',elite:'shadowDreadmoonPrison',shrine:'shadowEclipseSanctuary',heal:'shadowEclipseSanctuary',treasure:'shadowForsakenMirrorVault'};
 function roomForWave(index,nodeType='combat'){
   const rooms=chapter.rooms||[chapter.room];
   if(chapter.id==='jadeChapter'&&index>0&&index<rooms.length&&JADE_OPTIONAL_ROOMS[nodeType])return JADE_OPTIONAL_ROOMS[nodeType];
@@ -1111,6 +1112,7 @@ function roomForWave(index,nodeType='combat'){
   if(chapter.id==='crimsonChapter'&&index>0&&index<rooms.length&&CRIMSON_OPTIONAL_ROOMS[nodeType])return CRIMSON_OPTIONAL_ROOMS[nodeType];
   if(chapter.id==='stormChapter'&&index>0&&index<rooms.length&&STORM_OPTIONAL_ROOMS[nodeType])return STORM_OPTIONAL_ROOMS[nodeType];
   if(chapter.id==='neonChapter'&&index>0&&index<rooms.length&&NEON_OPTIONAL_ROOMS[nodeType])return NEON_OPTIONAL_ROOMS[nodeType];
+  if(chapter.id==='shadowChapter'&&index>0&&index<rooms.length&&SHADOW_OPTIONAL_ROOMS[nodeType])return SHADOW_OPTIONAL_ROOMS[nodeType];
   return rooms[Math.min(rooms.length-1,index%rooms.length)];
 }
 
@@ -2045,6 +2047,7 @@ function begin() {
   if(debugSystem==='crimsonRoute'){setChapter(2);player.maxHealth=2400;player.health=2400;startWave(3,{nodeType:['elite','shrine','event'].includes(debugParams.get('node'))?debugParams.get('node'):'elite'});return;}
   if(debugSystem==='stormRoute'){setChapter(3);player.maxHealth=3200;player.health=3200;startWave(4,{nodeType:['elite','shrine','event'].includes(debugParams.get('node'))?debugParams.get('node'):'elite'});return;}
   if(debugSystem==='neonRoute'){setChapter(4);player.maxHealth=4200;player.health=4200;startWave(4,{nodeType:['elite','shrine','event'].includes(debugParams.get('node'))?debugParams.get('node'):'elite'});return;}
+  if(debugSystem==='shadowRoute'){setChapter(5);player.maxHealth=12000;player.health=12000;startWave(4,{nodeType:['elite','shrine','event'].includes(debugParams.get('node'))?debugParams.get('node'):'elite'});return;}
   if(debugSystem==='specialists'){startSpecialistShowcase();return;}
   if(debugSystem==='statuses'){startStatusShowcase();return;}
   if(debugSystem==='capstone'){player.level=10;player.maxHealth=1200;player.health=1200;player.damageMultiplier=2.4;player.weaponEvolution=selectedHeroId==='kitsune'?'phaseNova':selectedHeroId==='bamboo'?'siegeLotus':selectedHeroId==='hopscotch'?'moonConstellation':selectedHeroId==='rusty'?'deadeyeCircuit':selectedHeroId==='nomi'?'skyfeatherConstellation':'thunderheadArray';player.bonusPierces=selectedHeroId==='hopscotch'?2:player.bonusPierces;player.bonusRicochets=selectedHeroId==='rusty'?2:player.bonusRicochets;player.arcChainBonus=selectedHeroId==='zap'?3:player.arcChainBonus;refreshSynergyHud();startWave(4);return;}
