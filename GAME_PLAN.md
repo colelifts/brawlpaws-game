@@ -128,6 +128,7 @@ Next ability work:
 - Move remaining duration ticks and VFX routing fully behind the shared status registry. **Duration and expiry routing complete:** all non-damage-over-time conditions tick through one registry loop; Burn and Bleed retain their shared damage tick handlers, while Chill-to-Freeze now applies through the same status API.
 - Extend the landed hero state atlases into multi-frame cast/action/recovery sequences after gameplay timing is locked. **Timing complete:** every ability now declares cast duration and release time; its effect fires on that visible release, while the dedicated hero silhouette moves through anticipation, commit, recoil, and recovery without surrendering aim-facing to movement.
 - Continue balancing evolution availability and damage against chapter corruption, guardian health, and high-rank Ascension armies
+- Online party combat now transmits authored weapon timing, ability anticipation/release, live aim, movement cadence, and the resulting shared projectiles/status effects. Remote allies use their own directional fire and state atlases instead of appearing as non-combat moving avatars.
 
 **Exit gate:** abilities are mechanically distinct, readable at game scale, aim correctly in eight directions, and display clear cooldown states.
 

@@ -195,7 +195,7 @@ test('all sixty authored regions belong to one persistent expedition topology',(
   assert.match(game,/clearedRegions:new Set\(\)/);
   assert.match(game,/world:\{id:EXPEDITION_WORLD\.id,discovered:/);
   assert.match(game,/worldX:worldPosition\.x,worldY:worldPosition\.y/);
-  assert.match(game,/sendCoop\('presence',\{x:player\.x,y:player\.y,worldX:/);
+  assert.match(game,/sendCoop\('presence',\{x:player\.x,y:player\.y,[\s\S]{0,80}worldX:/);
 });
 
 test('expedition distance drives danger, loot quality, discoveries, and safe extraction',()=>{
@@ -388,7 +388,7 @@ test('elemental recipes unlock visible combat-changing synergies',()=>{
 });
 
 test('Shock Paws is a long global ultimate that resolves every active enemy',()=>{
-  assert.match(game,/const targets = enemies\.filter\(\(enemy\)=>!enemy\.dead&&enemy\.state!==\'waiting\'\)/);
+  assert.match(game,/targets ?= enemies\.filter\(\(enemy\)=>!enemy\.dead&&enemy\.state!==\'waiting\'\)/);
   assert.match(game,/for \(const enemy of targets\)/);
   assert.match(data,/shockPaws:[^\n]*damage:\s*16/);
   assert.match(data,/shockPaws:[^\n]*duration:\s*5\.4/);
@@ -460,6 +460,22 @@ test('online co-op exposes room codes, live authority, and party-size pressure s
   assert.match(game,/corruption\.count\*party\.count/);
   assert.match(game,/corruption\.health\*party\.health/);
   assert.match(game,/corruption\.damage\*party\.damage/);
+});
+
+test('online allies transmit timed weapon and ability combat instead of avatar-only presence',()=>{
+  for(const fn of ['spawnRemoteWeaponVolley','spawnRemoteAbility'])assert.match(game,new RegExp(`function ${fn}\\(`));
+  for(const kind of ['abilityStart','abilityRelease'])assert.match(game,new RegExp(`kind:'${kind}'`));
+  for(const kind of ['attackStart','attackRelease'])assert.match(game,new RegExp(`kind:'${kind}'`));
+  assert.match(game,/remoteAttack=\{elapsed:0,duration:remoteWeapon\.attackDuration/);
+  assert.match(game,/remoteCast=\{abilityId:definition\.id,elapsed:0,duration:definition\.castDuration/);
+  assert.match(game,/if\(payload\.kind==='attackRelease'\)[\s\S]{0,380}spawnRemoteWeaponVolley/);
+  assert.match(game,/steamBurst:Boolean\(payload\.steamBurst\)/);
+  assert.match(game,/stormCurrent:Boolean\(payload\.stormCurrent\)/);
+  assert.match(game,/const source=storm\.source\|\|player/);
+  assert.match(game,/vortex\.definition\.damage\*\(vortex\.power\|\|1\)/);
+  assert.match(game,/stateSheet=assets\[remoteHero\.stateAsset\]/);
+  assert.match(game,/fireSheet=assets\[remoteHero\.fireAsset\]/);
+  assert.match(game,/debugSystem==='coopCombat'/);
 });
 
 test('specialist enemies use dedicated animation and attack assets',()=>{
