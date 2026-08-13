@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { BOSS_PATTERNS, BOSS_PROFILES, ENCOUNTERS } from '../src/data.js';
 import { encounterActiveLimit } from '../src/math.js';
-import { EXPEDITION_WORLD, expeditionThreat } from '../src/expedition-world.js';
+import { EXPEDITION_WORLD, EXPEDITION_MILESTONES, expeditionRealmProgress, expeditionThreat } from '../src/expedition-world.js';
 
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const game=readFileSync(new URL('../src/game.js',import.meta.url),'utf8');
@@ -191,6 +191,17 @@ test('expedition distance drives danger, loot quality, discoveries, and safe ext
   for(const id of ['expedition-pressure','expedition-threat','expedition-loot','expedition-risk','world-map-risk','route-extract'])assert.match(html,new RegExp(`id="${id}"`));
   assert.match(game,/function extractExpedition\(/);assert.match(game,/expeditionsExtracted/);assert.match(game,/worldDiscoveries/);assert.match(game,/expeditionShards/);
   assert.match(game,/regionPressure\.enemyHealth/);assert.match(game,/regionThreat\.gold/);assert.match(game,/Math\.floor\(\(player\.expeditionShards\|\|0\)\*\.35\)/);
+});
+
+test('World I exploration earns permanent cartographer milestones and realm seals',()=>{
+  assert.deepEqual(EXPEDITION_MILESTONES.map((milestone)=>milestone.count),[5,15,30,45,60]);
+  assert.ok(EXPEDITION_MILESTONES.every((milestone)=>milestone.reward>0));
+  const realms=expeditionRealmProgress(['jadeCourtyard','jadeMoonbridge'],['jade']);
+  assert.equal(realms.length,6);assert.equal(realms[0].charted,2);assert.equal(realms[0].sealed,true);assert.equal(realms[1].sealed,false);
+  for(const id of ['world-map-seals','world-map-milestone'])assert.match(html,new RegExp(`id="${id}"`));
+  assert.match(game,/function claimExpeditionMilestones\(/);
+  assert.match(game,/profile\.realmSeals\.push\(realm\.id\)/);
+  assert.match(game,/profile\.worldsCompleted\.push\(EXPEDITION_WORLD\.id\)/);
 });
 
 test('route cards travel to real neighboring regions and preserve the destination through detours',()=>{

@@ -49,6 +49,13 @@ export const EXPEDITION_LOOT_TIERS=[
   {id:'legendary',name:'LEGENDARY',color:'#ff8b38',multiplier:3.05},
   {id:'mythic',name:'MYTHIC',color:'#ffe06a',multiplier:4.1}
 ];
+export const EXPEDITION_MILESTONES=[
+  {id:'firstTrail',count:5,name:'FIRST TRAIL',reward:15,copy:'Chart five landmarks'},
+  {id:'wayfinder',count:15,name:'WAYFINDER',reward:30,copy:'Chart a quarter of World I'},
+  {id:'realmWalker',count:30,name:'REALM WALKER',reward:50,copy:'Chart half of World I'},
+  {id:'spiritCartographer',count:45,name:'SPIRIT CARTOGRAPHER',reward:75,copy:'Chart three quarters of World I'},
+  {id:'worldOneAtlas',count:60,name:'WORLD I ATLAS',reward:125,copy:'Chart every World I landmark'}
+];
 export const expeditionNode=(roomId)=>NODE_BY_ROOM.get(roomId)||null;
 export const expeditionNeighbors=(roomId)=>links.flatMap((link)=>link.from===roomId?[link.to]:link.to===roomId?[link.from]:[]);
 export function expeditionThreat(roomId){
@@ -69,4 +76,8 @@ export function expeditionWorldPosition(roomId,localX=3072,localY=1940){
 }
 export function expeditionProgress(discovered=[]){
   const known=discovered instanceof Set?discovered:new Set(discovered),count=nodes.reduce((total,node)=>total+(known.has(node.roomId)?1:0),0);return {discovered:count,total:nodes.length,ratio:nodes.length?count/nodes.length:0};
+}
+export function expeditionRealmProgress(discovered=[],realmSeals=[]){
+  const known=discovered instanceof Set?discovered:new Set(discovered),seals=realmSeals instanceof Set?realmSeals:new Set(realmSeals);
+  return EXPEDITION_WORLD.chapters.map((chapter,index)=>{const regionIds=[...chapter.rooms,...chapter.branches],charted=regionIds.filter((id)=>known.has(id)).length;return {...chapter,index,charted,total:regionIds.length,sealed:seals.has(chapter.id)};});
 }

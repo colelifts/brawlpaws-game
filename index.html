@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#080817" />
   <link rel="icon" href="data:," />
   <title>BrawlPaws — Six-Chapter Roguelite Campaign</title>
-  <link rel="stylesheet" href="styles.css?v=20260813-save1" />
+  <link rel="stylesheet" href="styles.css?v=20260813-world4" />
 </head>
 <body>
   <main id="game-shell" aria-label="BrawlPaws roguelite campaign">
@@ -248,7 +248,7 @@
             <label class="audio-slider"><input type="range" min="0" max="1" step="0.01" data-audio-setting="uiVolume"><output data-audio-output="uiVolume">70%</output></label>
           </article>
           <article class="save-data-row">
-            <header><div><strong>CAMPAIGN SAVE</strong><p id="save-data-summary">PROFILE V2 · STORED ON THIS DEVICE</p></div><span id="save-data-status" role="status">READY</span></header>
+            <header><div><strong>CAMPAIGN SAVE</strong><p id="save-data-summary">PROFILE V3 · STORED ON THIS DEVICE</p></div><span id="save-data-status" role="status">READY</span></header>
             <textarea id="save-data-text" aria-label="BrawlPaws save data" spellcheck="false" placeholder="Exported save data appears here. To import, paste a BrawlPaws save here or choose a JSON file."></textarea>
             <div class="save-data-actions">
               <button id="export-save" type="button">EXPORT &amp; DOWNLOAD</button>
@@ -282,6 +282,7 @@
     <section id="world-map-screen" class="overlay world-map-screen" aria-labelledby="world-map-title">
       <div class="world-map-panel brush-panel">
         <header><div><p>EXPEDITION WORLD I</p><h2 id="world-map-title">THE SIX-REALM SPIRIT ROAD</h2></div><span id="world-map-progress">1 / 60 REGIONS</span></header>
+        <div class="world-map-milestones"><div id="world-map-seals" class="world-map-seals" aria-label="Realm seals"></div><p id="world-map-milestone">NEXT CARTOGRAPHER REWARD · 5 LANDMARKS</p></div>
         <canvas id="world-map" width="1280" height="680" aria-label="Explored expedition regions"></canvas>
         <footer><span id="world-map-location">CURRENT REGION · JADE GROVE</span><b id="world-map-risk">0 ROAD SHARDS AT RISK</b><button id="close-world-map" type="button">RETURN TO THE ROAD <kbd>M</kbd></button></footer>
       </div>
@@ -412,6 +413,6 @@
     <div id="loading">AWAKENING THE GROVE…</div>
   </main>
   <script src="vendor/phaser-3.90.0.min.js"></script>
-    <script type="module" src="src/game.js?v=20260813-save1"></script>
+    <script type="module" src="src/game.js?v=20260813-world4"></script>
 </body>
 </html>

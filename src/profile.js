@@ -1,7 +1,7 @@
 import { HEROES, WEAPONS, ENEMIES, DIFFICULTIES } from './data.js?v=20260813-expedition6';
 import { expeditionNode } from './expedition-world.js?v=20260813-world2';
 
-export const PROFILE_VERSION=2;
+export const PROFILE_VERSION=3;
 export const PROFILE_FORMAT='brawlpaws-save';
 export const DEFAULT_SETTINGS=Object.freeze({screenShake:1,flashIntensity:1,damageNumbers:true,ambientMotion:true,minimap:true,masterVolume:.8,musicVolume:.55,sfxVolume:.85,abilityVolume:.85,uiVolume:.7});
 export const DEFAULT_CONTRACT_PROGRESS=Object.freeze({spiritCull:0,eliteBreakers:0,foxfireHunt:0,sealRunner:0,guardianOath:0});
@@ -12,13 +12,14 @@ const unique=(value,predicate)=>[...new Set((Array.isArray(value)?value:[]).filt
 const identifier=(value)=>typeof value==='string'&&/^[a-zA-Z0-9_-]{1,64}$/.test(value);
 
 export function defaultHeroMastery(){return Object.fromEntries(Object.keys(HEROES).map((id)=>[id,{xp:0,highestRoad:0,kills:0,guardians:0}]));}
-export function createDefaultProfile(){return {schemaVersion:PROFILE_VERSION,spiritShards:0,campaignClears:0,runsStarted:0,expeditionsExtracted:0,bestExtractionDepth:0,bestDifficulty:'',lastDifficulty:'ferocious',selectedHero:'kitsune',highestLevel:1,tutorialComplete:false,tutorialStep:0,vitalityRank:0,forgeRank:0,attunementRank:0,purseRank:0,ascensionRank:1,ascensionClears:0,unlockedHeroes:['kitsune','bamboo'],collectedWeapons:[],boundArsenal:{},discoveredEnemies:['groveMinion'],discoveredGuardians:[],worldDiscoveries:['jadeCourtyard'],worldsCompleted:[],heroMastery:defaultHeroMastery(),contractProgress:{...DEFAULT_CONTRACT_PROGRESS},claimedContracts:[],settings:{...DEFAULT_SETTINGS}};}
+export function createDefaultProfile(){return {schemaVersion:PROFILE_VERSION,spiritShards:0,campaignClears:0,runsStarted:0,expeditionsExtracted:0,bestExtractionDepth:0,bestDifficulty:'',lastDifficulty:'ferocious',selectedHero:'kitsune',highestLevel:1,tutorialComplete:false,tutorialStep:0,vitalityRank:0,forgeRank:0,attunementRank:0,purseRank:0,ascensionRank:1,ascensionClears:0,unlockedHeroes:['kitsune','bamboo'],collectedWeapons:[],boundArsenal:{},discoveredEnemies:['groveMinion'],discoveredGuardians:[],worldDiscoveries:['jadeCourtyard'],worldsCompleted:[],realmSeals:[],claimedExpeditionMilestones:[],heroMastery:defaultHeroMastery(),contractProgress:{...DEFAULT_CONTRACT_PROGRESS},claimedContracts:[],settings:{...DEFAULT_SETTINGS}};}
 
 function migrateLegacy(raw){
   const source=raw&&typeof raw==='object'&&!Array.isArray(raw)?structuredClone(raw):{};
   const version=integer(source.schemaVersion||1,1,999);
   if(version>PROFILE_VERSION)throw new Error(`This save needs a newer BrawlPaws build (save v${version}, game v${PROFILE_VERSION}).`);
   if(version<2){source.worldsCompleted=Array.isArray(source.worldsCompleted)?source.worldsCompleted:[];source.schemaVersion=2;}
+  if(version<3){source.realmSeals=Array.isArray(source.realmSeals)?source.realmSeals:[];source.claimedExpeditionMilestones=Array.isArray(source.claimedExpeditionMilestones)?source.claimedExpeditionMilestones:[];source.schemaVersion=3;}
   return source;
 }
 
@@ -47,6 +48,8 @@ export function sanitizeProfile(raw){
   profile.worldDiscoveries=unique(source.worldDiscoveries,(id)=>Boolean(expeditionNode(id)));
   if(!profile.worldDiscoveries.includes('jadeCourtyard'))profile.worldDiscoveries.unshift('jadeCourtyard');
   profile.worldsCompleted=unique(source.worldsCompleted,identifier);
+  profile.realmSeals=unique(source.realmSeals,identifier);
+  profile.claimedExpeditionMilestones=unique(source.claimedExpeditionMilestones,identifier);
   profile.heroMastery=defaultHeroMastery();
   for(const id of Object.keys(HEROES)){const saved=source.heroMastery?.[id]||{};profile.heroMastery[id]={xp:integer(saved.xp),highestRoad:integer(saved.highestRoad),kills:integer(saved.kills),guardians:integer(saved.guardians)};}
   for(const id of Object.keys(DEFAULT_CONTRACT_PROGRESS))profile.contractProgress[id]=integer(source.contractProgress?.[id]);
