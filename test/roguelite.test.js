@@ -276,6 +276,15 @@ test('authored return gates revisit cleared regions without replaying combat',()
   assert.match(game,/RETURNING ALONG THE SPIRIT ROAD/);
 });
 
+test('Tiled cutscene triggers launch saved one-time world dialogue',()=>{
+  assert.match(mapRuntime,/triggersAt\(entity,roomId=this\.activeRoomId\)/);
+  for(const helper of ['mapCutsceneDefinition','showMapCutscene','finishMapCutscene','updateMapTriggers'])assert.match(game,new RegExp(`function ${helper}\\(`));
+  assert.match(game,/layeredMapRuntime\.triggersAt\(player\)/);
+  assert.match(game,/player\.mapTriggersSeen\.add\(id\)/);
+  assert.match(game,/mapTriggersSeen:\[\.\.\.\(player\.mapTriggersSeen\|\|\[\]\)\]/);
+  assert.match(game,/if\(activeMapCutscene\)\{finishMapCutscene\(\);return;\}/);
+});
+
 test('the Mission Board tracks and rewards persistent campaign contracts',()=>{
   for(const id of ['spiritCull','eliteBreakers','foxfireHunt','sealRunner','guardianOath'])assert.match(game,new RegExp(`id:'${id}'`));
   for(const helper of ['recordContractProgress','renderMissionBoard','claimCampaignContract','contractClaimed'])assert.match(game,new RegExp(`function ${helper}\\(`));

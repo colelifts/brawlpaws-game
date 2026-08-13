@@ -498,6 +498,7 @@ let roomInteractable = null;
 let destructibles = [];
 let tutorialActive=null;
 let tutorialTypeTimer=null;
+let activeMapCutscene=null;
 let roomMission = null;
 let missionCheckpointClock = 0;
 let defeatReason = '';
@@ -598,7 +599,7 @@ function serializePlayerCheckpoint(){
   const worldPosition=expeditionWorldPosition(room.id,player.x,player.y);
   return {
     ...player,x:room.playerSpawn.x,y:room.playerSpawn.y,worldX:worldPosition.x,worldY:worldPosition.y,currentRegion:room.id,vx:0,vy:0,attack:null,shotCooldown:0,dashTime:0,dashCooldown:0,invulnerable:1.1,flash:0,hurtTime:0,stunTime:0,bleedTime:0,bleedTick:0,curseTime:0,curseMultiplier:1,castTime:0,ultimateFlash:0,wildHeartTime:0,braceTime:0,braced:false,
-    unlockedAbilities:[...player.unlockedAbilities],synergies:[...player.synergies],eventHistory:[...player.eventHistory],shopPurchases:[...player.shopPurchases],discoveredRegions:[...(player.discoveredRegions||[])],clearedRegions:[...(player.clearedRegions||[])]
+    unlockedAbilities:[...player.unlockedAbilities],synergies:[...player.synergies],eventHistory:[...player.eventHistory],shopPurchases:[...player.shopPurchases],discoveredRegions:[...(player.discoveredRegions||[])],clearedRegions:[...(player.clearedRegions||[])],mapTriggersSeen:[...(player.mapTriggersSeen||[])]
   };
 }
 
@@ -658,6 +659,7 @@ function restorePlayerCheckpoint(saved){
   restored.eventHistory=new Set(Array.isArray(saved.eventHistory)?saved.eventHistory:[]);
   restored.shopPurchases=new Set(Array.isArray(saved.shopPurchases)?saved.shopPurchases:[]);
   restored.discoveredRegions=new Set(Array.isArray(saved.discoveredRegions)?saved.discoveredRegions:[saved.currentRegion||chapter.room]);restored.clearedRegions=new Set(Array.isArray(saved.clearedRegions)?saved.clearedRegions:[]);
+  restored.mapTriggersSeen=new Set(Array.isArray(saved.mapTriggersSeen)?saved.mapTriggersSeen:[]);
   Object.assign(player,restored,{x:room.playerSpawn.x,y:room.playerSpawn.y,vx:0,vy:0,attack:null,dashTime:0,shotCooldown:0,aimFacing:Number.isFinite(restored.aimFacing)?restored.aimFacing:(restored.facing??-Math.PI/2),moveFacing:Number.isFinite(restored.moveFacing)?restored.moveFacing:(restored.facing??-Math.PI/2),aimLockTime:0,invulnerable:1.1,flash:0,hurtTime:0,stunTime:0,bleedTime:0,bleedTick:0,curseTime:0,curseMultiplier:1,castTime:0,ultimateFlash:0,wildHeartTime:0,braceTime:0,braced:false});player.maxSpiritShield=Math.max(0,Number(player.maxSpiritShield)||0);player.spiritShield=clamp(Number(player.spiritShield)||0,0,player.maxSpiritShield);
   equipWeapon(WEAPONS[player.weaponId]?player.weaponId:heroDef.weapon);player.health=clamp(Number(player.health)||1,1,player.maxHealth);camera.x=player.x;camera.y=player.y;camera.shake=0;resolveSynergies();
 }
@@ -1321,7 +1323,7 @@ function resetGame() {
     abilityEvolutions:{undertowWell:false,foxfireVolley:false,wildHeart:false,shockPaws:false},
     upgradeRanks:{spiritRounds:0,quickPaws:0,vitality:0,undertow:0,hungryFlame:0,heartBloom:0,stormHeart:0,wardbreaker:0,spiritHunter:0,spiritCatalyst:0,pressureChamber:0,headhunter:0,keenEye:0,moonPiercer:0,perfectDraw:0,glassFang:0,spiritMomentum:0,guardianHunter:0,deepReserves:0,bankShot:0,loadedDice:0,quickdraw:0,spiritCylinder:0,phaseRounds:0,foxstepMastery:0,ironBelly:0,scatterBore:0,guardianHide:0,capacitorBank:0,chainLogic:0,rapidCycle:0,moonEdge:0,secondPassage:0,cranePoise:0,permafrost:0,shatterpoint:0,oniPayload:0,blastChamber:0,razorCurrent:0,typhoonReach:0,cinderDrum:0,ruptureMagazine:0,cycloneEdge:0,crosswindRecall:0,lunarCapacitor:0,horizonBore:0,razorFang:0,hollowHex:0,spiritAegis:0},
     heartBonus: 0, stormBonus: 0,guardianBlessings:[],endingVow:null,victoryShardBonus:0,
-    gold:legacyGold,goldMultiplier:1,expeditionShards:0,relics:[],shopPurchases:new Set(),discoveredRegions:new Set(profile.worldDiscoveries||[room.id]),clearedRegions:new Set(),regionHistory:[],worldX:0,worldY:0,currentRegion:room.id,killHeal:0,damageTakenMultiplier:heroDef.damageTakenMultiplier,speedMultiplier:masteryBonus.speed,dashCooldownMultiplier:1,
+    gold:legacyGold,goldMultiplier:1,expeditionShards:0,relics:[],shopPurchases:new Set(),discoveredRegions:new Set(profile.worldDiscoveries||[room.id]),clearedRegions:new Set(),regionHistory:[],mapTriggersSeen:new Set(),worldX:0,worldY:0,currentRegion:room.id,killHeal:0,damageTakenMultiplier:heroDef.damageTakenMultiplier,speedMultiplier:masteryBonus.speed,dashCooldownMultiplier:1,
     knockbackResistance:heroDef.knockbackResistance,knockbackMultiplier:1,braceTime:0,braceDelay:.72,braceDamageMultiplier:.8,braced:false,shieldDamageMultiplier:1,eliteDamageMultiplier:contractClaimed('eliteBreakers')?1.08:1,guardianDamageMultiplier:contractClaimed('guardianOath')?1.08:1,eliteGoldMultiplier:1,eliteKillHeal:0,statusDurationMultiplier:1,bleedOnHit:0,bleedSpread:false,curseOnCrit:0,cursePowerMultiplier:1,curseDurationMultiplier:1,spiritShield:0,maxSpiritShield:0,shieldTime:0,bonusProjectiles:0,bonusPierces:0,bonusRicochets:0,ricochetDamageRetention:.78,critBonus:0,critDamageMultiplier:1,arcChainBonus:0,arcChainPower:1,arcChainRange:0,glaiveReturnPower:1,glaiveReturnSpeed:1,glaiveReturnCrit:0,weaponEvolution:null,
     wildHeartTime: 0, ultimateFlash: 0, castTime: 0, castAbility: null,
     hitCount: 0, maxCombo: 0, comboDrop: 0, dashes: 0, hurtTime: 0, stunTime: 0, bleedTime:0, bleedTick:0, curseTime:0, curseMultiplier:1,
@@ -1483,8 +1485,28 @@ function showStory(beat) {
 }
 
 function continueStory() {
+  if(activeMapCutscene){finishMapCutscene();return;}
   storyScreen.classList.remove('active');
   if(encounter.storyBeat==='epilogue')openEndlessRoadDecision({campaignVictory:true});else if(encounter.storyBeat==='boss')spawnBoss();else if(encounter.storyBeat==='interlude2')preparePhysicalRoute(2);else if(encounter.storyBeat==='interlude4')preparePhysicalRoute(4);else if(chapterIndex===0&&!profile.tutorialComplete){startWave(0);showTutorialLesson(clamp(profile.tutorialStep||0,0,TUTORIAL_LESSONS.length-1));}else startWave(0);
+}
+
+function mapCutsceneDefinition(trigger){
+  const id=trigger.properties.cutsceneId||trigger.name,node=expeditionNode(room.id),guardian=room.id===(chapter.bossRoom||chapter.rooms?.at(-1)),accent=node?.color||'#45efff';
+  if(guardian||id.includes('intro'))return {accent,kicker:`${node?.biomeName||chapter.name}  GUARDIAN TERRITORY`,title:`${room.name.toUpperCase()} ANSWERS`,copy:`The spirit road seals behind ${heroDef.name}. Every lantern bends toward the guardian at the center of the court.`,quote:'Read the warning. Survive the oath. Break the chain.',button:'ENTER THE GUARDIAN COURT'};
+  const kind=node?.kind||'main',copy=kind==='event'?'A hidden voice moves through the architecture. This road remembers choices the main path tried to bury.':kind==='shrine'?'The air grows still around an old sanctuary. Its power remains, but the corruption has already found the threshold.':kind==='elite'?'Broken weapons and deep pawprints mark a hunting ground claimed by the strongest spirits nearby.':`A new landmark opens ahead. The path is real, the walls are solid, and something has already heard ${heroDef.name} arrive.`;
+  return {accent,kicker:`${node?.biomeName||chapter.name}  LANDMARK DISCOVERED`,title:room.name.toUpperCase(),copy,quote:kind==='main'?'Every gate is a promise—and a warning.':'The dangerous roads remember better rewards.',button:'STEP ONTO THE ROAD'};
+}
+
+function showMapCutscene(trigger){
+  const id=`${room.id}:${trigger.properties.cutsceneId||trigger.name}`;if(player.mapTriggersSeen?.has(id))return;player.mapTriggersSeen.add(id);activeMapCutscene={id,roomId:room.id,trigger};const definition=mapCutsceneDefinition(trigger);state='story';input.keys.clear();input.attackHeld=false;storyScreen.classList.remove('tutorial-mode');storyScreen.classList.add('active');storyScreen.style.setProperty('--story-accent',definition.accent);ui.storyKicker.textContent=definition.kicker;ui.storyTitle.textContent=definition.title;typeTutorialCopy(definition.copy);ui.storyQuote.textContent=definition.quote;ui.storyProgress.textContent='AUTHORED MAP TRIGGER';ui.storyObjective.textContent=`CURRENT REGION  ${room.name.toUpperCase()}`;ui.storyButton.innerHTML=`${definition.button} <span>›</span>`;saveRunCheckpoint({kind:'wave',wave:Math.max(0,encounter.wave),modifiers:{...(encounter.modifiers||{}),missionState:serializeMissionState(),corruption:serializeCorruptionDirector()}});
+}
+
+function finishMapCutscene(){
+  clearInterval(tutorialTypeTimer);storyScreen.classList.remove('active','tutorial-mode');activeMapCutscene=null;state='playing';player.invulnerable=Math.max(player.invulnerable,1);lastTime=performance.now();
+}
+
+function updateMapTriggers(){
+  if(state!=='playing'||room.mapRuntime!=='phaser-tiled'||activeMapCutscene||tutorialActive||encounter.transitioning)return;for(const trigger of layeredMapRuntime.triggersAt(player)){const type=trigger.properties.triggerType,id=`${room.id}:${trigger.properties.cutsceneId||trigger.name}`;if(type!=='cutscene'||player.mapTriggersSeen?.has(id))continue;showMapCutscene(trigger);break;}
 }
 
 const TUTORIAL_LESSONS=[
@@ -2164,6 +2186,9 @@ function begin() {
   if(debugSystem==='physicalRoute'){
     player.maxHealth=900;player.health=900;player.clearedRegions=new Set(['jadeCourtyard','jadeMoonbridge']);player.regionHistory=['jadeCourtyard'];activateRoom('jadeMoonbridge',{reposition:true});encounter.wave=1;preparePhysicalRoute(2);if(debugParams.has('autowalk'))setTimeout(()=>{const choice=encounter.routeGateChoices?.find((entry)=>debugParams.has('back')?entry.backtrack:!entry.backtrack&&!entry.extract);if(choice){player.x=choice.x;player.y=choice.y;camera.x=player.x;camera.y=player.y;}},650);return;
   }
+  if(debugSystem==='mapCutscene'){
+    startWave(0);setTimeout(()=>{const trigger=layeredMapRuntime.worldObjects('Triggers').find((entry)=>entry.properties.triggerType==='cutscene');if(trigger){player.x=trigger.x+trigger.width/2;player.y=trigger.y+trigger.height/2;camera.x=player.x;camera.y=player.y;}},500);return;
+  }
   if(debugSystem==='bambooRoute'){setChapter(1);player.maxHealth=1600;player.health=1600;startWave(2,{nodeType:['elite','shrine','event'].includes(debugParams.get('node'))?debugParams.get('node'):'elite'});return;}
   if(debugSystem==='crimsonRoute'){setChapter(2);player.maxHealth=2400;player.health=2400;startWave(3,{nodeType:['elite','shrine','event'].includes(debugParams.get('node'))?debugParams.get('node'):'elite'});return;}
   if(debugSystem==='stormRoute'){setChapter(3);player.maxHealth=3200;player.health=3200;startWave(4,{nodeType:['elite','shrine','event'].includes(debugParams.get('node'))?debugParams.get('node'):'elite'});return;}
@@ -2516,6 +2541,7 @@ function updatePlayer(dt) {
   player.x += player.vx * dt;
   player.y += player.vy * dt;
   keepInArena(player);
+  updateMapTriggers();
   updateAttack(dt);
 }
 

@@ -200,6 +200,11 @@ export class LayeredMapRuntime {
     return entity.x>=gate.x-margin&&entity.x<=gate.x+gate.width+margin&&entity.y>=gate.y-margin&&entity.y<=gate.y+gate.height+margin?{destination:gate.properties.destination,gate}:null;
   }
 
+  triggersAt(entity,roomId=this.activeRoomId){
+    const triggers=this.worldObjects('Triggers',roomId),radius=entity.radius||18;
+    return triggers.filter((trigger)=>entity.x+radius>=trigger.x&&entity.x-radius<=trigger.x+trigger.width&&entity.y+radius>=trigger.y&&entity.y-radius<=trigger.y+trigger.height);
+  }
+
   renderDebug(){
     const entry=this.activeEntry();if(!entry)return;const g=entry.debugGraphics;g.clear();g.lineStyle(6,0x39f4ff,.9);for(const rect of entry.collision)g.strokeRect(rect.x,rect.y,rect.width,rect.height);for(const gate of entry.gates){g.lineStyle(6,gate.sealed?0xff3864:0x71ff71,.95);g.strokeRect(gate.x,gate.y,gate.width,gate.height);}
     for(const spawn of entry.objects['Enemy Spawns']){g.fillStyle(0xff365f,.9);g.fillCircle(spawn.x,spawn.y,22);}for(const trigger of entry.objects.Triggers){g.lineStyle(5,0xff4fd8,.8);g.strokeRect(trigger.x,trigger.y,trigger.width,trigger.height);}
