@@ -3,12 +3,14 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { BOSS_PATTERNS, BOSS_PROFILES, ENCOUNTERS } from '../src/data.js';
 import { encounterActiveLimit } from '../src/math.js';
+import { EXPEDITION_WORLD } from '../src/expedition-world.js';
 
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const game=readFileSync(new URL('../src/game.js',import.meta.url),'utf8');
 const data=readFileSync(new URL('../src/data.js',import.meta.url),'utf8');
 const styles=readFileSync(new URL('../styles.css',import.meta.url),'utf8');
 const mapRuntime=readFileSync(new URL('../src/map-runtime.js',import.meta.url),'utf8');
+const expeditionWorld=readFileSync(new URL('../src/expedition-world.js',import.meta.url),'utf8');
 const shrineMap=JSON.parse(readFileSync(new URL('../assets/maps/jade-grove/shrine-courtyard.json',import.meta.url),'utf8'));
 
 test('the run includes route and shop interaction surfaces',()=>{
@@ -74,6 +76,8 @@ test('ranged facing is independent from locomotion so strafing cannot flip the s
   assert.match(game,/aimFacing:\s*-Math\.PI\s*\/\s*2/);
   assert.match(game,/moveFacing:\s*-Math\.PI\s*\/\s*2/);
   assert.match(game,/const actionOwnsFacing =/);
+  assert.match(game,/const actionOwnsFacing = input\.pointer\.active/);
+  assert.match(game,/if \(input\.pointer\.active\) updatePointerAim/);
   assert.match(game,/if \(actionOwnsFacing && Number\.isFinite\(player\.aimFacing\)\) player\.facing = player\.aimFacing/);
   assert.match(game,/player\.moveFacing = Math\.atan2\(move\.y, move\.x\)/);
   assert.doesNotMatch(game,/else if \(!player\.attack\) \{\s*player\.facing = approachAngle\(player\.facing, Math\.atan2\(move\.y, move\.x\)/);
@@ -160,6 +164,23 @@ test('Shadow Realm owns ten layered endgame domains and Tsukiko throne',()=>{
   for(const optionalRoom of ['shadowForsakenMirrorVault','shadowEclipseSanctuary','shadowDreadmoonPrison'])assert.match(game,new RegExp(optionalRoom));
   assert.match(game,/SHADOW_OPTIONAL_ROOMS/);
   assert.match(game,/chapter\.id==='shadowChapter'.*SHADOW_OPTIONAL_ROOMS/);
+});
+
+test('all sixty authored regions belong to one persistent expedition topology',()=>{
+  for(const id of ['world-map-screen','world-map','world-map-progress','world-map-location','world-map-button'])assert.match(html,new RegExp(`id="${id}"`));
+  for(const fn of ['drawExpeditionWorldMap','openWorldMap','closeWorldMap'])assert.match(game,new RegExp(`function ${fn}\\(`));
+  for(const helper of ['EXPEDITION_WORLD','expeditionNode','expeditionNeighbors','expeditionWorldPosition','expeditionProgress'])assert.match(expeditionWorld,new RegExp(helper));
+  assert.match(expeditionWorld,/width:REGION_GAP_X\*5\+6900,height:10800/);
+  assert.equal(EXPEDITION_WORLD.chapters.length,6);
+  assert.equal(EXPEDITION_WORLD.nodes.length,60);
+  assert.equal(new Set(EXPEDITION_WORLD.nodes.map((node)=>node.roomId)).size,60);
+  assert.equal(EXPEDITION_WORLD.links.filter((link)=>link.kind==='realm').length,5);
+  assert.equal(EXPEDITION_WORLD.chapters.every((chapter)=>chapter.rooms.length===7&&chapter.branches.length===3),true);
+  assert.match(game,/discoveredRegions:new Set\(\[room\.id\]\)/);
+  assert.match(game,/clearedRegions:new Set\(\)/);
+  assert.match(game,/world:\{id:EXPEDITION_WORLD\.id,discovered:/);
+  assert.match(game,/worldX:worldPosition\.x,worldY:worldPosition\.y/);
+  assert.match(game,/sendCoop\('presence',\{x:player\.x,y:player\.y,worldX:/);
 });
 
 test('Chrome performance, adaptive audio, and readable choice art are production-wired',()=>{
@@ -572,7 +593,8 @@ test('the Spirit Dojo is an isolated interactive combat laboratory',()=>{
 test('combat waves activate distinct rooms with a visible location transition',()=>{
   for(const id of ['room-transition','room-transition-kicker','room-transition-title','room-transition-subtitle'])assert.match(html,new RegExp(`id="${id}"`));
   for(const fn of ['activateRoom','showRoomTransition','roomForWave'])assert.match(game,new RegExp(`function ${fn}\\(`));
-  assert.match(game,/activateRoom\(roomForWave\(index,requestedNodeType\)/);
+  assert.match(game,/targetRegion=.*roomForWave\(index,requestedNodeType\)/);
+  assert.match(game,/activateRoom\(targetRegion/);
   assert.match(game,/chapter\.bossRoom\|\|chapter\.rooms\?\.at\(-1\)/);
   assert.match(game,/const arenaCache=new Map/);
 });

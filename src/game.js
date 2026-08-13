@@ -1,11 +1,14 @@
 import { clamp, lerp, normalize, distance, approachAngle, encounterActiveLimit, campaignPressureCurve, cappedWardPressure, normalizedEnemyScales, enemySpeedCeiling, enemyTelegraphFloor, incomingDamageLimit, guardianAttackTiming } from './math.js?v=20260812-guardians1';
 import { HEROES, WEAPONS, ABILITIES, STATUS_EFFECTS, ELITE_MODIFIERS, BOSS_PATTERNS, BOSS_PROFILES, ENEMIES, ENCOUNTERS, ROOMS, DIFFICULTIES } from './data.js?v=20260813-expedition6';
 import { createLayeredMapRuntime } from './map-runtime.js?v=20260813-expedition6';
+import { EXPEDITION_WORLD, expeditionNode, expeditionNeighbors, expeditionWorldPosition, expeditionProgress } from './expedition-world.js?v=20260813-world1';
 
 const canvas = document.querySelector('#game');
 const ctx = canvas.getContext('2d', { alpha: true });
 const minimapCanvas = document.querySelector('#minimap');
 const minimapCtx = minimapCanvas.getContext('2d');
+const worldMapCanvas=document.querySelector('#world-map');
+const worldMapCtx=worldMapCanvas.getContext('2d');
 const shell = document.querySelector('#game-shell');
 const startScreen = document.querySelector('#start-screen');
 const resultScreen = document.querySelector('#result-screen');
@@ -27,6 +30,7 @@ const guardianRewardGrid = document.querySelector('#guardian-reward-grid');
 const relicDraftScreen = document.querySelector('#relic-draft-screen');
 const relicDraftGrid = document.querySelector('#relic-draft-grid');
 const codexScreen = document.querySelector('#codex-screen');
+const worldMapScreen=document.querySelector('#world-map-screen');
 const codexGrid = document.querySelector('#codex-grid');
 const codexDetail = document.querySelector('#codex-detail');
 const codexProgress = document.querySelector('#codex-progress');
@@ -187,6 +191,7 @@ const ui = {
   timer: document.querySelector('#timer'), objective: document.querySelector('#objective-text'),
   corruptionPanel:document.querySelector('#corruption-panel'),corruptionTier:document.querySelector('#corruption-tier'),corruptionFill:document.querySelector('#corruption-fill'),corruptionCopy:document.querySelector('#corruption-copy'),
   minimapPanel:document.querySelector('#minimap-panel'),minimapLabel:document.querySelector('#minimap-label'),minimapCount:document.querySelector('#minimap-count'),
+  worldMapButton:document.querySelector('#world-map-button'),worldMapProgress:document.querySelector('#world-map-progress'),worldMapLocation:document.querySelector('#world-map-location'),
   roomState: document.querySelector('#room-state'), comboPanel: document.querySelector('#combo-panel'),
   comboCount: document.querySelector('#combo-count'), dashCard: document.querySelector('#dash-card'),sprintCard:document.querySelector('#sprint-card'),sprintFill:document.querySelector('#sprint-fill'),
   dashCooldown: document.querySelector('#dash-cooldown'), resultTitle: document.querySelector('#result-title'),
@@ -493,6 +498,7 @@ let missionCheckpointClock = 0;
 let defeatReason = '';
 let roomTransitionTimer = 0;
 let codexReturnState = 'preview';
+let worldMapReturnState='playing';
 let activeCodexTab = 'heroes';
 let activeCodexId = null;
 let runActive = false;
@@ -565,7 +571,8 @@ function applyCoopSnapshot(payload){
   const ids=new Set((payload.enemies||[]).map((enemy)=>enemy.id));for(const enemy of enemies)if(!ids.has(enemy.id))enemy.dead=true;
 }
 function updateCoop(dt){
-  if(!coop.connected||!player)return;coop.presenceClock-=dt;coop.snapshotClock-=dt;if(coop.presenceClock<=0){coop.presenceClock=.08;sendCoop('presence',{x:player.x,y:player.y,facing:player.facing,health:player.health,hero:selectedHeroId,state,room:room.id});}
+  if(!player)return;const worldPosition=expeditionWorldPosition(room.id,player.x,player.y);player.worldX=worldPosition.x;player.worldY=worldPosition.y;player.currentRegion=room.id;
+  if(!coop.connected)return;coop.presenceClock-=dt;coop.snapshotClock-=dt;if(coop.presenceClock<=0){coop.presenceClock=.08;sendCoop('presence',{x:player.x,y:player.y,worldX:worldPosition.x,worldY:worldPosition.y,facing:player.facing,health:player.health,hero:selectedHeroId,state,room:room.id});}
   if(coopIsHost()&&coop.snapshotClock<=0&&state==='playing'){coop.snapshotClock=.1;sendCoop('snapshot',{payload:{room:room.id,enemies:enemies.map(({id,type,x,y,vx,vy,facing,state,stateTime,health,maxHealth,shield,maxShield,dead,deathTime,burnTime,wetTime,shockTime,stunTime,bleedTime,bleedPower,curseTime,curseMultiplier,shieldTime,conductiveStacks,conductiveTime,bossPhase,counterTime,chillStacks,chillTime,freezeTime})=>({id,type,x,y,vx,vy,facing,state,stateTime,health,maxHealth,shield,maxShield,dead,deathTime,burnTime,wetTime,shockTime,stunTime,bleedTime,bleedPower,curseTime,curseMultiplier,shieldTime,conductiveStacks,conductiveTime,bossPhase,counterTime,chillStacks,chillTime,freezeTime}))}});}
 }
 
@@ -580,9 +587,10 @@ const CORRUPTION_TIERS=[
 
 function serializePlayerCheckpoint(){
   if(!player)return null;
+  const worldPosition=expeditionWorldPosition(room.id,player.x,player.y);
   return {
-    ...player,x:room.playerSpawn.x,y:room.playerSpawn.y,vx:0,vy:0,attack:null,shotCooldown:0,dashTime:0,dashCooldown:0,invulnerable:1.1,flash:0,hurtTime:0,stunTime:0,bleedTime:0,bleedTick:0,curseTime:0,curseMultiplier:1,castTime:0,ultimateFlash:0,wildHeartTime:0,braceTime:0,braced:false,
-    unlockedAbilities:[...player.unlockedAbilities],synergies:[...player.synergies],eventHistory:[...player.eventHistory],shopPurchases:[...player.shopPurchases]
+    ...player,x:room.playerSpawn.x,y:room.playerSpawn.y,worldX:worldPosition.x,worldY:worldPosition.y,currentRegion:room.id,vx:0,vy:0,attack:null,shotCooldown:0,dashTime:0,dashCooldown:0,invulnerable:1.1,flash:0,hurtTime:0,stunTime:0,bleedTime:0,bleedTick:0,curseTime:0,curseMultiplier:1,castTime:0,ultimateFlash:0,wildHeartTime:0,braceTime:0,braced:false,
+    unlockedAbilities:[...player.unlockedAbilities],synergies:[...player.synergies],eventHistory:[...player.eventHistory],shopPurchases:[...player.shopPurchases],discoveredRegions:[...(player.discoveredRegions||[])],clearedRegions:[...(player.clearedRegions||[])]
   };
 }
 
@@ -619,7 +627,7 @@ function refreshContinueRunUi(){
 
 function saveRunCheckpoint(checkpoint){
   if(!runActive||!player||debugBoss||debugRoute>0||debugParams.has('chapter')||Boolean(debugSystem))return;
-  const snapshot={version:RUN_VERSION,savedAt:Date.now(),heroId:selectedHeroId,difficulty:selectedDifficulty,chapterIndex,runTime,checkpoint,player:serializePlayerCheckpoint()};
+  const snapshot={version:RUN_VERSION,savedAt:Date.now(),heroId:selectedHeroId,difficulty:selectedDifficulty,chapterIndex,runTime,checkpoint:{...checkpoint,region:room.id},world:{id:EXPEDITION_WORLD.id,discovered:[...(player.discoveredRegions||new Set([room.id]))],cleared:[...(player.clearedRegions||new Set())]},player:serializePlayerCheckpoint()};
   try{localStorage.setItem(RUN_KEY,JSON.stringify(snapshot));}catch{/* Run remains playable when storage is unavailable. */}
   refreshContinueRunUi();
 }
@@ -638,6 +646,7 @@ function restorePlayerCheckpoint(saved){
   restored.synergies=new Set(Array.isArray(saved.synergies)?saved.synergies:[]);
   restored.eventHistory=new Set(Array.isArray(saved.eventHistory)?saved.eventHistory:[]);
   restored.shopPurchases=new Set(Array.isArray(saved.shopPurchases)?saved.shopPurchases:[]);
+  restored.discoveredRegions=new Set(Array.isArray(saved.discoveredRegions)?saved.discoveredRegions:[saved.currentRegion||chapter.room]);restored.clearedRegions=new Set(Array.isArray(saved.clearedRegions)?saved.clearedRegions:[]);
   Object.assign(player,restored,{x:room.playerSpawn.x,y:room.playerSpawn.y,vx:0,vy:0,attack:null,dashTime:0,shotCooldown:0,aimFacing:Number.isFinite(restored.aimFacing)?restored.aimFacing:(restored.facing??-Math.PI/2),moveFacing:Number.isFinite(restored.moveFacing)?restored.moveFacing:(restored.facing??-Math.PI/2),aimLockTime:0,invulnerable:1.1,flash:0,hurtTime:0,stunTime:0,bleedTime:0,bleedTick:0,curseTime:0,curseMultiplier:1,castTime:0,ultimateFlash:0,wildHeartTime:0,braceTime:0,braced:false});player.maxSpiritShield=Math.max(0,Number(player.maxSpiritShield)||0);player.spiritShield=clamp(Number(player.spiritShield)||0,0,player.maxSpiritShield);
   equipWeapon(WEAPONS[player.weaponId]?player.weaponId:heroDef.weapon);player.health=clamp(Number(player.health)||1,1,player.maxHealth);camera.x=player.x;camera.y=player.y;camera.shake=0;resolveSynergies();
 }
@@ -646,13 +655,13 @@ function resumeSavedRun(){
   const snapshot=loadRunCheckpoint();if(!snapshot){refreshContinueRunUi();return;}
   ensureAudio();input.attack=false;input.attackHeld=false;input.keys.clear();
   selectedHeroId=snapshot.heroId;heroDef=HEROES[selectedHeroId];weapon=WEAPONS[heroDef.weapon];selectedDifficulty=snapshot.difficulty;applyHeroUi();refreshProfileUi();
-  resetGame();setChapter(snapshot.chapterIndex);restorePlayerCheckpoint(snapshot.player);runTime=Math.max(0,Number(snapshot.runTime)||0);runActive=true;
+  resetGame();setChapter(snapshot.chapterIndex);player.discoveredRegions=new Set(snapshot.world?.discovered||snapshot.player.discoveredRegions||[chapter.room]);player.clearedRegions=new Set(snapshot.world?.cleared||snapshot.player.clearedRegions||[]);restorePlayerCheckpoint(snapshot.player);runTime=Math.max(0,Number(snapshot.runTime)||0);runActive=true;
   startScreen.classList.remove('active');resultScreen.classList.remove('active');hud.classList.remove('hidden');
   const point=snapshot.checkpoint;
   if(point.kind==='boss')spawnBoss({restoring:true});
   else if(point.kind==='guardianReward')openGuardianReward(point.guardianId);
-  else if(point.kind==='route')openRoute(point.nextWave);
-  else if(point.kind==='wave')startWave(point.wave,point.modifiers||{});
+  else if(point.kind==='route'){if(point.region&&ROOMS[point.region])activateRoom(point.region,{reposition:true});openRoute(point.nextWave);}
+  else if(point.kind==='wave')startWave(point.wave,{...(point.modifiers||{}),resumeRegion:point.region});
   else showStory(['intro','interlude2','interlude4','boss','epilogue'].includes(point.beat)?point.beat:'intro');
   updateHud();
 }
@@ -1089,6 +1098,7 @@ function activateRoom(roomId,{reposition=true,announce=false,waveIndex=0,subtitl
   const nextRoom=ROOMS[roomId];if(!nextRoom)return;room=nextRoom;assets.arena=loadRoomArena(room);
   const authoredSpawn=room.mapRuntime==='phaser-tiled'?layeredMapRuntime.playerSpawn(room.id):null,spawn=authoredSpawn||room.playerSpawn;
   if(reposition&&player){player.x=spawn.x;player.y=spawn.y;player.vx=0;player.vy=0;player.facing=-Math.PI/2;player.invulnerable=Math.max(player.invulnerable,1.1);camera.x=player.x;camera.y=player.y;camera.shake=0;}
+  if(player){if(!(player.discoveredRegions instanceof Set))player.discoveredRegions=new Set(player.discoveredRegions||[]);if(expeditionNode(room.id))player.discoveredRegions.add(room.id);const worldPosition=expeditionWorldPosition(room.id,player.x,player.y);player.worldX=worldPosition.x;player.worldY=worldPosition.y;player.currentRegion=room.id;}
   ui.biomeTitle.textContent=room.name.toUpperCase();ui.routeBiome.textContent=`${room.name.toUpperCase()}  BRANCHING ROUTE`;canvas.setAttribute('aria-label',`${room.name} combat arena`);
   if(announce)showRoomTransition(waveIndex,subtitle);
 }
@@ -1264,7 +1274,7 @@ function resetGame() {
     abilityEvolutions:{undertowWell:false,foxfireVolley:false,wildHeart:false,shockPaws:false},
     upgradeRanks:{spiritRounds:0,quickPaws:0,vitality:0,undertow:0,hungryFlame:0,heartBloom:0,stormHeart:0,wardbreaker:0,spiritHunter:0,spiritCatalyst:0,pressureChamber:0,headhunter:0,keenEye:0,moonPiercer:0,perfectDraw:0,glassFang:0,spiritMomentum:0,guardianHunter:0,deepReserves:0,bankShot:0,loadedDice:0,quickdraw:0,spiritCylinder:0,phaseRounds:0,foxstepMastery:0,ironBelly:0,scatterBore:0,guardianHide:0,capacitorBank:0,chainLogic:0,rapidCycle:0,moonEdge:0,secondPassage:0,cranePoise:0,permafrost:0,shatterpoint:0,oniPayload:0,blastChamber:0,razorCurrent:0,typhoonReach:0,cinderDrum:0,ruptureMagazine:0,cycloneEdge:0,crosswindRecall:0,lunarCapacitor:0,horizonBore:0,razorFang:0,hollowHex:0,spiritAegis:0},
     heartBonus: 0, stormBonus: 0,guardianBlessings:[],endingVow:null,victoryShardBonus:0,
-    gold:legacyGold,goldMultiplier:1,relics:[],shopPurchases:new Set(),killHeal:0,damageTakenMultiplier:heroDef.damageTakenMultiplier,speedMultiplier:1,dashCooldownMultiplier:1,
+    gold:legacyGold,goldMultiplier:1,relics:[],shopPurchases:new Set(),discoveredRegions:new Set([room.id]),clearedRegions:new Set(),worldX:0,worldY:0,currentRegion:room.id,killHeal:0,damageTakenMultiplier:heroDef.damageTakenMultiplier,speedMultiplier:1,dashCooldownMultiplier:1,
     knockbackResistance:heroDef.knockbackResistance,knockbackMultiplier:1,braceTime:0,braceDelay:.72,braceDamageMultiplier:.8,braced:false,shieldDamageMultiplier:1,eliteDamageMultiplier:contractClaimed('eliteBreakers')?1.08:1,guardianDamageMultiplier:contractClaimed('guardianOath')?1.08:1,eliteGoldMultiplier:1,eliteKillHeal:0,statusDurationMultiplier:1,bleedOnHit:0,bleedSpread:false,curseOnCrit:0,cursePowerMultiplier:1,curseDurationMultiplier:1,spiritShield:0,maxSpiritShield:0,shieldTime:0,bonusProjectiles:0,bonusPierces:0,bonusRicochets:0,ricochetDamageRetention:.78,critBonus:0,critDamageMultiplier:1,arcChainBonus:0,arcChainPower:1,arcChainRange:0,glaiveReturnPower:1,glaiveReturnSpeed:1,glaiveReturnCrit:0,weaponEvolution:null,
     wildHeartTime: 0, ultimateFlash: 0, castTime: 0, castAbility: null,
     hitCount: 0, maxCombo: 0, comboDrop: 0, dashes: 0, hurtTime: 0, stunTime: 0, bleedTime:0, bleedTick:0, curseTime:0, curseMultiplier:1,
@@ -1276,7 +1286,7 @@ function resetGame() {
   encounter = { wave:-1, transitioning:false, transitionTime:0,bossActive:false,bossDefeated:false,storyBeat:'intro',rewardScale:1,nodeType:'combat',startWaveAfterUpgrade:null };roomMission=null;missionCheckpointClock=0;defeatReason='';corruptionDirector=null;
   runTime = 0; runReward=0; hitStop = 0; clearDelay = -1; comboUiTimer = 0; pendingLevelUps = 0; currentUpgradeChoices = [];
   levelupScreen.classList.remove('active');
-  tutorialActive=null;tutorialTracker.classList.remove('active','complete');storyScreen.classList.remove('active','tutorial-mode');routeScreen.classList.remove('active');shopScreen.classList.remove('active');eventScreen.classList.remove('active');guardianRewardScreen.classList.remove('active');relicDraftScreen.classList.remove('active');ui.bossPanel.classList.remove('active');currentGuardianRewards=[];pendingGuardianReward=null;currentRelicChoices=[];relicDraftContinuation=null;
+  tutorialActive=null;tutorialTracker.classList.remove('active','complete');storyScreen.classList.remove('active','tutorial-mode');routeScreen.classList.remove('active');shopScreen.classList.remove('active');eventScreen.classList.remove('active');guardianRewardScreen.classList.remove('active');relicDraftScreen.classList.remove('active');worldMapScreen.classList.remove('active');ui.bossPanel.classList.remove('active');currentGuardianRewards=[];pendingGuardianReward=null;currentRelicChoices=[];relicDraftContinuation=null;
   ui.waveLabel.textContent = `CHAPTER ${chapterIndex+1}  WAVE 1 / ${chapter.waves.length}`;
   ui.roomState.textContent = 'ENCOUNTER'; ui.roomState.style.color = '#ff38b5';
   ui.objective.textContent = 'BRACE  SPIRITS APPROACH';
@@ -1479,7 +1489,7 @@ function skipTutorial(){clearInterval(tutorialTypeTimer);profile.tutorialComplet
 function startWave(index,modifiers={}) {
   const wave = chapter.waves[index];
   const difficulty=activeDifficulty();
-  Object.values(effects).forEach((list)=>list.splice(0));const requestedNodeType=modifiers.nodeType||'combat';activateRoom(roomForWave(index,requestedNodeType),{reposition:true,announce:true,waveIndex:index,subtitle:wave.name.toUpperCase()});
+  Object.values(effects).forEach((list)=>list.splice(0));const requestedNodeType=modifiers.nodeType||'combat',targetRegion=modifiers.resumeRegion&&ROOMS[modifiers.resumeRegion]?modifiers.resumeRegion:roomForWave(index,requestedNodeType);activateRoom(targetRegion,{reposition:true,announce:true,waveIndex:index,subtitle:wave.name.toUpperCase()});
   if(player.maxSpiritShield>0)applyPlayerStatus('shield',14,player.maxSpiritShield);
   encounter.wave=index; encounter.waveTime=0;encounter.transitioning=false; encounter.bossActive=false;encounter.nodeType=modifiers.nodeType||'combat';encounter.modifiers={...modifiers};encounter.biomePressureClock=biomePressureInterval(index)*.72;encounter.biomePressureCount=0;encounter.warpackClock=(CHAPTER_WARPACKS[chapter.id]?.interval||18)*.78;encounter.warpackCount=0;corruptionDirector=createCorruptionDirector(index,modifiers.corruption);const corruption=corruptionTier();encounter.rewardScale=(modifiers.rewardScale||1)*difficulty.rewardScale*corruption.reward;enemies=[];state='playing';roomInteractable=null;spawnRoomDestructibles(index,modifiers.brokenProps||[]);spawnRoomMission(wave.mission,modifiers.missionState);refreshCorruptionHud({surge:corruptionDirector.tier>=2});
   if(PHYSICAL_ROUTE_NODES.has(encounter.nodeType)){spawnRoomInteractable(encounter.nodeType);if(modifiers.interactableUsed)roomInteractable.used=true;}
@@ -1567,6 +1577,7 @@ function spawnBoss({restoring=false}={}) {
 function beginWaveTransition() {
   if(encounter.transitioning)return;
   recordContractProgress('sealRunner');
+  if(!(player.clearedRegions instanceof Set))player.clearedRegions=new Set(player.clearedRegions||[]);player.clearedRegions.add(room.id);
   encounter.transitioning=true;encounter.awaitingGate=room.mapRuntime==='phaser-tiled'&&Boolean(layeredMapRuntime.forwardGate());encounter.transitionTime=encounter.awaitingGate?0:2.4;
   ui.roomState.textContent='SEAL BROKEN';ui.roomState.style.color='#65ef4f';ui.objective.textContent=encounter.awaitingGate?'THE NORTH GATE IS OPEN  ·  CONTINUE FORWARD':'THE CURSE GROWS STRONGER';
   player.health=Math.min(player.maxHealth,player.health+12);
@@ -2122,6 +2133,7 @@ function resize() {
 }
 
 function musicTrackForState(){
+  if(state==='worldMap')return worldMapReturnState==='hub'?'hub':['Jade','Bamboo','Crimson','Storm','Neon','Shadow'][chapterIndex].toLowerCase();
   if(state==='preview'||state==='codex'||state==='settings'&&settingsReturnState==='preview')return 'menu';
   if(state==='hub'||state==='hubMenu'||room.id==='spiritVillage')return 'hub';
   const realms=['Jade','Bamboo','Crimson','Storm','Neon','Shadow'];
@@ -2338,8 +2350,10 @@ function updatePlayer(dt) {
 
   const move = movementVector();
   if (move.x || move.y) player.moveFacing = Math.atan2(move.y, move.x);
-  if (input.attackHeld || player.attack || player.castTime > 0) updatePointerAim(true);
-  const actionOwnsFacing = (player.aimLockTime || 0) > 0 || input.attackHeld || Boolean(player.attack) || player.castTime > 0;
+  // Twin-stick rule: movement controls translation; a live mouse aim controls body facing.
+  // This prevents alternating left/right frames when moving opposite the firing direction.
+  if (input.pointer.active) updatePointerAim(input.attackHeld || Boolean(player.attack) || player.castTime > 0);
+  const actionOwnsFacing = input.pointer.active || (player.aimLockTime || 0) > 0 || input.attackHeld || Boolean(player.attack) || player.castTime > 0;
   if (actionOwnsFacing && Number.isFinite(player.aimFacing)) player.facing = player.aimFacing;
   const wantsSprint=input.keys.has(' ')&&Boolean(move.x||move.y)&&!player.attack&&player.castTime<=0&&player.dashTime<=0;
   player.sprinting=wantsSprint&&player.sprint>2;
@@ -3331,6 +3345,20 @@ function drawMinimapMarker(map,entity,color,size=3,shape='dot'){
   minimapCtx.fill();minimapCtx.stroke();minimapCtx.restore();
 }
 
+function drawExpeditionWorldMap(){
+  if(!player||!worldMapCanvas)return;const rect=worldMapCanvas.getBoundingClientRect(),width=Math.max(1,Math.round(rect.width)),height=Math.max(1,Math.round(rect.height)),dpr=Math.min(window.devicePixelRatio||1,1.5);
+  if(worldMapCanvas.width!==Math.round(width*dpr)||worldMapCanvas.height!==Math.round(height*dpr)){worldMapCanvas.width=Math.round(width*dpr);worldMapCanvas.height=Math.round(height*dpr);}worldMapCtx.setTransform(dpr,0,0,dpr,0,0);worldMapCtx.clearRect(0,0,width,height);
+  const discovered=player.discoveredRegions instanceof Set?player.discoveredRegions:new Set(player.discoveredRegions||[room.id]),cleared=player.clearedRegions instanceof Set?player.clearedRegions:new Set(player.clearedRegions||[]),padding=54,scaleX=(width-padding*2)/EXPEDITION_WORLD.width,scaleY=(height-padding*2)/EXPEDITION_WORLD.height,scale=Math.min(scaleX,scaleY),offsetX=(width-EXPEDITION_WORLD.width*scale)/2,offsetY=(height-EXPEDITION_WORLD.height*scale)/2,point=(node)=>({x:offsetX+node.x*scale,y:offsetY+node.y*scale});
+  worldMapCtx.fillStyle='#050510';worldMapCtx.fillRect(0,0,width,height);for(const chapterData of EXPEDITION_WORLD.chapters){const chapterNodes=EXPEDITION_WORLD.nodes.filter((node)=>node.biome===chapterData.id&&node.kind==='main'),xs=chapterNodes.map((node)=>point(node).x);worldMapCtx.fillStyle=`${chapterData.color}0b`;worldMapCtx.strokeStyle=`${chapterData.color}26`;worldMapCtx.lineWidth=1;worldMapCtx.beginPath();worldMapCtx.roundRect(Math.min(...xs)-28,30,Math.max(...xs)-Math.min(...xs)+56,height-60,24);worldMapCtx.fill();worldMapCtx.stroke();worldMapCtx.fillStyle=`${chapterData.color}aa`;worldMapCtx.font='900 9px Inter, sans-serif';worldMapCtx.textAlign='center';worldMapCtx.fillText(chapterData.name,(Math.min(...xs)+Math.max(...xs))/2,50);}
+  for(const link of EXPEDITION_WORLD.links){const from=expeditionNode(link.from),to=expeditionNode(link.to),fromKnown=discovered.has(link.from)||from.kind==='main',toKnown=discovered.has(link.to)||to.kind==='main';if(!fromKnown||!toKnown)continue;const a=point(from),b=point(to),explored=discovered.has(link.from)&&discovered.has(link.to);worldMapCtx.strokeStyle=explored?(link.kind==='realm'?'#fff08c99':`${from.color}aa`):'#55506645';worldMapCtx.lineWidth=explored?3:1.5;worldMapCtx.setLineDash(link.kind==='branch'?[7,6]:[]);worldMapCtx.beginPath();worldMapCtx.moveTo(a.x,a.y);worldMapCtx.lineTo(b.x,b.y);worldMapCtx.stroke();worldMapCtx.setLineDash([]);}
+  for(const node of EXPEDITION_WORLD.nodes){const known=discovered.has(node.roomId),main=node.kind==='main'||node.kind==='guardian';if(!known&&!main)continue;const p=point(node),current=node.roomId===room.id,radius=current?12:node.kind==='guardian'?9:known?7:4;worldMapCtx.save();worldMapCtx.translate(p.x,p.y);worldMapCtx.fillStyle=current?'#fff29a':known?node.color:'#2c2939';worldMapCtx.strokeStyle=current?'#ffffff':known?'#080812':'#625c72';worldMapCtx.lineWidth=current?4:2;worldMapCtx.shadowColor=current?'#fff29a':known?node.color:'transparent';worldMapCtx.shadowBlur=current?20:known?8:0;worldMapCtx.beginPath();if(node.kind==='guardian'||node.kind==='elite'){worldMapCtx.moveTo(0,-radius);worldMapCtx.lineTo(radius,0);worldMapCtx.lineTo(0,radius);worldMapCtx.lineTo(-radius,0);worldMapCtx.closePath();}else worldMapCtx.arc(0,0,radius,0,Math.PI*2);worldMapCtx.fill();worldMapCtx.stroke();if(cleared.has(node.roomId)){worldMapCtx.strokeStyle='#6eff86';worldMapCtx.lineWidth=2;worldMapCtx.beginPath();worldMapCtx.arc(0,0,radius+5,0,Math.PI*2);worldMapCtx.stroke();}worldMapCtx.restore();if(current||known&&node.kind!=='main'){worldMapCtx.fillStyle=current?'#fff8cf':'#c9c1d0';worldMapCtx.font=`900 ${current?10:7}px Inter, sans-serif`;worldMapCtx.textAlign='center';worldMapCtx.fillText((ROOMS[node.roomId]?.name||node.roomId).toUpperCase(),p.x,p.y+radius+15);}}
+  for(const member of coop.remotePlayers.values()){if(!Number.isFinite(member.worldX)||!Number.isFinite(member.worldY))continue;const p={x:offsetX+member.worldX*scale,y:offsetY+member.worldY*scale};worldMapCtx.save();worldMapCtx.translate(p.x,p.y);worldMapCtx.rotate(member.facing||0);worldMapCtx.fillStyle='#65f2ff';worldMapCtx.strokeStyle='#ffffff';worldMapCtx.lineWidth=1.5;worldMapCtx.shadowColor='#65f2ff';worldMapCtx.shadowBlur=10;worldMapCtx.beginPath();worldMapCtx.moveTo(8,0);worldMapCtx.lineTo(-5,-5);worldMapCtx.lineTo(-3,0);worldMapCtx.lineTo(-5,5);worldMapCtx.closePath();worldMapCtx.fill();worldMapCtx.stroke();worldMapCtx.restore();}
+  const progress=expeditionProgress(discovered),node=expeditionNode(room.id);ui.worldMapProgress.textContent=`${progress.discovered} / ${progress.total} REGIONS · ${Math.round(progress.ratio*100)}% DISCOVERED`;ui.worldMapLocation.textContent=`CURRENT REGION · ${ROOMS[room.id]?.name.toUpperCase()||room.id} · ${node?.biomeName||'SPIRIT ROAD'}`;document.documentElement.dataset.worldDiscovered=String(progress.discovered);document.documentElement.dataset.worldRegion=room.id;
+}
+
+function openWorldMap(){if(!['playing','hub','dojo'].includes(state)||!player)return;worldMapReturnState=state;state='worldMap';input.keys.clear();input.attackHeld=false;drawExpeditionWorldMap();worldMapScreen.classList.add('active');playSfx('upgrade',.12,.9);}
+function closeWorldMap(){if(state!=='worldMap')return;worldMapScreen.classList.remove('active');state=worldMapReturnState;lastTime=performance.now();}
+
 function drawMinimap(){
   const visible=Boolean(profile.settings.minimap&&player&&['playing','hub','dojo'].includes(state));ui.minimapPanel.classList.toggle('map-hidden',!visible);if(!visible)return;
   const rect=minimapCanvas.getBoundingClientRect(),width=Math.max(1,Math.round(rect.width)),height=Math.max(1,Math.round(rect.height)),dpr=Math.min(window.devicePixelRatio||1,2);
@@ -3957,11 +3985,13 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 
-window.__BRAWLPAWS_QA__=()=>({state,room:room.id,player:player&&{x:player.x,y:player.y,vx:player.vx,vy:player.vy,facing:player.facing,aimFacing:player.aimFacing,moveFacing:player.moveFacing,aimLockTime:player.aimLockTime,attacking:Boolean(player.attack)},mapReady:layeredMapRuntime.ready,mapDebug:layeredMapRuntime.debug,mapRoom:layeredMapRuntime.activeRoomId});
+window.__BRAWLPAWS_QA__=()=>({state,room:room.id,player:player&&{x:player.x,y:player.y,worldX:player.worldX,worldY:player.worldY,currentRegion:player.currentRegion,discoveredRegions:player.discoveredRegions?.size||0,clearedRegions:player.clearedRegions?.size||0,vx:player.vx,vy:player.vy,facing:player.facing,aimFacing:player.aimFacing,moveFacing:player.moveFacing,aimLockTime:player.aimLockTime,attacking:Boolean(player.attack)},mapReady:layeredMapRuntime.ready,mapDebug:layeredMapRuntime.debug,mapRoom:layeredMapRuntime.activeRoomId,world:{id:EXPEDITION_WORLD.id,regions:EXPEDITION_WORLD.nodes.length,links:EXPEDITION_WORLD.links.length,neighbors:expeditionNeighbors(room.id)}});
 
 window.addEventListener('resize', ()=>{lastDrawTime=0;resize();});
 window.addEventListener('keydown', (event) => {
   const key = event.key.toLowerCase();
+  if(state==='worldMap'&&(key==='m'||key==='escape')){closeWorldMap();event.preventDefault();return;}
+  if(key==='m'&&['playing','hub','dojo'].includes(state)){openWorldMap();event.preventDefault();return;}
   if(key==='f3'){const active=layeredMapRuntime.toggleDebug();if(player)spawnWord(player.x,player.y-90,active?'MAP DEBUG ON':'MAP DEBUG OFF',active?'#45f4ff':'#9ea1ad');event.preventDefault();return;}
   if(state==='settings'&&(key==='escape'||key==='o')){closeSettings();event.preventDefault();return;}
   if(state==='paused'&&key==='escape'){resumeGame();event.preventDefault();return;}
@@ -4006,6 +4036,8 @@ document.querySelector('#save-title-button').addEventListener('click',returnToTi
 document.querySelector('#close-settings').addEventListener('click',closeSettings);
 for(const button of settingsScreen.querySelectorAll('[data-setting]'))button.addEventListener('click',()=>changeSetting(button.dataset.setting,button.dataset.value));
 document.querySelector('#close-codex').addEventListener('click',closeCodex);
+document.querySelector('#world-map-button').addEventListener('click',openWorldMap);
+document.querySelector('#close-world-map').addEventListener('click',closeWorldMap);
 for(const button of document.querySelectorAll('[data-codex-tab]'))button.addEventListener('click',()=>{activeCodexId=null;renderCodex(button.dataset.codexTab);});
 document.querySelector('#restart-button').addEventListener('click', begin);
 document.querySelector('#story-button').addEventListener('click',()=>tutorialActive?.phase==='explain'?startTutorialLesson():continueStory());

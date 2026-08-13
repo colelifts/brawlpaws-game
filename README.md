@@ -8,6 +8,10 @@ Combat uses explicit balance contracts instead of unbounded stat stacking. Openi
 
 Treasure and relic events open a three-card Relic Draft with authored art, exact effects, role labels, and a real build-match cue. The chosen relic persists in run checkpoints; completing the relic pool converts future drafts to gold.
 
+## Continuous expedition
+
+The campaign now has one persistent 60-region Spirit Road topology spanning all six realms. Press `M` during exploration to open its expedition map; discovered and cleared regions persist in run checkpoints, and connected co-op players report their global world positions. Mouse aim owns body facing independently from movement, so strafing or retreating never flips a firing pose away from its target.
+
 ## Run it
 
 ```powershell
@@ -26,6 +30,8 @@ Then open [http://127.0.0.1:4174](http://127.0.0.1:4174).
 To play co-op, one player selects **Create Party** and shares the five-character code. Up to three allies enter that code and select **Join**. Party size automatically increases enemy health, damage, pack size, elite chance, reinforcements, corruption, and rewards.
 
 ## Controls
+
+- `M` — open or close the persistent six-realm expedition map
 
 - `WASD` or arrow keys — move
 - Hold `Space` while moving — Paw Sprint; briefly run 42% faster while the sprint meter drains, then let it recover

@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#080817" />
   <link rel="icon" href="data:," />
   <title>BrawlPaws — Six-Chapter Roguelite Campaign</title>
-  <link rel="stylesheet" href="styles.css?v=20260813-map2" />
+  <link rel="stylesheet" href="styles.css?v=20260813-world1" />
 </head>
 <body>
   <main id="game-shell" aria-label="BrawlPaws roguelite campaign">
@@ -56,6 +56,8 @@
         <div><b id="minimap-label">ARENA MAP</b><span id="minimap-count">0 ACTIVE</span></div>
         <small>PLAYER <i></i> OBJECTIVE <em></em> THREAT</small>
       </section>
+
+      <button id="world-map-button" class="world-map-button" type="button" aria-label="Open expedition map">WORLD MAP <kbd>M</kbd></button>
 
       <section class="combo-panel" id="combo-panel">
         <b id="combo-count">3</b><span>HIT COMBO!</span>
@@ -258,6 +260,14 @@
       </div>
     </section>
 
+    <section id="world-map-screen" class="overlay world-map-screen" aria-labelledby="world-map-title">
+      <div class="world-map-panel brush-panel">
+        <header><div><p>EXPEDITION WORLD I</p><h2 id="world-map-title">THE SIX-REALM SPIRIT ROAD</h2></div><span id="world-map-progress">1 / 60 REGIONS</span></header>
+        <canvas id="world-map" width="1280" height="680" aria-label="Explored expedition regions"></canvas>
+        <footer><span id="world-map-location">CURRENT REGION · JADE GROVE</span><b>BRANCHES REMAIN HIDDEN UNTIL DISCOVERED</b><button id="close-world-map" type="button">RETURN TO THE ROAD <kbd>M</kbd></button></footer>
+      </div>
+    </section>
+
     <section id="hub-menu-screen" class="overlay hub-menu-screen" aria-labelledby="hub-menu-title">
       <div class="hub-menu-panel brush-panel">
         <div class="hub-menu-heading"><div><p id="hub-menu-kicker">SPIRIT LANTERN VILLAGE</p><h2 id="hub-menu-title">HERO SHRINE</h2></div><strong id="hub-shards">◆ 0</strong></div>
@@ -365,6 +375,6 @@
     <div id="loading">AWAKENING THE GROVE…</div>
   </main>
   <script src="vendor/phaser-3.90.0.min.js"></script>
-    <script type="module" src="src/game.js?v=20260813-expedition6"></script>
+    <script type="module" src="src/game.js?v=20260813-world1"></script>
 </body>
 </html>

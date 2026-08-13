@@ -2,6 +2,10 @@
 
 BrawlPaws maps are Tiled JSON maps rendered by the pinned local Phaser 3.90 runtime. All six realms—Jade Grove, Bamboo Hollow, Crimson Dojo, Storm Coast, Neon City, and Shadow Realm—each ship with ten 6144×3840 layered templates loaded by one reusable runtime. Their source generators live in `scripts/build-*-maps.mjs` plus the original `build-shrine-map.mjs`.
 
+## Continuous expedition topology
+
+`src/expedition-world.js` binds the sixty layered regions into one persistent six-realm Spirit Road. It owns stable global coordinates, main-road links, optional branch links, guardian crossings, and the five realm-to-realm connections. The runtime streams the destination's Tiled layers when a physical gate is crossed, while the expedition overlay uses the same topology for discovery, cleared-state rings, current position, and co-op party markers. Checkpoints store the exact active region plus discovered and cleared region IDs; they never flatten map layers or bake the expedition into one background image.
+
 ## Jade Grove template library
 
 - `shrine-courtyard.json` — open shrine plaza and tutorial approach
