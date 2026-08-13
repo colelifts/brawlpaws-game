@@ -634,9 +634,12 @@ test('title and Hero Shrine support persistent hero selection',()=>{
 
 test('production title menu separates play roster loadout progression and co-op flows',()=>{
   for(const view of ['play','heroes','loadout','progression','coop','settings'])assert.match(html,new RegExp(`data-title-open="${view}"`));
-  assert.match(styles,/title-kitsune-v1\.webp/);
+  for(const panel of ['play','heroes','loadout','progression','coop'])assert.match(html,new RegExp(`data-title-panel="${panel}"`));
+  assert.match(styles,/title-kitsune-v2\.webp/);
+  assert.match(styles,/campaign-world-v1\.webp/);
   assert.match(game,/function openTitleView\(view='home'\)/);
-  assert.match(game,/PREPARE YOUR EXPEDITION/);
+  assert.match(game,/startScreen\.dataset\.titleView/);
+  assert.match(game,/state==='preview'&&key==='escape'/);
   assert.match(styles,/\.title-navigation/);
   assert.match(styles,/data-title-view="progression"/);
 });

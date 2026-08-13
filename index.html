@@ -112,97 +112,107 @@
     </section>
 
     <section id="start-screen" class="overlay active title-screen" data-title-view="home">
-      <div class="title-background" aria-hidden="true"></div>
+      <div class="title-background" aria-hidden="true"></div><div class="title-atmosphere" aria-hidden="true"></div>
+
       <aside class="title-profile" aria-label="Player profile">
         <div class="title-profile-portrait" aria-hidden="true"></div>
         <div><small>ACTIVE BRAWLPAW</small><strong id="title-profile-name">KITSUNE</strong><span id="title-profile-rank">MASTERY RANK 0</span><i><em id="title-profile-fill"></em></i></div>
         <b id="title-profile-shards">◆ 0</b>
       </aside>
-      <nav class="title-navigation" aria-label="Main menu">
-        <button type="button" class="selected" data-title-open="play"><span>▶</span><b>PLAY</b><small>CONTINUE OR BEGIN AN EXPEDITION</small></button>
-        <button type="button" data-title-open="heroes"><span>🐾</span><b>BRAWLPAWS</b><small>CHOOSE YOUR HERO</small></button>
-        <button type="button" data-title-open="loadout"><span>⚔</span><b>LOADOUT</b><small>WEAPONS AND FORGE BLUEPRINTS</small></button>
-        <button type="button" data-title-open="progression"><span>✦</span><b>PROGRESSION</b><small>MASTERY AND WORLD RECORDS</small></button>
-        <button type="button" data-title-open="coop"><span>◉</span><b>ONLINE CO-OP</b><small>CREATE OR JOIN A PARTY</small></button>
-        <button type="button" data-title-open="settings"><span>⚙</span><b>SETTINGS</b><small>AUDIO, CONTROLS, ACCESSIBILITY</small></button>
-      </nav>
-      <section class="title-continue-card" aria-label="Current campaign">
-        <small id="title-run-kicker">WORLD I · CHAPTER 1</small><h2>JADE GROVE</h2><p id="title-run-copy">Begin at Spirit Lantern Village, then push deeper into the grove.</p>
-        <div class="title-run-progress"><span><i id="title-run-fill"></i></span><b id="title-run-percent">0% CHARTED</b></div>
-        <div id="home-continue-slot"></div><button id="home-play-button" type="button">ENTER RUN SETUP <span>›</span></button>
-      </section>
-      <button type="button" id="title-back" class="title-back">← MAIN MENU</button>
-      <section class="title-progression-panel" aria-label="Campaign progression">
-        <small>YOUR LEGACY</small><h2>PROGRESSION</h2><div><article><span>WORLD I</span><b id="title-world-progress">0 / 60</b><em>REGIONS CHARTED</em></article><article><span>CAMPAIGN</span><b id="title-clear-count">0</b><em>GUARDIAN CLEARS</em></article><article><span>CURRENCY</span><b id="title-shard-count">0</b><em>SPIRIT SHARDS</em></article><article><span>ASCENSION</span><b id="title-ascension-rank">LOCKED</b><em>HIGHEST RANK</em></article></div><button type="button" id="title-progression-codex">VIEW DISCOVERIES IN CODEX</button>
-      </section>
-      <div class="vignette"></div>
-      <div class="title-lockup">
-        <div class="eyebrow">SIX-CHAPTER CAMPAIGN BUILD</div>
-        <h1>BRAWL<span>PAWS</span></h1>
-        <p class="kanji">大乱闘</p>
-        <p class="tagline">STRIKE FAST. DASH CLEAN. <strong>LEAVE A MARK.</strong></p>
-      </div>
-      <div class="start-card brush-panel">
-        <header class="title-view-heading"><button type="button" class="title-card-back">← BACK</button><div><small>RUN SETUP</small><strong>PREPARE YOUR EXPEDITION</strong></div></header>
-        <div class="kitsune-mark" id="start-hero-mark" aria-hidden="true"></div>
-        <div class="start-hero-heading">
-          <small>PLAYING AS</small>
-          <h2 id="start-hero-name">KITSUNE</h2>
-          <p id="start-hero-copy">Mobile gunner speedster · Neon spirit blaster</p>
-        </div>
-        <div class="hero-select" aria-label="Choose your BrawlPaw">
-          <button type="button" data-hero="kitsune" class="selected"><i style="background-image:url('assets/characters/kitsune-portrait.png')"></i><span><b>KITSUNE</b><small>SPEEDSTER</small></span></button>
-          <button type="button" data-hero="bamboo"><i style="background-image:url('assets/characters/bamboo-portrait.png')"></i><span><b>BAMBOO</b><small>TANK</small></span></button>
-          <button type="button" data-hero="hopscotch"><i style="background-image:url('assets/characters/hopscotch-portrait.png')"></i><span><b>HOPSCOTCH</b><small>LOCKED · CLEAR 1 RUN</small></span></button>
-          <button type="button" data-hero="rusty"><i style="background-image:url('assets/characters/rusty-portrait.png')"></i><span><b>RUSTY</b><small>LOCKED · CLEAR ASCENSION</small></span></button>
-          <button type="button" data-hero="zap"><i style="background-image:url('assets/characters/zap-portrait-v1.png')"></i><span><b>ZAP</b><small>LOCKED · CLEAR 2 RUNS</small></span></button>
-          <button type="button" data-hero="nomi"><i style="background-image:url('assets/characters/nomi-portrait-v1.png')"></i><span><b>NOMI</b><small>LOCKED · DEFEAT TSUKIKO</small></span></button>
-        </div>
-        <div class="hero-comparison" id="hero-comparison" aria-live="polite">
-          <div class="comparison-ratings" id="comparison-ratings"></div>
-          <div class="hero-mastery-summary" id="hero-mastery-summary">
-            <span><small>HERO MASTERY</small><b id="hero-mastery-rank">RANK 0 / 50</b></span>
-            <i><em id="hero-mastery-fill"></em></i>
-            <p id="hero-mastery-copy">Begin expeditions to earn hero mastery.</p>
-          </div>
-          <div class="weapon-comparison">
-            <span><small>STARTING WEAPON</small><b id="comparison-weapon">SPIRIT BLASTER</b></span>
-            <em id="comparison-weapon-tags">PRECISION · RAPID · LONG RANGE</em>
-            <p id="comparison-weapon-copy">Fast single spirit rounds with long reach and the best base critical chance.</p>
-            <div id="comparison-weapon-stats" class="weapon-stat-row"></div>
-          </div>
-        </div>
-        <section class="arsenal-contract" aria-labelledby="arsenal-contract-title">
-          <header><span><small>FORGE BLUEPRINT</small><b id="arsenal-contract-title">FATE DRAFT</b></span><em id="arsenal-contract-copy">Discover Arsenal weapons during runs, then bind one for its proper awakening level.</em></header>
-          <div id="arsenal-contract-grid" class="arsenal-contract-grid"></div>
+
+      <main class="title-home" aria-label="BrawlPaws main menu">
+        <header class="title-brand"><span>THE SPIRIT ROAD AWAITS</span><h1>BRAWL<em>PAWS</em></h1><p>大乱闘</p><b>STRIKE FAST. LEAVE A MARK.</b></header>
+        <nav class="title-navigation" aria-label="Main menu">
+          <button type="button" data-title-open="play"><span>01</span><b>PLAY</b><small>CHOOSE A CAMPAIGN AND START A RUN</small></button>
+          <button type="button" data-title-open="heroes"><span>02</span><b>BRAWLPAWS</b><small>CHOOSE AND MASTER YOUR HERO</small></button>
+          <button type="button" data-title-open="loadout"><span>03</span><b>LOADOUT</b><small>INSPECT WEAPONS AND BLUEPRINTS</small></button>
+          <button type="button" data-title-open="progression"><span>04</span><b>PROGRESSION</b><small>MASTERY, RECORDS, AND DISCOVERIES</small></button>
+          <button type="button" data-title-open="coop"><span>05</span><b>ONLINE CO-OP</b><small>CREATE OR JOIN A PARTY</small></button>
+          <button type="button" id="settings-button" data-title-open="settings"><span>06</span><b>SETTINGS</b><small>AUDIO, CONTROLS, ACCESSIBILITY</small></button>
+        </nav>
+        <section class="title-continue-card" aria-label="Current campaign">
+          <div><small id="title-run-kicker">WORLD I · CHAPTER 1</small><h2>JADE GROVE</h2><p id="title-run-copy">Begin at Spirit Lantern Village, then push deeper into the grove.</p></div>
+          <div class="title-run-progress"><span><i id="title-run-fill"></i></span><b id="title-run-percent">0% CHARTED</b></div>
+          <div class="title-continue-actions"><div id="home-continue-slot"></div><button id="home-play-button" type="button">OPEN CAMPAIGN <span>›</span></button></div>
         </section>
-        <div class="controls">
-          <span><kbd>WASD</kbd> MOVE</span>
-          <span><kbd>SPACE</kbd> SPRINT</span>
-          <span><kbd>SHIFT</kbd> DASH</span>
-          <span><kbd>LMB</kbd> / <kbd>J</kbd> FIRE</span>
-          <span><kbd>E</kbd><kbd>C</kbd><kbd>F</kbd><kbd>Q</kbd> ABILITIES</span>
-        </div>
-        <div class="difficulty-select" aria-label="Run difficulty">
-          <button type="button" data-difficulty="spirited"><b>SPIRITED</b><small>FAIR</small></button>
-          <button type="button" data-difficulty="ferocious" class="selected"><b>FEROCIOUS</b><small>INTENDED</small></button>
-          <button type="button" data-difficulty="nightmare"><b>NIGHTMARE</b><small>BRUTAL</small></button>
-          <button type="button" data-difficulty="ascension"><b>ASCENSION</b><small>LOCKED · CLEAR 1 RUN</small></button>
-        </div>
-        <section class="coop-start" id="coop-start" aria-label="Online co-op">
-          <header><span>ONLINE CO-OP</span><b id="coop-status">SOLO · OFFLINE READY</b></header>
-          <div class="coop-actions"><button id="coop-create" type="button">CREATE PARTY</button><input id="coop-code" maxlength="5" placeholder="ROOM CODE" aria-label="Five letter room code"><button id="coop-join" type="button">JOIN</button><button id="coop-leave" type="button" hidden>LEAVE</button></div>
-          <small id="coop-roster">FREE PEER-TO-PEER CO-OP · 2–4 PLAYERS INCREASE THE CHALLENGE</small>
+      </main>
+
+      <section class="title-shell" aria-label="Frontend menu">
+        <header class="title-shell-header">
+          <button type="button" id="title-back" class="title-back"><kbd>ESC</kbd><span>BACK</span></button>
+          <button type="button" class="title-mini-brand" data-title-open="home" aria-label="Main menu">BRAWL<em>PAWS</em></button>
+          <nav class="title-tabs" aria-label="Frontend sections">
+            <button type="button" data-title-open="play">CAMPAIGN</button><button type="button" data-title-open="heroes">BRAWLPAWS</button><button type="button" data-title-open="loadout">LOADOUT</button><button type="button" data-title-open="progression">PROGRESSION</button><button type="button" data-title-open="coop">CO-OP</button>
+          </nav>
+        </header>
+
+        <section class="title-scene campaign-scene" data-title-panel="play" aria-labelledby="campaign-title">
+          <div class="campaign-art" aria-hidden="true"></div>
+          <aside class="campaign-chapters">
+            <span>SELECT CAMPAIGN</span><h2 id="campaign-title">SPIRIT ROAD</h2>
+            <button class="selected" type="button"><i>01</i><b>JADE GROVE</b><small>AVAILABLE · WORLD I</small></button>
+            <button type="button" disabled><i>02</i><b>MOONFALL ISLES</b><small>LOCKED · DEFEAT TSUKIKO</small></button>
+            <button type="button" disabled><i>03</i><b>THE CELESTIAL WILD</b><small>LOCKED · COMPLETE WORLD II</small></button>
+          </aside>
+          <div class="campaign-map-markers" aria-label="Jade Grove chapters"><span class="map-node current n1"><b>1</b><em>JADE GROVE</em></span><span class="map-node locked n2"><b>2</b><em>BAMBOO HOLLOW</em></span><span class="map-node locked n3"><b>3</b><em>CRIMSON DOJO</em></span><span class="map-node locked n4"><b>4</b><em>STORM COAST</em></span><span class="map-node locked n5"><b>5</b><em>NEON CITY</em></span><span class="map-node locked n6"><b>6</b><em>SHADOW REALM</em></span></div>
+          <aside class="run-setup-panel">
+            <span>RUN SETUP</span><h2>JADE GROVE</h2><p>A giant connected expedition. Explore, gather power, defeat six guardians, and decide when to return home.</p>
+            <div class="run-hero"><div id="start-hero-mark"></div><span><small>PLAYING AS</small><b id="start-hero-name">KITSUNE</b><em id="start-hero-copy">Mobile gunner speedster · Spirit Blaster</em></span><button type="button" data-title-open="heroes">CHANGE</button></div>
+            <div class="difficulty-select" aria-label="Run difficulty">
+              <button type="button" data-difficulty="spirited"><b>SPIRITED</b><small>FAIR</small></button><button type="button" data-difficulty="ferocious" class="selected"><b>FEROCIOUS</b><small>INTENDED</small></button><button type="button" data-difficulty="nightmare"><b>NIGHTMARE</b><small>BRUTAL</small></button><button type="button" data-difficulty="ascension"><b>ASCENSION</b><small>LOCKED · CLEAR 1 RUN</small></button>
+            </div>
+            <div id="profile-summary" class="profile-summary">SPIRIT SHARDS 0 · CAMPAIGN CLEARS 0</div>
+            <button id="start-button" class="run-primary-action">START NEW EXPEDITION <span>›</span></button>
+          </aside>
         </section>
-        <div class="profile-summary" id="profile-summary">SPIRIT SHARDS 0 · CAMPAIGN CLEARS 0</div>
-        <div class="start-actions">
-          <button id="start-button">ENTER SPIRIT LANTERN VILLAGE <span>›</span></button>
-          <button id="continue-run" class="continue-run-button" hidden>CONTINUE RUN <small id="continue-run-copy">ROOM CHECKPOINT</small></button>
-          <button id="codex-button" class="codex-open-button">CODEX <kbd>K</kbd></button>
-          <button id="settings-button" class="codex-open-button">SETTINGS <kbd>O</kbd></button>
-        </div>
-      </div>
-      <p class="build-note">JADE GROVE → BAMBOO HOLLOW → CRIMSON DOJO → STORM COAST → NEON CITY → SHADOW REALM</p>
+
+        <section class="title-scene heroes-scene" data-title-panel="heroes" aria-labelledby="heroes-title">
+          <header class="scene-heading"><span>HERO ROSTER</span><h2 id="heroes-title">CHOOSE YOUR BRAWLPAW</h2><p>Every hero has a different weapon, movement style, and mastery path.</p></header>
+          <div class="hero-select" aria-label="Choose your BrawlPaw">
+            <button type="button" data-hero="kitsune" class="selected"><i style="background-image:url('assets/characters/kitsune-portrait.png')"></i><span><b>KITSUNE</b><small>SPEEDSTER</small></span></button>
+            <button type="button" data-hero="bamboo"><i style="background-image:url('assets/characters/bamboo-portrait.png')"></i><span><b>BAMBOO</b><small>TANK</small></span></button>
+            <button type="button" data-hero="hopscotch"><i style="background-image:url('assets/characters/hopscotch-portrait.png')"></i><span><b>HOPSCOTCH</b><small>LOCKED · CLEAR 1 RUN</small></span></button>
+            <button type="button" data-hero="rusty"><i style="background-image:url('assets/characters/rusty-portrait.png')"></i><span><b>RUSTY</b><small>LOCKED · CLEAR ASCENSION</small></span></button>
+            <button type="button" data-hero="zap"><i style="background-image:url('assets/characters/zap-portrait-v1.png')"></i><span><b>ZAP</b><small>LOCKED · CLEAR 2 RUNS</small></span></button>
+            <button type="button" data-hero="nomi"><i style="background-image:url('assets/characters/nomi-portrait-v1.png')"></i><span><b>NOMI</b><small>LOCKED · DEFEAT TSUKIKO</small></span></button>
+          </div>
+          <div class="selected-hero-art" aria-hidden="true"></div>
+          <article class="hero-comparison" id="hero-comparison" aria-live="polite">
+            <span>SELECTED BRAWLPAW</span><h2 id="title-hero-detail-name">KITSUNE</h2><p id="title-hero-detail-role">SPEEDSTER · PRECISION GUNNER</p>
+            <div class="comparison-ratings" id="comparison-ratings"></div>
+            <div class="hero-mastery-summary" id="hero-mastery-summary"><span><small>HERO MASTERY</small><b id="hero-mastery-rank">RANK 0 / 50</b></span><i><em id="hero-mastery-fill"></em></i><p id="hero-mastery-copy">Begin expeditions to earn hero mastery.</p></div>
+            <button type="button" class="scene-primary" data-title-open="loadout">VIEW STARTING LOADOUT <span>›</span></button>
+          </article>
+        </section>
+
+        <section class="title-scene loadout-scene" data-title-panel="loadout" aria-labelledby="loadout-title">
+          <header class="scene-heading"><span>SPIRIT ARMORY</span><h2 id="loadout-title">LOADOUT</h2><p>Understand the weapon before you enter a run. New blueprints are earned in the field.</p></header>
+          <div class="loadout-hero-art selected-hero-art" aria-hidden="true"></div>
+          <article class="weapon-comparison">
+            <span>STARTING WEAPON</span><h2 id="comparison-weapon">SPIRIT BLASTER</h2><em id="comparison-weapon-tags">PRECISION · RAPID · LONG RANGE</em><p id="comparison-weapon-copy">Fast single spirit rounds with long reach and the best base critical chance.</p><div id="comparison-weapon-stats" class="weapon-stat-row"></div>
+            <div class="controls"><span><kbd>WASD</kbd> MOVE</span><span><kbd>SPACE</kbd> SPRINT</span><span><kbd>SHIFT</kbd> DASH</span><span><kbd>LMB</kbd> FIRE</span><span><kbd>E C F Q</kbd> ABILITIES</span></div>
+            <button type="button" class="scene-primary" data-title-open="play">READY FOR CAMPAIGN <span>›</span></button>
+          </article>
+          <section class="arsenal-contract" aria-labelledby="arsenal-contract-title"><header><span><small>FORGE BLUEPRINT</small><b id="arsenal-contract-title">FATE DRAFT</b></span><em id="arsenal-contract-copy">Discover Arsenal weapons during runs, then bind one for its proper awakening level.</em></header><div id="arsenal-contract-grid" class="arsenal-contract-grid"></div></section>
+        </section>
+
+        <section class="title-scene progression-scene" data-title-panel="progression" aria-labelledby="progression-title">
+          <header class="scene-heading"><span>YOUR LEGACY</span><h2 id="progression-title">PROGRESSION</h2><p>Permanent accomplishments only. Run upgrades are earned fresh every expedition.</p></header>
+          <div class="progression-cards"><article><span>WORLD I</span><b id="title-world-progress">0 / 60</b><em>REGIONS CHARTED</em></article><article><span>CAMPAIGN</span><b id="title-clear-count">0</b><em>GUARDIAN CLEARS</em></article><article><span>CURRENCY</span><b id="title-shard-count">0</b><em>SPIRIT SHARDS</em></article><article><span>ASCENSION</span><b id="title-ascension-rank">LOCKED</b><em>HIGHEST RANK</em></article></div>
+          <div class="mastery-road"><span>EXPEDITION MILESTONES</span><h3>THE SPIRIT ROAD</h3><div><i class="earned"><b>1</b><em>FIRST STEPS</em></i><i><b>10</b><em>PATHFINDER</em></i><i><b>25</b><em>GROVE HUNTER</em></i><i><b>45</b><em>SPIRIT WALKER</em></i><i><b>60</b><em>WORLD I MASTER</em></i></div></div>
+          <button type="button" id="codex-button" class="scene-primary">OPEN DISCOVERY CODEX <kbd>K</kbd></button>
+        </section>
+
+        <section class="title-scene coop-scene" data-title-panel="coop" aria-labelledby="coop-title">
+          <header class="scene-heading"><span>ONLINE EXPEDITION</span><h2 id="coop-title">ASSEMBLE YOUR PARTY</h2><p>Free peer-to-peer co-op. Enemy health, aggression, and elite density scale with party size.</p></header>
+          <section class="party-slots" aria-label="Party roster"><article class="occupied"><div class="title-profile-portrait"></div><span><b id="coop-host-name">KITSUNE</b><small>PARTY LEADER · YOU</small></span><em>READY</em></article><article><i>2</i><span><b>OPEN SLOT</b><small>WAITING FOR A BRAWLPAW</small></span></article><article><i>3</i><span><b>OPEN SLOT</b><small>WAITING FOR A BRAWLPAW</small></span></article><article><i>4</i><span><b>OPEN SLOT</b><small>WAITING FOR A BRAWLPAW</small></span></article></section>
+          <section class="coop-start" id="coop-start" aria-label="Online co-op controls"><header><span>CONNECTION</span><b id="coop-status">SOLO · OFFLINE READY</b></header><div class="coop-actions"><button id="coop-create" type="button">CREATE PRIVATE PARTY</button><label><span>JOIN WITH CODE</span><input id="coop-code" maxlength="5" placeholder="ABCDE" aria-label="Five letter room code"></label><button id="coop-join" type="button">JOIN PARTY</button><button id="coop-leave" type="button" hidden>LEAVE PARTY</button></div><small id="coop-roster">ROOM CODES CONNECT 2–4 PLAYERS · NO ACCOUNT REQUIRED</small></section>
+          <aside class="coop-rules"><span>PARTY SCALING</span><h3>A FAIRER FIGHT</h3><p>More heroes mean tougher encounters—not four players erasing solo-balanced enemies.</p><ul><li>More enemy health per ally</li><li>Higher elite density</li><li>Shared room and guardian progress</li><li>Individual loot and mastery rewards</li></ul><button type="button" class="scene-primary" data-title-open="play">CHOOSE CAMPAIGN <span>›</span></button></aside>
+        </section>
+      </section>
+
+      <footer class="title-footer"><span><kbd>ENTER</kbd> SELECT</span><span><kbd>ESC</kbd> BACK</span><span><kbd>O</kbd> SETTINGS</span><b>ONLINE CO-OP · SOLO OFFLINE READY</b></footer>
+      <button id="continue-run" class="continue-run-button" hidden>CONTINUE RUN <small id="continue-run-copy">ROOM CHECKPOINT</small></button>
     </section>
 
     <section id="pause-screen" class="overlay pause-screen" aria-labelledby="pause-title">

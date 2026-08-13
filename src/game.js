@@ -366,7 +366,7 @@ function claimExpeditionMilestones({announce=false}={}){
 }
 
 function applyHeroUi(){
-  shell.dataset.hero=selectedHeroId;shell.dataset.weapon=weapon.id;shell.style.setProperty('--hero-accent',heroDef.accent);ui.heroPortrait.style.setProperty('--hero-portrait',`url('${heroDef.portrait}')`);
+  shell.dataset.hero=selectedHeroId;shell.dataset.weapon=weapon.id;shell.style.setProperty('--hero-accent',heroDef.accent);startScreen.style.setProperty('--title-portrait',`url('${heroDef.portrait}')`);startScreen.style.setProperty('--hero-accent',heroDef.accent);ui.heroPortrait.style.setProperty('--hero-portrait',`url('${heroDef.portrait}')`);
   ui.heroName.textContent=heroDef.name.toUpperCase();ui.heroRole.textContent=heroDef.role.toUpperCase();ui.weaponName.textContent=weapon.name.toUpperCase();ui.dashName.textContent=heroDef.dashName.toUpperCase();
   ui.startHeroMark.style.backgroundImage=`url('${heroDef.portrait}')`;ui.startHeroName.textContent=heroDef.name.toUpperCase();
   ui.startHeroCopy.textContent=selectedHeroId==='bamboo'?`${heroDef.role}  Wide spirit cannon  ${heroDef.passiveName}`:`${heroDef.role}  Precision spirit blaster  ${heroDef.passiveName}`;
@@ -382,11 +382,15 @@ function applyHeroUi(){
 
 function refreshTitleProfile(){
   const rank=masteryRank(),record=masteryRecord(),next=masteryXpForRank(Math.min(MASTERY_CAP,rank+1)),previous=masteryXpForRank(rank),ratio=rank>=MASTERY_CAP?1:clamp((record.xp-previous)/Math.max(1,next-previous),0,1),charted=profile.worldDiscoveries?.length||0,progress=Math.round(charted/EXPEDITION_WORLD.nodes.length*100);
-  const set=(selector,value)=>{const element=document.querySelector(selector);if(element)element.textContent=value;};set('#title-profile-name',heroDef.name.toUpperCase());set('#title-profile-rank',`MASTERY RANK ${rank}`);set('#title-profile-shards',`◆ ${profile.spiritShards}`);set('#title-run-percent',`${progress}% CHARTED`);set('#title-world-progress',`${charted} / ${EXPEDITION_WORLD.nodes.length}`);set('#title-clear-count',profile.campaignClears);set('#title-shard-count',profile.spiritShards);set('#title-ascension-rank',profile.campaignClears?`RANK ${profile.ascensionRank}`:'LOCKED');const fill=document.querySelector('#title-profile-fill'),runFill=document.querySelector('#title-run-fill'),portrait=document.querySelector('.title-profile-portrait');if(fill)fill.style.width=`${ratio*100}%`;if(runFill)runFill.style.width=`${progress}%`;if(portrait)portrait.style.backgroundImage=`url('${heroDef.portrait}')`;
+  const set=(selector,value)=>{const element=document.querySelector(selector);if(element)element.textContent=value;};set('#title-profile-name',heroDef.name.toUpperCase());set('#title-profile-rank',`MASTERY RANK ${rank}`);set('#title-profile-shards',`◆ ${profile.spiritShards}`);set('#title-run-percent',`${progress}% CHARTED`);set('#title-world-progress',`${charted} / ${EXPEDITION_WORLD.nodes.length}`);set('#title-clear-count',profile.campaignClears);set('#title-shard-count',profile.spiritShards);set('#title-ascension-rank',profile.campaignClears?`RANK ${profile.ascensionRank}`:'LOCKED');set('#title-hero-detail-name',heroDef.name.toUpperCase());set('#title-hero-detail-role',`${heroDef.role.toUpperCase()} · ${heroDef.difficulty.toUpperCase()}`);set('#coop-host-name',heroDef.name.toUpperCase());const fill=document.querySelector('#title-profile-fill'),runFill=document.querySelector('#title-run-fill');if(fill)fill.style.width=`${ratio*100}%`;if(runFill)runFill.style.width=`${progress}%`;for(const portrait of document.querySelectorAll('.title-profile-portrait'))portrait.style.backgroundImage=`url('${heroDef.portrait}')`;
 }
 
 function openTitleView(view='home'){
-  if(view==='settings'){openSettings('preview');return;}const active=['play','heroes','loadout','progression','coop'].includes(view)?view:'home';startScreen.dataset.titleView=active;for(const button of document.querySelectorAll('[data-title-open]'))button.classList.toggle('selected',button.dataset.titleOpen===active);const labels={play:['RUN SETUP','PREPARE YOUR EXPEDITION'],heroes:['BRAWLPAW ROSTER','CHOOSE YOUR HERO'],loadout:['FORGE & LOADOUT','READY YOUR ARSENAL'],coop:['ONLINE CO-OP','ASSEMBLE YOUR PARTY']},heading=document.querySelector('.title-view-heading');if(heading&&labels[active]){heading.querySelector('small').textContent=labels[active][0];heading.querySelector('strong').textContent=labels[active][1];}
+  if(view==='settings'){openSettings('preview');return;}
+  const active=['play','heroes','loadout','progression','coop'].includes(view)?view:'home';
+  startScreen.dataset.titleView=active;
+  for(const button of document.querySelectorAll('[data-title-open]'))button.classList.toggle('selected',button.dataset.titleOpen===active);
+  requestAnimationFrame(()=>{const destination=active==='home'?document.querySelector('.title-navigation button'):document.querySelector(`.title-tabs [data-title-open="${active}"]`);destination?.focus({preventScroll:true});});
 }
 
 function equipWeapon(id,{announce=false}={}){
@@ -4396,7 +4400,7 @@ function controllerMenuInput(){
   const candidates=controllerUiCandidates();
   if(candidates.length&&(pressed.has('navLeft')||pressed.has('navUp')||pressed.has('navRight')||pressed.has('navDown'))){const current=Math.max(0,candidates.indexOf(document.activeElement)),direction=pressed.has('navLeft')||pressed.has('navUp')?-1:1;candidates[(current+direction+candidates.length)%candidates.length].focus({preventScroll:true});}
   if(candidates.length&&pressed.has('confirm')){const target=candidates.includes(document.activeElement)?document.activeElement:candidates[0];target.focus({preventScroll:true});target.click();return;}
-  if(pressed.has('cancel')){if(state==='settings')closeSettings();else if(state==='codex')closeCodex();else if(state==='worldMap')closeWorldMap();else if(state==='paused')resumeGame();else if(state==='shop')leaveShop();else if(state==='hubMenu')closeHubMenu();else if(['playing','hub','dojo'].includes(state))pauseGame();}
+  if(pressed.has('cancel')){if(state==='settings')closeSettings();else if(state==='codex')closeCodex();else if(state==='worldMap')closeWorldMap();else if(state==='paused')resumeGame();else if(state==='shop')leaveShop();else if(state==='hubMenu')closeHubMenu();else if(state==='preview'&&startScreen.dataset.titleView!=='home')openTitleView('home');else if(['playing','hub','dojo'].includes(state))pauseGame();}
 }
 function pollGamepad(){
   const pads=typeof navigator.getGamepads==='function'?[...navigator.getGamepads()].filter(Boolean):[],gamepad=pads.find((pad)=>pad.index===input.gamepad.index)||pads[0];
@@ -4431,6 +4435,7 @@ window.addEventListener('keydown', (event) => {
   if(key===bound('worldMap')&&['playing','hub','dojo'].includes(state)){openWorldMap();event.preventDefault();return;}
   if(key==='f3'){const active=layeredMapRuntime.toggleDebug();if(player)spawnWord(player.x,player.y-90,active?'MAP DEBUG ON':'MAP DEBUG OFF',active?'#45f4ff':'#9ea1ad');event.preventDefault();return;}
   if(state==='settings'&&(key==='escape'||key===bound('settings'))){closeSettings();event.preventDefault();return;}
+  if(state==='preview'&&key==='escape'&&startScreen.dataset.titleView!=='home'){openTitleView('home');event.preventDefault();return;}
   if(state==='paused'&&key==='escape'){resumeGame();event.preventDefault();return;}
   if(key===bound('settings')&&['preview','hub','playing','dojo','paused'].includes(state)){openSettings(state);event.preventDefault();return;}
   if(state==='codex'&&(key==='escape'||key===bound('codex'))){closeCodex();event.preventDefault();return;}
@@ -4466,14 +4471,11 @@ document.querySelector('#start-button').addEventListener('click', begin);
 for(const button of document.querySelectorAll('[data-title-open]'))button.addEventListener('click',()=>openTitleView(button.dataset.titleOpen));
 document.querySelector('#home-play-button')?.addEventListener('click',()=>openTitleView('play'));
 document.querySelector('#title-back')?.addEventListener('click',()=>openTitleView('home'));
-document.querySelector('.title-card-back')?.addEventListener('click',()=>openTitleView('home'));
-document.querySelector('#title-progression-codex')?.addEventListener('click',()=>openCodex('heroes'));
 coopCreateButton?.addEventListener('click',()=>{const code=coopRoomCode();coopCodeInput.value=code;connectCoop(code,true);});
 coopJoinButton?.addEventListener('click',()=>connectCoop(coopCodeInput.value));
 coopLeaveButton?.addEventListener('click',()=>leaveCoop());
 continueRunButton.addEventListener('click',resumeSavedRun);
 document.querySelector('#codex-button').addEventListener('click',()=>openCodex('heroes'));
-document.querySelector('#settings-button').addEventListener('click',()=>openSettings('preview'));
 document.querySelector('#resume-button').addEventListener('click',resumeGame);
 document.querySelector('#pause-settings').addEventListener('click',()=>openSettings('paused'));
 document.querySelector('#save-title-button').addEventListener('click',returnToTitle);
