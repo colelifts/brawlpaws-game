@@ -1,6 +1,6 @@
 import { clamp, lerp, normalize, distance, approachAngle, encounterActiveLimit, campaignPressureCurve, cappedWardPressure, normalizedEnemyScales, enemySpeedCeiling, enemyTelegraphFloor, incomingDamageLimit, guardianAttackTiming } from './math.js?v=20260812-guardians1';
 import { HEROES, WEAPONS, ABILITIES, STATUS_EFFECTS, ELITE_MODIFIERS, BOSS_PATTERNS, BOSS_PROFILES, ENEMIES, ENCOUNTERS, ROOMS, DIFFICULTIES } from './data.js?v=20260813-casts1';
-import { createLayeredMapRuntime } from './map-runtime.js?v=20260813-worldgates2';
+import { createLayeredMapRuntime } from './map-runtime.js?v=20260813-stream1';
 import { EXPEDITION_WORLD, EXPEDITION_MILESTONES, expeditionNode, expeditionNeighbors, expeditionWorldPosition, expeditionProgress, expeditionRealmProgress, expeditionThreat, expeditionLoot } from './expedition-world.js?v=20260813-world3';
 import { PROFILE_VERSION, DEFAULT_SETTINGS, DEFAULT_CONTRACT_PROGRESS, createDefaultProfile, defaultHeroMastery, sanitizeProfile, createSaveArchive, parseSaveArchive } from './profile.js?v=20260813-prestige1';
 import { DEFAULT_BINDINGS, BINDING_LABELS, keyLabel, gamepadActions } from './controls.js?v=20260813-controls1';
@@ -1184,10 +1184,10 @@ function nearestHubStation(){
   return bestDistance<=235?{station:best,distance:bestDistance}:null;
 }
 
-function activateRoom(roomId,{reposition=true,announce=false,waveIndex=0,subtitle=''}={}){
+function activateRoom(roomId,{reposition=true,announce=false,waveIndex=0,subtitle='',entryGate=null}={}){
   const nextRoom=ROOMS[roomId];if(!nextRoom)return;room=nextRoom;assets.arena=loadRoomArena(room);
-  const authoredSpawn=room.mapRuntime==='phaser-tiled'?layeredMapRuntime.playerSpawn(room.id):null,spawn=authoredSpawn||room.playerSpawn;
-  if(reposition&&player){player.x=spawn.x;player.y=spawn.y;player.vx=0;player.vy=0;player.facing=-Math.PI/2;player.invulnerable=Math.max(player.invulnerable,1.1);camera.x=player.x;camera.y=player.y;camera.shake=0;}
+  const authoredSpawn=room.mapRuntime==='phaser-tiled'?(entryGate?layeredMapRuntime.entrySpawn(room.id,entryGate):layeredMapRuntime.playerSpawn(room.id)):null,spawn=authoredSpawn||room.playerSpawn;
+  if(reposition&&player){player.x=spawn.x;player.y=spawn.y;player.vx=0;player.vy=0;player.facing=Number.isFinite(spawn.facing)?spawn.facing:-Math.PI/2;player.aimFacing=player.facing;player.moveFacing=player.facing;player.invulnerable=Math.max(player.invulnerable,1.1);camera.x=player.x;camera.y=player.y;camera.shake=0;}
   if(player){
     if(!(player.discoveredRegions instanceof Set))player.discoveredRegions=new Set(player.discoveredRegions||[]);
     const node=expeditionNode(room.id),newDiscovery=node&&!profile.worldDiscoveries.includes(room.id);
@@ -1636,7 +1636,7 @@ function skipTutorial(){clearInterval(tutorialTypeTimer);profile.tutorialComplet
 function startWave(index,modifiers={}) {
   const wave = chapter.waves[index];
   const difficulty=activeDifficulty();
-  Object.values(effects).forEach((list)=>list.splice(0));const requestedNodeType=modifiers.nodeType||'combat',targetRegion=modifiers.resumeRegion&&ROOMS[modifiers.resumeRegion]?modifiers.resumeRegion:roomForWave(index,requestedNodeType);activateRoom(targetRegion,{reposition:true,announce:true,waveIndex:index,subtitle:wave.name.toUpperCase()});
+  Object.values(effects).forEach((list)=>list.splice(0));const requestedNodeType=modifiers.nodeType||'combat',targetRegion=modifiers.resumeRegion&&ROOMS[modifiers.resumeRegion]?modifiers.resumeRegion:roomForWave(index,requestedNodeType),crossingRegion=targetRegion!==room.id;activateRoom(targetRegion,{reposition:true,announce:true,waveIndex:index,subtitle:wave.name.toUpperCase(),entryGate:modifiers.entryGate||(crossingRegion?'back':null)});
   if(player.maxSpiritShield>0)applyPlayerStatus('shield',14,player.maxSpiritShield);
   encounter.wave=index; encounter.waveTime=0;encounter.transitioning=false;encounter.awaitingGate=false;encounter.awaitingRouteChoice=false;encounter.routeGateChoices=[];encounter.routeGateLock=0;encounter.bossActive=false;encounter.endlessStage=Number(modifiers.endlessStage)||0;encounter.nodeType=modifiers.nodeType||'combat';encounter.modifiers={...modifiers};encounter.regionThreat=expeditionThreat(room.id);encounter.biomePressureClock=biomePressureInterval(index)*.72;encounter.biomePressureCount=0;encounter.warpackClock=(CHAPTER_WARPACKS[chapter.id]?.interval||18)*.78;encounter.warpackCount=0;corruptionDirector=createCorruptionDirector(index,modifiers.corruption);const corruption=corruptionTier();encounter.rewardScale=(modifiers.rewardScale||1)*difficulty.rewardScale*corruption.reward;enemies=[];state='playing';roomInteractable=null;spawnRoomDestructibles(index,modifiers.brokenProps||[]);spawnRoomMission(wave.mission,modifiers.missionState);refreshCorruptionHud({surge:corruptionDirector.tier>=2});
   if(PHYSICAL_ROUTE_NODES.has(encounter.nodeType)){spawnRoomInteractable(encounter.nodeType);if(modifiers.interactableUsed)roomInteractable.used=true;}
@@ -1778,12 +1778,13 @@ function updatePhysicalRoute(dt){
   encounter.routeGateLock=Math.max(0,(encounter.routeGateLock||0)-dt);if(encounter.routeGateLock>0)return;
   const choices=encounter.routeGateChoices||[];let nearest=null,nearestDistance=Infinity;
   for(const choice of choices){const d=distance(player,choice);if(d<nearestDistance){nearest=choice;nearestDistance=d;}if(d<=choice.radius+player.radius*.72){if(coop.connected&&!coopIsHost()){spawnWord(player.x,player.y-78,'HOST CHOOSES THE ROAD','#9cf4ff');encounter.routeGateLock=1;return;}encounter.awaitingRouteChoice=false;encounter.routeGateChoices=[];player.vx=0;player.vy=0;if(choice.extract)extractExpedition({fromWorld:true});else if(choice.backtrack)returnToClearedRegion(choice.destination);else commitRouteChoice(choice);return;}}
+  if(nearest?.destination&&nearestDistance<620)layeredMapRuntime.previewNeighbor(nearest.destination);else layeredMapRuntime.clearPreview();
   if(nearest&&nearestDistance<340)ui.objective.textContent=nearest.extract?`ENTER TO EXTRACT  ·  BANK ${player.expeditionShards||0} SHARDS`:`${nearest.name.toUpperCase()}  ·  ${ROOMS[nearest.destination]?.name.toUpperCase()||'SPIRIT ROAD'}`;
   else ui.objective.textContent=coop.connected&&!coopIsHost()?'FOLLOW THE HOST TO THE NEXT ROAD':'WALK INTO A SPIRIT ROAD  ·  M OPENS WORLD MAP';
 }
 
 function returnToClearedRegion(destination){
-  if(!ROOMS[destination]||!player.clearedRegions?.has(destination))return;player.regionHistory=Array.isArray(player.regionHistory)?player.regionHistory:[];player.regionHistory.pop();activateRoom(destination,{reposition:true,announce:true,waveIndex:pendingRouteWave,subtitle:'RETURNING ALONG THE SPIRIT ROAD'});preparePhysicalRoute(pendingRouteWave,{restoring:true});spawnWord(player.x,player.y-96,'CLEARED ROAD REVISITED','#a9c8ff');
+  if(!ROOMS[destination]||!player.clearedRegions?.has(destination))return;player.regionHistory=Array.isArray(player.regionHistory)?player.regionHistory:[];player.regionHistory.pop();activateRoom(destination,{reposition:true,announce:true,waveIndex:pendingRouteWave,subtitle:'RETURNING ALONG THE SPIRIT ROAD',entryGate:'forward'});preparePhysicalRoute(pendingRouteWave,{restoring:true});spawnWord(player.x,player.y-96,'CLEARED ROAD REVISITED','#a9c8ff');
 }
 
 function openRoute(nextWave){
@@ -1821,11 +1822,11 @@ function selectRoute(index){
 
 function commitRouteChoice(node){
   if(!node)return;pendingRouteDestination=node.destination;player.regionHistory=Array.isArray(player.regionHistory)?player.regionHistory:[];if(room.id!==pendingRouteDestination&&player.regionHistory.at(-1)!==room.id)player.regionHistory.push(room.id);encounter.awaitingRouteChoice=false;encounter.routeGateChoices=[];encounter.transitioning=false;
-  if(node.id==='elite')startWave(pendingRouteWave,{nodeType:'elite',resumeRegion:pendingRouteDestination,healthScale:1.28,speedScale:1.18,damageScale:1.22,rewardScale:2});
-  else if(PHYSICAL_ROUTE_NODES.has(node.id))startWave(pendingRouteWave,{nodeType:node.id,resumeRegion:pendingRouteDestination,rewardScale:1.08});
+  if(node.id==='elite')startWave(pendingRouteWave,{nodeType:'elite',resumeRegion:pendingRouteDestination,entryGate:'back',healthScale:1.28,speedScale:1.18,damageScale:1.22,rewardScale:2});
+  else if(PHYSICAL_ROUTE_NODES.has(node.id))startWave(pendingRouteWave,{nodeType:node.id,resumeRegion:pendingRouteDestination,entryGate:'back',rewardScale:1.08});
   else if(node.id==='shop')enterMerchantRoom({destination:pendingRouteDestination,nextWave:pendingRouteWave});
   else if(node.id==='event'||node.id==='secret')enterRouteEventRoom(node.id,{destination:pendingRouteDestination,nextWave:pendingRouteWave});
-  else startWave(pendingRouteWave,{resumeRegion:pendingRouteDestination});
+  else startWave(pendingRouteWave,{resumeRegion:pendingRouteDestination,entryGate:'back'});
 }
 
 function openRouteEvent(kind){
@@ -1839,7 +1840,7 @@ function openRouteEvent(kind){
 }
 
 function enterRouteEventRoom(kind,{destination=pendingRouteDestination,nextWave=pendingRouteWave,restoring=false}={}){
-  if(!ROUTE_EVENTS[kind]||!ROOMS[destination])return;pendingRouteDestination=destination;pendingRouteWave=nextWave;activateRoom(destination,{reposition:true,announce:!restoring,waveIndex:nextWave,subtitle:kind==='secret'?'HIDDEN LANDMARK':'LANTERN CROSSROADS'});
+  if(!ROUTE_EVENTS[kind]||!ROOMS[destination])return;pendingRouteDestination=destination;pendingRouteWave=nextWave;activateRoom(destination,{reposition:true,announce:!restoring,waveIndex:nextWave,subtitle:kind==='secret'?'HIDDEN LANDMARK':'LANTERN CROSSROADS',entryGate:'back'});
   Object.values(effects).forEach((list)=>list.splice(0));enemies=[];destructibles=[];roomMission=null;clearDelay=-1;state='playing';encounter.wave=nextWave;encounter.waveTime=0;encounter.transitioning=false;encounter.awaitingGate=false;encounter.awaitingRouteChoice=false;encounter.routeGateChoices=[];encounter.routeGateLock=0;encounter.bossActive=false;encounter.nodeType=kind;encounter.modifiers={nodeType:kind,resumeRegion:destination};roomInteractable=null;spawnRoomInteractable(kind);
   ui.waveLabel.textContent=`CHAPTER ${chapterIndex+1}  ${kind==='secret'?'HIDDEN ROAD':'SPIRIT EVENT'}`;ui.roomState.textContent=kind==='secret'?'SECRET LANDMARK':'LANTERN CROSSROADS';ui.roomState.style.color=INTERACTABLE_DEFS[kind].color;ui.objective.textContent=`APPROACH THE ${kind==='secret'?'HIDDEN SEAL':'LANTERN SPIRIT'}  ·  PRESS E TO INTERACT`;saveRunCheckpoint({kind:'routeChoice',nextWave,nodeId:kind,destination});
   if(!restoring&&!coop.applyingSignal)coopSignal({kind:'eventRoom',chapter:chapterIndex,nextWave,room:destination,nodeType:kind});updateHud();
@@ -2043,7 +2044,7 @@ function useRoomInteractable(){
 }
 
 function enterMerchantRoom({destination=pendingRouteDestination,nextWave=pendingRouteWave,restoring=false}={}){
-  if(!ROOMS[destination])return;pendingRouteDestination=destination;pendingRouteWave=nextWave;activateRoom(destination,{reposition:true,announce:!restoring,waveIndex:nextWave,subtitle:'MOON MARKET  SAFE REGION'});
+  if(!ROOMS[destination])return;pendingRouteDestination=destination;pendingRouteWave=nextWave;activateRoom(destination,{reposition:true,announce:!restoring,waveIndex:nextWave,subtitle:'MOON MARKET  SAFE REGION',entryGate:'back'});
   Object.values(effects).forEach((list)=>list.splice(0));enemies=[];destructibles=[];roomMission=null;clearDelay=-1;state='playing';encounter.wave=nextWave;encounter.waveTime=0;encounter.transitioning=false;encounter.awaitingGate=false;encounter.awaitingRouteChoice=false;encounter.routeGateChoices=[];encounter.routeGateLock=0;encounter.bossActive=false;encounter.nodeType='shop';encounter.modifiers={nodeType:'shop',resumeRegion:destination};roomInteractable=null;spawnRoomInteractable('shop');
   if(!(player.clearedRegions instanceof Set))player.clearedRegions=new Set(player.clearedRegions||[]);player.clearedRegions.add(destination);ui.waveLabel.textContent=`CHAPTER ${chapterIndex+1}  MOON MARKET`;ui.roomState.textContent='SAFE MERCHANT STOP';ui.roomState.style.color='#ffbf42';ui.objective.textContent='APPROACH THE SHOPKEEPER  ·  PRESS E TO BROWSE';saveRunCheckpoint({kind:'routeChoice',nextWave,nodeId:'shop',destination});
   if(!restoring&&!coop.applyingSignal)coopSignal({kind:'merchant',chapter:chapterIndex,nextWave,room:destination});updateHud();

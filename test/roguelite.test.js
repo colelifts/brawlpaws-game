@@ -289,6 +289,16 @@ test('authored return gates revisit cleared regions without replaying combat',()
   assert.match(game,/RETURNING ALONG THE SPIRIT ROAD/);
 });
 
+test('authored regions stream across aligned gates and preserve entry direction',()=>{
+  assert.match(mapRuntime,/previewNeighbor\(destinationRoomId\)/);
+  assert.match(mapRuntime,/entrySpawn\(roomId,direction='back'\)/);
+  assert.match(mapRuntime,/const offsetX=\(exit\.x\+exit\.width\/2\)-\(entrance\.x\+entrance\.width\/2\),offsetY=exit\.y-\(entrance\.y\+entrance\.height\)\+24/);
+  assert.match(mapRuntime,/this\.scene\.cameras\.main\.setBounds\(minX,minY,maxX-minX,maxY-minY\)/);
+  assert.match(game,/entryGate:modifiers\.entryGate\|\|\(crossingRegion\?'back':null\)/);
+  assert.match(game,/layeredMapRuntime\.previewNeighbor\(nearest\.destination\)/);
+  assert.match(game,/entryGate:'forward'/);
+});
+
 test('Tiled cutscene triggers launch saved one-time world dialogue',()=>{
   assert.match(mapRuntime,/triggersAt\(entity,roomId=this\.activeRoomId\)/);
   for(const helper of ['mapCutsceneDefinition','showMapCutscene','finishMapCutscene','updateMapTriggers'])assert.match(game,new RegExp(`function ${helper}\\(`));

@@ -84,7 +84,7 @@ const objectProperties=(object)=>Object.fromEntries((object.properties||[]).map(
 
 export class LayeredMapRuntime {
   constructor(parentId='phaser-map'){
-    this.parentId=parentId;this.ready=false;this.debug=false;this.entries=new Map();this.activeRoomId=null;this.scene=null;this.game=null;
+    this.parentId=parentId;this.ready=false;this.debug=false;this.entries=new Map();this.activeRoomId=null;this.previewRoomId=null;this.scene=null;this.game=null;
     this.start();
   }
 
@@ -133,6 +133,7 @@ export class LayeredMapRuntime {
     entry.collision=entry.objects.Collision.map((object)=>({id:object.name,x:object.x,y:object.y,width:object.width,height:object.height,active:true}));
     entry.gates=entry.objects['Doors / Gates'].map((object)=>({...object,sealed:object.properties.state==='combat-sealed'}));
     this.createLowProps(scene,entry);this.createGateArt(scene,entry);this.createAmbient(scene,entry);this.createDebug(scene,entry);
+    entry.displayOrigins=new Map(entry.display.map((object)=>[object,{x:Number(object.x)||0,y:Number(object.y)||0}]));
     this.entries.set(definition.roomId,entry);
   }
 
@@ -164,13 +165,35 @@ export class LayeredMapRuntime {
 
   activateRoom(roomId){
     if(this.activeRoomId===roomId)return this.entries.get(roomId)||null;
-    for(const entry of this.entries.values()){entry.visible=entry.roomId===roomId;for(const object of entry.display)object.setVisible(entry.visible&&(object!==entry.debugGraphics||this.debug));}
+    this.previewRoomId=null;for(const entry of this.entries.values()){this.setEntryOffset(entry,0,0);entry.visible=entry.roomId===roomId;for(const object of entry.display)object.setVisible(entry.visible&&(object!==entry.debugGraphics||this.debug));}
     this.activeRoomId=this.entries.has(roomId)?roomId:null;const entry=this.activeEntry();
     if(entry){this.scene.cameras.main.setBounds(0,0,entry.map.widthInPixels,entry.map.heightInPixels);this.scene.physics.world.setBounds(0,0,entry.map.widthInPixels,entry.map.heightInPixels);}
     return entry;
   }
 
   activeEntry(){return this.entries.get(this.activeRoomId)||null;}
+
+  setEntryOffset(entry,x=0,y=0){
+    if(!entry?.displayOrigins)return;for(const object of entry.display){const origin=entry.displayOrigins.get(object);if(origin)object.setPosition(origin.x+x,origin.y+y);}
+  }
+
+  entrySpawn(roomId,direction='back'){
+    const entry=this.entries.get(roomId),gate=direction==='forward'?this.forwardGate(roomId):this.backGate(roomId);if(!entry||!gate)return this.playerSpawn(roomId);
+    const inward=direction==='forward'?1:-1,x=gate.x+gate.width/2,y=gate.y+gate.height/2+inward*(gate.height/2+190);
+    return {x:Math.max(180,Math.min(entry.map.widthInPixels-180,x)),y:Math.max(180,Math.min(entry.map.heightInPixels-180,y)),facing:direction==='forward'?Math.PI/2:-Math.PI/2};
+  }
+
+  previewNeighbor(destinationRoomId){
+    const current=this.activeEntry(),destination=this.entries.get(destinationRoomId);if(!current||!destination||destination===current)return null;
+    if(this.previewRoomId&&this.previewRoomId!==destinationRoomId)this.clearPreview();const exit=this.forwardGate(current.roomId),entrance=this.backGate(destinationRoomId);if(!exit||!entrance)return null;
+    const offsetX=(exit.x+exit.width/2)-(entrance.x+entrance.width/2),offsetY=exit.y-(entrance.y+entrance.height)+24;
+    this.setEntryOffset(destination,offsetX,offsetY);destination.visible=true;for(const object of destination.display)object.setVisible(object!==destination.debugGraphics||this.debug);this.previewRoomId=destinationRoomId;
+    const minX=Math.min(0,offsetX),minY=Math.min(0,offsetY),maxX=Math.max(current.map.widthInPixels,offsetX+destination.map.widthInPixels),maxY=Math.max(current.map.heightInPixels,offsetY+destination.map.heightInPixels);this.scene.cameras.main.setBounds(minX,minY,maxX-minX,maxY-minY);return {roomId:destinationRoomId,offsetX,offsetY};
+  }
+
+  clearPreview(){
+    if(!this.previewRoomId)return;const entry=this.entries.get(this.previewRoomId);if(entry&&entry.roomId!==this.activeRoomId){entry.visible=false;this.setEntryOffset(entry,0,0);for(const object of entry.display)object.setVisible(false);}this.previewRoomId=null;const active=this.activeEntry();if(active)this.scene.cameras.main.setBounds(0,0,active.map.widthInPixels,active.map.heightInPixels);
+  }
 
   update({roomId,cameraX,cameraY,zoom,width,height,sealed,active=true}){
     const host=document.getElementById(this.parentId);if(host)host.style.visibility=active?'visible':'hidden';
