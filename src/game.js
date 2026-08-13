@@ -83,7 +83,7 @@ const assets = {
   crimsonEnemies: new Image(), crimsonEnemiesMove: new Image(), pyreclawShogun: new Image(), pyreclawShogunMove: new Image(), crimsonCombatVfx: new Image(),
   stormEnemies: new Image(), stormEnemiesMove: new Image(), raijinKirin: new Image(), raijinKirinMove: new Image(), stormCoastVfx: new Image(),
   neonEnemies: new Image(), neonEnemiesMove: new Image(), daikyoOni: new Image(), daikyoOniMove: new Image(), neonCityVfx: new Image(),
-  shadowEnemies: new Image(), shadowEnemiesMove: new Image(), tsukikoEmpress: new Image(), tsukikoEmpressMove: new Image(), shadowRealmVfx: new Image(),
+  shadowEnemies: new Image(), shadowEnemiesMove: new Image(), tsukikoEmpress: new Image(), tsukikoEmpressMove: new Image(), shadowRealmVfx: new Image(), routeGates: new Image(),
   bellweaverCat: new Image(), powderkegToad: new Image(), gatewardenRhino: new Image(), mistclawLynx: new Image(), tidechantHeron: new Image(), kernelHackerTanuki: new Image(), moonveilSeer: new Image(), specialEnemyVfx: new Image(), guardianSignatureVfx: new Image()
 };
 const assetSources = {
@@ -169,7 +169,8 @@ const assetSources = {
   kernelHackerTanuki: 'assets/characters/kernel-hacker-tanuki-v1.png',
   moonveilSeer: 'assets/characters/moonveil-seer-v1.png',
   specialEnemyVfx: 'assets/vfx/special-enemy-vfx.png',
-  guardianSignatureVfx: 'assets/vfx/guardian-signatures.png'
+  guardianSignatureVfx: 'assets/vfx/guardian-signatures.png',
+  routeGates: 'assets/environment/route-gates-v1.png'
 };
 const STARTUP_LOADING_LIMIT_MS=3200;
 const startupAssetKeys=new Set(['arena','kitsune','kitsuneFire','kitsuneStates','enemies','props','archerMove','archerAttack','raccoonAttack','boarAttack','blasterShotVfx','blasterImpactVfx']);
@@ -3538,9 +3539,9 @@ function drawArenaBackdrop(screen){
 function drawPhysicalRouteGates(){
   if(!encounter?.awaitingRouteChoice||!encounter.routeGateChoices?.length)return;const time=performance.now()/1000;
   ctx.save();for(const gate of encounter.routeGateChoices){const near=distance(player,gate)<340,pulse=.5+Math.sin(time*3.2+gate.index)*.5,color=gate.color||'#45efff',radius=gate.radius||66;
-    ctx.save();ctx.translate(gate.x,gate.y);ctx.scale(1,.58);const glow=ctx.createRadialGradient(0,0,8,0,0,radius*1.45);glow.addColorStop(0,`${color}55`);glow.addColorStop(.58,`${color}1f`);glow.addColorStop(1,`${color}00`);ctx.fillStyle=glow;ctx.beginPath();ctx.arc(0,0,radius*1.45,0,Math.PI*2);ctx.fill();ctx.strokeStyle=`${color}${near?'ee':'a8'}`;ctx.lineWidth=near?7:4;ctx.setLineDash([18,10]);ctx.lineDashOffset=-time*42;ctx.beginPath();ctx.arc(0,0,radius+8+pulse*4,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.strokeStyle=`${color}72`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,radius*.68-pulse*3,0,Math.PI*2);ctx.stroke();ctx.restore();
-    ctx.save();ctx.translate(gate.x,gate.y-16);ctx.shadowColor=color;ctx.shadowBlur=near?22:12;ctx.fillStyle=color;ctx.font='900 20px Bangers, Impact, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(gate.extract?'⇧':gate.backtrack?'↩':gate.icon||'◆',0,0);ctx.restore();
-    const labelY=gate.y+(gate.index===1?112:126);ctx.save();ctx.translate(gate.x,labelY);ctx.textAlign='center';ctx.shadowColor='#000';ctx.shadowBlur=8;ctx.fillStyle='rgba(5,6,15,.88)';ctx.strokeStyle=`${color}${near?'dd':'78'}`;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(-112,-32,224,64,10);ctx.fill();ctx.stroke();ctx.shadowBlur=0;ctx.fillStyle=near?'#fff':'#e9e6f0';ctx.font='900 15px Bangers, Impact, sans-serif';ctx.fillText(gate.name.toUpperCase(),0,-8);ctx.fillStyle=color;ctx.font='800 9px Inter, sans-serif';const destination=gate.extract?`BANK ${player.expeditionShards||0} SHARDS`:(ROOMS[gate.destination]?.name||'Spirit Road').toUpperCase();ctx.fillText(destination,0,13);ctx.restore();
+    const routeType=gate.extract?'heal':gate.backtrack?'combat':gate.id==='shop'||gate.id==='treasure'?'treasure':gate.id==='heal'||gate.id==='shrine'?'heal':gate.id==='event'||gate.id==='secret'?'mystery':'combat',frame={combat:0,mystery:1,treasure:2,heal:3}[routeType],atlasReady=assets.routeGates.complete&&assets.routeGates.naturalWidth;
+    ctx.save();ctx.translate(gate.x,gate.y+34);const glow=ctx.createRadialGradient(0,-54,8,0,-28,near?190:160);glow.addColorStop(0,`${color}${near?'55':'35'}`);glow.addColorStop(1,`${color}00`);ctx.fillStyle=glow;ctx.beginPath();ctx.ellipse(0,-28,near?190:160,near?148:126,0,0,Math.PI*2);ctx.fill();if(atlasReady){const sw=assets.routeGates.naturalWidth/2,sh=assets.routeGates.naturalHeight/2,sx=(frame%2)*sw,sy=Math.floor(frame/2)*sh,w=near?314:282,h=w*(sh/sw);ctx.globalAlpha=near?1:.92;ctx.shadowColor=color;ctx.shadowBlur=near?20:10;ctx.drawImage(assets.routeGates,sx,sy,sw,sh,-w/2,-h*.84,w,h);}else{ctx.scale(1,.58);ctx.strokeStyle=`${color}${near?'ee':'a8'}`;ctx.lineWidth=near?7:4;ctx.setLineDash([18,10]);ctx.lineDashOffset=-time*42;ctx.beginPath();ctx.arc(0,0,radius+8+pulse*4,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);}ctx.restore();
+    const labelY=gate.y+(gate.index===1?166:178);ctx.save();ctx.translate(gate.x,labelY);ctx.textAlign='center';ctx.shadowColor='#000';ctx.shadowBlur=10;ctx.fillStyle='rgba(5,6,15,.92)';ctx.strokeStyle=`${color}${near?'dd':'78'}`;ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(-154,-42,308,84,12);ctx.fill();ctx.stroke();ctx.shadowBlur=0;ctx.fillStyle=near?'#fff':'#f3eff8';ctx.font='900 24px Bangers, Impact, sans-serif';ctx.fillText(gate.name.toUpperCase(),0,-10);ctx.fillStyle=color;ctx.font='900 13px Inter, sans-serif';const destination=gate.extract?`BANK ${player.expeditionShards||0} SHARDS`:(ROOMS[gate.destination]?.name||'Spirit Road').toUpperCase();ctx.fillText(destination,0,19);ctx.restore();
   }ctx.restore();
 }
 

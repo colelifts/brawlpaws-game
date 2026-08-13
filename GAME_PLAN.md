@@ -294,7 +294,7 @@ The room-route prototype is now migration material, not the final campaign shape
 ### Migration order
 
 1. Add the tracked tutorial director and character-led dialogue presentation.
-2. Convert Jade's authored combat spaces into connected streaming regions with terrain layers and traversal corridors.
+2. Convert Jade's authored combat spaces into connected streaming regions with terrain layers and traversal corridors. **In progress:** all sixty authored regions now share one expedition topology; neighboring maps stream beside the active region with their gate thresholds aligned, entry direction is preserved, cleared regions can be revisited, and production-painted spirit-road gates replace abstract portal rings. The next environment pass is authored traversal terrain, parallax/occlusion depth, and animated landmarks between the aligned regions.
 3. Add distance-based threat/XP/loot bands, exploration discoveries, extraction, and death banking.
 4. Place Jade Grove, Bamboo Hollow, Crimson Dojo, Storm Coast, Neon City, and Shadow Realm as regions within Expedition World I, with a far-edge guardian citadel.
 5. Gate Expedition World II behind the World I guardian clear and preserve the continue-or-extract choice. **Implemented:** the village portal now exposes a locked/unlocked expedition atlas; Hollow Moon Ascension is a finite 12-region run with fresh power, escalating pressure, guardian gates at 6 and 12, checkpoint-safe extraction, and its own permanent completion record. The uncapped Endless Road remains the optional post-World-I continuation.

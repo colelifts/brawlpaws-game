@@ -299,6 +299,13 @@ test('authored regions stream across aligned gates and preserve entry direction'
   assert.match(game,/entryGate:'forward'/);
 });
 
+test('spirit roads use authored world-gate art instead of abstract portal rings',()=>{
+  assert.match(game,/routeGates: new Image\(\)/);
+  assert.match(game,/route-gates-v1\.png/);
+  assert.match(game,/const routeType=gate\.extract\?'heal'/);
+  assert.match(game,/ctx\.drawImage\(assets\.routeGates,sx,sy,sw,sh/);
+});
+
 test('Tiled cutscene triggers launch saved one-time world dialogue',()=>{
   assert.match(mapRuntime,/triggersAt\(entity,roomId=this\.activeRoomId\)/);
   for(const helper of ['mapCutsceneDefinition','showMapCutscene','finishMapCutscene','updateMapTriggers'])assert.match(game,new RegExp(`function ${helper}\\(`));
