@@ -1019,6 +1019,7 @@ test('every guardian exposes a named skill-based counter window',()=>{
   assert.match(game,/enemy\.def\.behavior==='boss'&&enemy\.counterTime>0/);
   assert.match(game,/guardianAttackTiming\(\{baseWindup:pattern\.windup/);
   assert.match(game,/function updateBossReadout\(boss,profile\)/);
+  assert.match(game,/bossBlend=boss\?clamp\(bossGap\/1850,\.22,\.48\):0/);
   assert.match(styles,/\.boss-panel\.counter-open/);
 });
 

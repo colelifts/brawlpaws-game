@@ -3446,7 +3446,8 @@ function updateCamera(dt, screen) {
   const viewHeight = screen.height / camera.zoom;
   const lookX = player.vx * .16 + Math.cos(player.facing) * camera.kick;
   const lookY = player.vy * .11 + Math.sin(player.facing) * camera.kick * .7;
-  const routeFocus=encounter.routeCameraTarget,focusBlend=routeFocus?.blend||0,focusX=lerp(player.x+lookX,routeFocus?.x??player.x,focusBlend),focusY=lerp(player.y+lookY,routeFocus?.y??player.y,focusBlend),worldBounds=room.mapRuntime==='phaser-tiled'?layeredMapRuntime.viewBounds():null;
+  const boss=enemies.find((enemy)=>!enemy.dead&&enemy.def?.behavior==='boss'&&enemy.state!=='waiting'),bossGap=boss?distance(player,boss):Infinity,bossBlend=boss?clamp(bossGap/1850,.22,.48):0,bossFocusX=boss?lerp(player.x+lookX,boss.x,bossBlend):player.x+lookX,bossFocusY=boss?lerp(player.y+lookY,boss.y-130,bossBlend):player.y+lookY;
+  const routeFocus=encounter.routeCameraTarget,focusBlend=routeFocus?.blend||0,focusX=lerp(bossFocusX,routeFocus?.x??bossFocusX,focusBlend),focusY=lerp(bossFocusY,routeFocus?.y??bossFocusY,focusBlend),worldBounds=room.mapRuntime==='phaser-tiled'?layeredMapRuntime.viewBounds():null;
   const minX=(worldBounds?.minX||0)+viewWidth/2,maxX=(worldBounds?.maxX||room.width)-viewWidth/2,minY=(worldBounds?.minY||0)+viewHeight/2,maxY=(worldBounds?.maxY||room.height)-viewHeight/2;
   const targetX = clamp(focusX,Math.min(minX,maxX),Math.max(minX,maxX));
   const targetY = clamp(focusY,Math.min(minY,maxY),Math.max(minY,maxY));
