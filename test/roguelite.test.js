@@ -514,6 +514,8 @@ test('active campaigns persist a versioned room-safe checkpoint and can resume',
   assert.match(game,/saveRunCheckpoint\(\{kind:'wave',wave:index,modifiers:encounter\.modifiers\}\)/);
   assert.match(game,/saveRunCheckpoint\(\{kind:'route',nextWave\}\)/);
   assert.match(game,/saveRunCheckpoint\(\{kind:'boss'\}\)/);
+  assert.match(game,/saveRunCheckpoint\(\{kind:'endlessDecision'\}\)/);
+  assert.match(game,/endlessRoad:\{\.\.\.endlessRoad/);
   assert.match(game,/unlockedAbilities:\[\.\.\.player\.unlockedAbilities\]/);
   assert.match(game,/restored\.unlockedAbilities=new Set/);
   assert.match(game,/spawnBoss\(\{restoring:true\}\)/);
@@ -543,8 +545,18 @@ test('guardian victories open build-defining blessings and a three-vow epilogue'
   assert.match(game,/saveRunCheckpoint\(\{kind:'guardianReward',guardianId\}\)/);
   assert.match(game,/point\.kind==='guardianReward'/);
   assert.match(game,/showStory\('epilogue'\)/);
-  assert.match(game,/encounter\.storyBeat==='epilogue'\)endGame\(true\)/);
+  assert.match(game,/encounter\.storyBeat==='epilogue'\)openEndlessRoadDecision\(\{campaignVictory:true\}\)/);
   assert.match(game,/player\.victoryShardBonus/);
+});
+
+test('hero mastery and the post-Tsukiko endless road persist without overpowering the opening',()=>{
+  for(const id of ['hero-mastery-rank','hero-mastery-fill','endless-road-screen','continue-endless-road','bank-endless-road'])assert.match(html,new RegExp(`id="${id}"`));
+  for(const fn of ['masteryXpForRank','masteryRank','masteryStartingBonus','bankMasteryProgress','endlessPressure','bankCampaignVictory','openEndlessRoadDecision','startEndlessStage','completeEndlessStage','finishEndlessRoad'])assert.match(game,new RegExp(`function ${fn}\\(`));
+  assert.match(game,/const MASTERY_CAP=50/);
+  assert.match(game,/health:Math\.floor\(rank\/10\)\*2/);
+  assert.match(game,/stage%6===0/);
+  assert.match(game,/Math\.floor\(endlessRoad\.bank\/2\)/);
+  assert.match(game,/masteryXpEarned/);
 });
 
 test('persistent accessibility controls change render behavior and remain pause-safe',()=>{

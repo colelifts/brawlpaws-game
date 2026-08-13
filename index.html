@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#080817" />
   <link rel="icon" href="data:," />
   <title>BrawlPaws — Six-Chapter Roguelite Campaign</title>
-  <link rel="stylesheet" href="styles.css?v=20260813-world1" />
+  <link rel="stylesheet" href="styles.css?v=20260813-mastery2" />
 </head>
 <body>
   <main id="game-shell" aria-label="BrawlPaws roguelite campaign">
@@ -131,6 +131,11 @@
         </div>
         <div class="hero-comparison" id="hero-comparison" aria-live="polite">
           <div class="comparison-ratings" id="comparison-ratings"></div>
+          <div class="hero-mastery-summary" id="hero-mastery-summary">
+            <span><small>HERO MASTERY</small><b id="hero-mastery-rank">RANK 0 / 50</b></span>
+            <i><em id="hero-mastery-fill"></em></i>
+            <p id="hero-mastery-copy">Begin expeditions to earn hero mastery.</p>
+          </div>
           <div class="weapon-comparison">
             <span><small>STARTING WEAPON</small><b id="comparison-weapon">SPIRIT BLASTER</b></span>
             <em id="comparison-weapon-tags">PRECISION · RAPID · LONG RANGE</em>
@@ -366,15 +371,33 @@
         <div class="result-stats">
           <span><small>TIME</small><b id="result-time">00:00</b></span>
           <span><small>MAX COMBO</small><b id="result-combo">0</b></span>
-          <span><small>DASHES</small><b id="result-dashes">0</b></span>
+          <span><small id="result-third-label">DASHES</small><b id="result-dashes">0</b></span>
         </div>
         <button id="restart-button">BRAWL AGAIN <span>↻</span></button>
+      </div>
+    </section>
+
+    <section id="endless-road-screen" class="overlay endless-road-screen" aria-labelledby="endless-road-title">
+      <div class="endless-road-panel brush-panel">
+        <p id="endless-road-kicker">THE HOLLOW MOON OPENS</p>
+        <h2 id="endless-road-title">THE ROAD CONTINUES</h2>
+        <p id="endless-road-copy">Your campaign is won. Bank the victory, or carry this exact build beyond Tsukiko into an escalating road with no final wave.</p>
+        <div class="endless-road-readout">
+          <span><small>NEXT TRIAL</small><b id="endless-road-stage">ROAD 1 · JADE GROVE</b></span>
+          <span><small>ENEMY PRESSURE</small><b id="endless-road-pressure">+22% HEALTH · +16% DAMAGE</b></span>
+          <span><small>AT RISK</small><b id="endless-road-bank">0 ROAD SHARDS</b></span>
+        </div>
+        <div class="endless-road-actions">
+          <button id="continue-endless-road" type="button">CONTINUE INTO THE UNKNOWN <span>›</span></button>
+          <button id="bank-endless-road" type="button">BANK VICTORY &amp; RETURN TO VILLAGE</button>
+        </div>
+        <small>Every sixth road ends in a guardian. Falling banks only half of the extra road shards.</small>
       </div>
     </section>
 
     <div id="loading">AWAKENING THE GROVE…</div>
   </main>
   <script src="vendor/phaser-3.90.0.min.js"></script>
-    <script type="module" src="src/game.js?v=20260813-world1"></script>
+    <script type="module" src="src/game.js?v=20260813-mastery2"></script>
 </body>
 </html>

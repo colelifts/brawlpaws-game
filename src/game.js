@@ -12,6 +12,7 @@ const worldMapCtx=worldMapCanvas.getContext('2d');
 const shell = document.querySelector('#game-shell');
 const startScreen = document.querySelector('#start-screen');
 const resultScreen = document.querySelector('#result-screen');
+const endlessRoadScreen = document.querySelector('#endless-road-screen');
 const levelupScreen = document.querySelector('#levelup-screen');
 const upgradeGrid = document.querySelector('#upgrade-grid');
 const storyScreen = document.querySelector('#story-screen');
@@ -199,6 +200,7 @@ const ui = {
   weaponName:document.querySelector('#weapon-name'),dashName:document.querySelector('#dash-name'),
   startHeroMark:document.querySelector('#start-hero-mark'),startHeroName:document.querySelector('#start-hero-name'),startHeroCopy:document.querySelector('#start-hero-copy'),
   comparisonRatings:document.querySelector('#comparison-ratings'),comparisonWeapon:document.querySelector('#comparison-weapon'),comparisonWeaponTags:document.querySelector('#comparison-weapon-tags'),comparisonWeaponCopy:document.querySelector('#comparison-weapon-copy'),comparisonWeaponStats:document.querySelector('#comparison-weapon-stats'),
+  heroMasteryRank:document.querySelector('#hero-mastery-rank'),heroMasteryFill:document.querySelector('#hero-mastery-fill'),heroMasteryCopy:document.querySelector('#hero-mastery-copy'),
   arsenalContractTitle:document.querySelector('#arsenal-contract-title'),arsenalContractCopy:document.querySelector('#arsenal-contract-copy'),arsenalContractGrid:document.querySelector('#arsenal-contract-grid'),
   xpFill: document.querySelector('#xp-fill'), xpText: document.querySelector('#xp-text'),
   levelBadge: document.querySelector('#level-badge'),
@@ -218,8 +220,9 @@ const ui = {
   },
   resultKicker: document.querySelector('#result-kicker'), resultCopy: document.querySelector('#result-copy'),
   resultTime: document.querySelector('#result-time'), resultCombo: document.querySelector('#result-combo'),
-  resultDashes: document.querySelector('#result-dashes'), resultReward: document.querySelector('#result-reward'),
+  resultDashes: document.querySelector('#result-dashes'),resultThirdLabel:document.querySelector('#result-third-label'), resultReward: document.querySelector('#result-reward'),
   profileSummary: document.querySelector('#profile-summary'),
+  endlessRoadKicker:document.querySelector('#endless-road-kicker'),endlessRoadTitle:document.querySelector('#endless-road-title'),endlessRoadCopy:document.querySelector('#endless-road-copy'),endlessRoadStage:document.querySelector('#endless-road-stage'),endlessRoadPressure:document.querySelector('#endless-road-pressure'),endlessRoadBank:document.querySelector('#endless-road-bank'),
   synergyStrip:document.querySelector('#synergy-strip'), levelupSubtitle:document.querySelector('#levelup-subtitle'),rerollButton:document.querySelector('#reroll-upgrades'),
   rerollCost:document.querySelector('#reroll-cost'), skipUpgrade:document.querySelector('#skip-upgrade'),
   eventKicker:document.querySelector('#event-kicker'), eventTitle:document.querySelector('#event-title'),
@@ -240,7 +243,8 @@ const RUN_KEY='brawlpaws-run-v1';
 const RUN_VERSION=1;
 const DEFAULT_SETTINGS={screenShake:1,flashIntensity:1,damageNumbers:true,ambientMotion:true,minimap:true,masterVolume:.8,musicVolume:.55,sfxVolume:.85,abilityVolume:.85,uiVolume:.7};
 const DEFAULT_CONTRACT_PROGRESS={spiritCull:0,eliteBreakers:0,foxfireHunt:0,sealRunner:0,guardianOath:0};
-const DEFAULT_PROFILE={spiritShards:0,campaignClears:0,runsStarted:0,bestDifficulty:'',lastDifficulty:'ferocious',selectedHero:'kitsune',highestLevel:1,tutorialComplete:false,tutorialStep:0,vitalityRank:0,forgeRank:0,attunementRank:0,purseRank:0,ascensionRank:1,ascensionClears:0,unlockedHeroes:['kitsune','bamboo'],collectedWeapons:[],boundArsenal:{},discoveredEnemies:['groveMinion'],discoveredGuardians:[],contractProgress:DEFAULT_CONTRACT_PROGRESS,claimedContracts:[],settings:DEFAULT_SETTINGS};
+const DEFAULT_HERO_MASTERY=Object.fromEntries(Object.keys(HEROES).map((id)=>[id,{xp:0,highestRoad:0,kills:0,guardians:0}]));
+const DEFAULT_PROFILE={spiritShards:0,campaignClears:0,runsStarted:0,bestDifficulty:'',lastDifficulty:'ferocious',selectedHero:'kitsune',highestLevel:1,tutorialComplete:false,tutorialStep:0,vitalityRank:0,forgeRank:0,attunementRank:0,purseRank:0,ascensionRank:1,ascensionClears:0,unlockedHeroes:['kitsune','bamboo'],collectedWeapons:[],boundArsenal:{},discoveredEnemies:['groveMinion'],discoveredGuardians:[],heroMastery:DEFAULT_HERO_MASTERY,contractProgress:DEFAULT_CONTRACT_PROGRESS,claimedContracts:[],settings:DEFAULT_SETTINGS};
 function loadProfile(){
   try{
     const loaded={...DEFAULT_PROFILE,...JSON.parse(localStorage.getItem(PROFILE_KEY)||'{}')};
@@ -255,6 +259,7 @@ function loadProfile(){
     loaded.discoveredGuardians=Array.isArray(loaded.discoveredGuardians)?loaded.discoveredGuardians:[];
     loaded.collectedWeapons=Array.isArray(loaded.collectedWeapons)?loaded.collectedWeapons:[];
     loaded.boundArsenal=loaded.boundArsenal&&typeof loaded.boundArsenal==='object'?loaded.boundArsenal:{};
+    loaded.heroMastery=Object.fromEntries(Object.keys(HEROES).map((id)=>{const saved=loaded.heroMastery?.[id]||{};return [id,{xp:Math.max(0,Math.round(Number(saved.xp)||0)),highestRoad:Math.max(0,Math.round(Number(saved.highestRoad)||0)),kills:Math.max(0,Math.round(Number(saved.kills)||0)),guardians:Math.max(0,Math.round(Number(saved.guardians)||0))}];}));
     loaded.unlockedHeroes=Array.isArray(loaded.unlockedHeroes)?loaded.unlockedHeroes:['kitsune','bamboo'];
     loaded.contractProgress={...DEFAULT_CONTRACT_PROGRESS,...loaded.contractProgress};loaded.claimedContracts=Array.isArray(loaded.claimedContracts)?loaded.claimedContracts:[];
     if(loaded.campaignClears>0&&!loaded.unlockedHeroes.includes('hopscotch'))loaded.unlockedHeroes.push('hopscotch');
@@ -263,7 +268,7 @@ function loadProfile(){
     loaded.ascensionRank=clamp(Math.round(Number(loaded.ascensionRank)||1),1,10);loaded.ascensionClears=Math.max(0,Math.round(Number(loaded.ascensionClears)||0));
     if(loaded.ascensionClears>0&&!loaded.unlockedHeroes.includes('rusty'))loaded.unlockedHeroes.push('rusty');
     return loaded;
-  }catch{return {...DEFAULT_PROFILE,settings:{...DEFAULT_SETTINGS},unlockedHeroes:[...DEFAULT_PROFILE.unlockedHeroes],collectedWeapons:[],boundArsenal:{},discoveredEnemies:[...DEFAULT_PROFILE.discoveredEnemies],discoveredGuardians:[],contractProgress:{...DEFAULT_CONTRACT_PROGRESS},claimedContracts:[]};}
+  }catch{return {...DEFAULT_PROFILE,settings:{...DEFAULT_SETTINGS},unlockedHeroes:[...DEFAULT_PROFILE.unlockedHeroes],collectedWeapons:[],boundArsenal:{},discoveredEnemies:[...DEFAULT_PROFILE.discoveredEnemies],discoveredGuardians:[],heroMastery:structuredClone(DEFAULT_HERO_MASTERY),contractProgress:{...DEFAULT_CONTRACT_PROGRESS},claimedContracts:[]};}
 }
 function saveProfile(){try{localStorage.setItem(PROFILE_KEY,JSON.stringify(profile));}catch{/* Storage can be unavailable in private contexts. */}}
 let profile=loadProfile();
@@ -272,6 +277,14 @@ heroDef=HEROES[selectedHeroId];weapon=WEAPONS[heroDef.weapon];
 let selectedDifficulty=DIFFICULTIES[debugDifficulty]?debugDifficulty:(DIFFICULTIES[profile.lastDifficulty]?profile.lastDifficulty:'ferocious');
 if(selectedDifficulty==='ascension'&&profile.campaignClears<1&&debugDifficulty!=='ascension')selectedDifficulty='ferocious';
 let runReward=0;
+const MASTERY_CAP=50;
+const MASTERY_MILESTONES=[{rank:5,label:'HUNTER CREST'},{rank:10,label:'+2 STARTING HP'},{rank:20,label:'+1% STARTING POWER'},{rank:30,label:'+1 STARTING REROLL'},{rank:40,label:'+1% MOVE SPEED'},{rank:50,label:'MYTHIC AURA'}];
+function masteryXpForRank(rank){const value=clamp(Math.round(rank),0,MASTERY_CAP);return Math.round(80*value+18*value*value+2*value*value*value);}
+function masteryRecord(id=selectedHeroId){profile.heroMastery??=structuredClone(DEFAULT_HERO_MASTERY);profile.heroMastery[id]??={xp:0,highestRoad:0,kills:0,guardians:0};return profile.heroMastery[id];}
+function masteryRank(id=selectedHeroId){const xp=masteryRecord(id).xp;let rank=0;while(rank<MASTERY_CAP&&xp>=masteryXpForRank(rank+1))rank++;return rank;}
+function masteryStartingBonus(id=selectedHeroId){const rank=masteryRank(id);return {rank,health:Math.floor(rank/10)*2,damage:1+Math.floor(rank/20)*.01,gold:Math.floor(rank/5)*2,rerolls:rank>=30?1:0,speed:1+(rank>=40?.01:0)};}
+function updateHeroMasteryUi(){if(!ui.heroMasteryRank)return;const record=masteryRecord(),rank=masteryRank(),floor=masteryXpForRank(rank),ceiling=masteryXpForRank(Math.min(MASTERY_CAP,rank+1)),progress=rank>=MASTERY_CAP?1:(record.xp-floor)/Math.max(1,ceiling-floor),next=MASTERY_MILESTONES.find((milestone)=>milestone.rank>rank);ui.heroMasteryRank.textContent=`RANK ${rank} / ${MASTERY_CAP}`;ui.heroMasteryFill.style.width=`${Math.round(progress*100)}%`;ui.heroMasteryCopy.textContent=rank>=MASTERY_CAP?`MYTHIC MASTERY  ·  ROAD ${record.highestRoad}  ·  ${record.kills} SPIRITS FREED`:`${record.xp-floor} / ${ceiling-floor} XP TO RANK ${rank+1}${next?`  ·  RANK ${next.rank}: ${next.label}`:''}`;}
+function bankMasteryProgress(){if(!player)return {xp:0,oldRank:masteryRank(),newRank:masteryRank()};const record=masteryRecord(),xp=Math.max(0,Math.round(player.masteryXpEarned||0)),oldRank=masteryRank();record.xp+=xp;record.kills+=Math.max(0,Math.round(player.masteryKills||0));record.guardians+=Math.max(0,Math.round(player.masteryGuardians||0));record.highestRoad=Math.max(record.highestRoad,endlessRoad.stage||0);player.masteryXpEarned=0;player.masteryKills=0;player.masteryGuardians=0;const newRank=masteryRank();return {xp,oldRank,newRank};}
 
 function activeDifficulty(){
   const base=DIFFICULTIES[selectedDifficulty]||DIFFICULTIES.ferocious;if(selectedDifficulty!=='ascension')return {...base,rank:0,enemyCountScale:base.enemyCountScale||1,spawnRateScale:base.spawnRateScale||1};
@@ -348,7 +361,8 @@ function updateChapterWarpack(dt){
 
 function refreshProfileUi(){
   const record=profile.campaignClears?`ASCENSION ${profile.ascensionRank}`:profile.bestDifficulty?`BEST ${profile.bestDifficulty.toUpperCase()}`:'NO CLEARS YET';
-  ui.profileSummary.textContent=`SPIRIT SHARDS ${profile.spiritShards} / CAMPAIGN CLEARS ${profile.campaignClears} / ${record}`;
+  ui.profileSummary.textContent=`SPIRIT SHARDS ${profile.spiritShards} / ${heroDef.name.toUpperCase()} MASTERY ${masteryRank()} / ${record}`;
+  updateHeroMasteryUi();
   for(const button of document.querySelectorAll('[data-difficulty]')){const ascension=button.dataset.difficulty==='ascension';const unlocked=!ascension||profile.campaignClears>0||debugDifficulty==='ascension';button.classList.toggle('selected',button.dataset.difficulty===selectedDifficulty);button.disabled=!unlocked;const label=button.querySelector('small');if(ascension&&label)label.textContent=unlocked?`RANK ${profile.ascensionRank}`:'LOCKED  CLEAR 1 RUN';}
   for(const button of document.querySelectorAll('[data-hero]')){
     const id=button.dataset.hero;const unlocked=profile.unlockedHeroes.includes(id)||id===debugHero;button.classList.toggle('locked',!unlocked);button.disabled=!unlocked;
@@ -365,6 +379,7 @@ function applyHeroUi(){
   ui.comparisonRatings.innerHTML=Object.entries(heroDef.ratings).map(([name,value])=>`<div class="comparison-rating"><b>${name.toUpperCase()}</b><span class="rating-pips">${Array.from({length:5},(_,index)=>`<i class="${index<value?'active':''}"></i>`).join('')}</span></div>`).join('');
   ui.comparisonWeapon.textContent=weapon.name.toUpperCase();ui.comparisonWeaponTags.textContent=weapon.tags.join(' / ');ui.comparisonWeaponCopy.textContent=weapon.summary;
   ui.comparisonWeaponStats.innerHTML=`<span><small>DAMAGE</small><b>${weapon.damage}</b></span><span><small>FIRE RATE</small><b>${(1/weapon.fireRate).toFixed(1)}/S</b></span><span><small>SHOTS</small><b>${(weapon.shots||1)*(weapon.baseVolleys||1)}</b></span><span><small>CRIT</small><b>${Math.round(weapon.criticalChance*100)}%</b></span>`;
+  updateHeroMasteryUi();
   for(const button of document.querySelectorAll('[data-hero]'))button.classList.toggle('selected',button.dataset.hero===selectedHeroId);
   renderArsenalContract();
 }
@@ -508,6 +523,8 @@ let currentGuardianRewards = [];
 let pendingGuardianReward = null;
 let currentRelicChoices = [];
 let relicDraftReturnState = 'playing';
+let endlessRoad={active:false,stage:0,bank:0,campaignBanked:false,campaignReward:0,unlocks:[]};
+let endlessDebugProfile=null;
 let relicDraftContinuation = null;
 let corruptionDirector = null;
 const coop={peer:null,hostConnection:null,connections:new Map(),connected:false,isRoomHost:false,code:'',id:crypto.randomUUID(),hostId:null,members:new Map(),remotePlayers:new Map(),snapshotClock:0,presenceClock:0,applyingSignal:false};
@@ -597,7 +614,7 @@ function serializePlayerCheckpoint(){
 function validRunSnapshot(snapshot){
   if(!snapshot||snapshot.version!==RUN_VERSION||!HEROES[snapshot.heroId]||!DIFFICULTIES[snapshot.difficulty])return false;
   if(!Number.isInteger(snapshot.chapterIndex)||snapshot.chapterIndex<0||snapshot.chapterIndex>=CHAPTER_ORDER.length||!snapshot.player)return false;
-  const checkpoint=snapshot.checkpoint;const allowed=['story','wave','route','boss','guardianReward'];if(!checkpoint||!allowed.includes(checkpoint.kind))return false;
+  const checkpoint=snapshot.checkpoint;const allowed=['story','wave','route','boss','guardianReward','endlessDecision'];if(!checkpoint||!allowed.includes(checkpoint.kind))return false;
   const savedChapter=ENCOUNTERS[CHAPTER_ORDER[snapshot.chapterIndex]];
   if(checkpoint.kind==='wave'&&(!Number.isInteger(checkpoint.wave)||checkpoint.wave<0||checkpoint.wave>=savedChapter.waves.length))return false;
   if(checkpoint.kind==='route'&&(!Number.isInteger(checkpoint.nextWave)||checkpoint.nextWave<1||checkpoint.nextWave>=savedChapter.waves.length))return false;
@@ -614,6 +631,7 @@ function checkpointLabel(snapshot){
   if(!snapshot)return '';
   const savedChapter=ENCOUNTERS[CHAPTER_ORDER[snapshot.chapterIndex]];const point=snapshot.checkpoint;
   if(point.kind==='boss')return `CHAPTER ${snapshot.chapterIndex+1}  GUARDIAN`;
+  if(point.kind==='endlessDecision')return `ENDLESS ROAD ${snapshot.endlessRoad?.stage||1}  BANK OR CONTINUE`;
   if(point.kind==='guardianReward')return `CHAPTER ${snapshot.chapterIndex+1}  GUARDIAN REWARD`;
   if(point.kind==='route')return `CHAPTER ${snapshot.chapterIndex+1}  CHOOSE WAVE ${point.nextWave+1}`;
   if(point.kind==='wave')return `CHAPTER ${snapshot.chapterIndex+1}  WAVE ${point.wave+1}`;
@@ -627,7 +645,7 @@ function refreshContinueRunUi(){
 
 function saveRunCheckpoint(checkpoint){
   if(!runActive||!player||debugBoss||debugRoute>0||debugParams.has('chapter')||Boolean(debugSystem))return;
-  const snapshot={version:RUN_VERSION,savedAt:Date.now(),heroId:selectedHeroId,difficulty:selectedDifficulty,chapterIndex,runTime,checkpoint:{...checkpoint,region:room.id},world:{id:EXPEDITION_WORLD.id,discovered:[...(player.discoveredRegions||new Set([room.id]))],cleared:[...(player.clearedRegions||new Set())]},player:serializePlayerCheckpoint()};
+  const snapshot={version:RUN_VERSION,savedAt:Date.now(),heroId:selectedHeroId,difficulty:selectedDifficulty,chapterIndex,runTime,checkpoint:{...checkpoint,region:room.id},endlessRoad:{...endlessRoad,unlocks:[...(endlessRoad.unlocks||[])]},world:{id:EXPEDITION_WORLD.id,discovered:[...(player.discoveredRegions||new Set([room.id]))],cleared:[...(player.clearedRegions||new Set())]},player:serializePlayerCheckpoint()};
   try{localStorage.setItem(RUN_KEY,JSON.stringify(snapshot));}catch{/* Run remains playable when storage is unavailable. */}
   refreshContinueRunUi();
 }
@@ -655,10 +673,11 @@ function resumeSavedRun(){
   const snapshot=loadRunCheckpoint();if(!snapshot){refreshContinueRunUi();return;}
   ensureAudio();input.attack=false;input.attackHeld=false;input.keys.clear();
   selectedHeroId=snapshot.heroId;heroDef=HEROES[selectedHeroId];weapon=WEAPONS[heroDef.weapon];selectedDifficulty=snapshot.difficulty;applyHeroUi();refreshProfileUi();
-  resetGame();setChapter(snapshot.chapterIndex);player.discoveredRegions=new Set(snapshot.world?.discovered||snapshot.player.discoveredRegions||[chapter.room]);player.clearedRegions=new Set(snapshot.world?.cleared||snapshot.player.clearedRegions||[]);restorePlayerCheckpoint(snapshot.player);runTime=Math.max(0,Number(snapshot.runTime)||0);runActive=true;
+  resetGame();setChapter(snapshot.chapterIndex);endlessRoad={...endlessRoad,...snapshot.endlessRoad,unlocks:[...(snapshot.endlessRoad?.unlocks||[])]};player.discoveredRegions=new Set(snapshot.world?.discovered||snapshot.player.discoveredRegions||[chapter.room]);player.clearedRegions=new Set(snapshot.world?.cleared||snapshot.player.clearedRegions||[]);restorePlayerCheckpoint(snapshot.player);runTime=Math.max(0,Number(snapshot.runTime)||0);runActive=true;
   startScreen.classList.remove('active');resultScreen.classList.remove('active');hud.classList.remove('hidden');
   const point=snapshot.checkpoint;
-  if(point.kind==='boss')spawnBoss({restoring:true});
+  if(point.kind==='boss'){if(point.endlessStage)spawnBoss({restoring:true,endlessStage:point.endlessStage});else spawnBoss({restoring:true});}
+  else if(point.kind==='endlessDecision')openEndlessRoadDecision({resume:true});
   else if(point.kind==='guardianReward')openGuardianReward(point.guardianId);
   else if(point.kind==='route'){if(point.region&&ROOMS[point.region])activateRoom(point.region,{reposition:true});openRoute(point.nextWave);}
   else if(point.kind==='wave')startWave(point.wave,{...(point.modifiers||{}),resumeRegion:point.region});
@@ -1261,20 +1280,20 @@ function resetGame() {
   dojoPanel.classList.remove('active');
   weapon=WEAPONS[heroDef.weapon];shell.dataset.weapon=weapon.id;ui.weaponName.textContent=weapon.name.toUpperCase();
   setChapter(0);
-  const legacyHealth=Math.min(25,profile.campaignClears*5)+profile.vitalityRank*5;const legacyGold=Math.min(25,profile.campaignClears*5)+profile.purseRank*5+(contractClaimed('spiritCull')?15:0);
+  const masteryBonus=masteryStartingBonus();const legacyHealth=Math.min(25,profile.campaignClears*5)+profile.vitalityRank*5+masteryBonus.health;const legacyGold=Math.min(25,profile.campaignClears*5)+profile.purseRank*5+(contractClaimed('spiritCull')?15:0)+masteryBonus.gold;
   player = {
     x: room.playerSpawn.x, y: room.playerSpawn.y, vx: 0, vy: 0, radius: heroDef.radius,
     facing: -Math.PI / 2, aimFacing: -Math.PI / 2, moveFacing: -Math.PI / 2, aimLockTime: 0, health: heroDef.maxHealth+legacyHealth, maxHealth: heroDef.maxHealth+legacyHealth, invulnerable: 0, flash: 0,
     dashTime: 0, dashCooldown: 0, dashDirection: { x: 0, y: -1 }, dashTrailClock: 0,sprint:100,sprinting:false,footstepClock:0,
     attack: null, shotCooldown: 0,weaponId:weapon.id,arsenalAwakened:false,legendArsenalAwakened:false,
     abilityCooldowns: { undertowWell: 0, foxfireVolley: 0, wildHeart: 0, shockPaws: 0 },
-    unlockedAbilities: new Set(), dualWield:Boolean(heroDef.naturalDual), damageMultiplier: 1+profile.forgeRank*.03, fireRateMultiplier: 1,
-    rerolls:1+(contractClaimed('sealRunner')?1:0),paidRerolls:0,synergies:new Set(),eventHistory:new Set(),shotsFired:0,buildPath:null,buildMastery:null,masteryCharge:0,
+    unlockedAbilities: new Set(), dualWield:Boolean(heroDef.naturalDual), damageMultiplier: (1+profile.forgeRank*.03)*masteryBonus.damage, fireRateMultiplier: 1,
+    rerolls:1+(contractClaimed('sealRunner')?1:0)+masteryBonus.rerolls,paidRerolls:0,synergies:new Set(),eventHistory:new Set(),shotsFired:0,buildPath:null,buildMastery:null,masteryCharge:0,masteryXpEarned:0,masteryKills:0,masteryGuardians:0,
     abilityPower: { undertowWell: 1+profile.attunementRank*.04, foxfireVolley:(1+profile.attunementRank*.04)*(contractClaimed('foxfireHunt')?1.06:1), wildHeart: 1+profile.attunementRank*.04, shockPaws: 1+profile.attunementRank*.04 },
     abilityEvolutions:{undertowWell:false,foxfireVolley:false,wildHeart:false,shockPaws:false},
     upgradeRanks:{spiritRounds:0,quickPaws:0,vitality:0,undertow:0,hungryFlame:0,heartBloom:0,stormHeart:0,wardbreaker:0,spiritHunter:0,spiritCatalyst:0,pressureChamber:0,headhunter:0,keenEye:0,moonPiercer:0,perfectDraw:0,glassFang:0,spiritMomentum:0,guardianHunter:0,deepReserves:0,bankShot:0,loadedDice:0,quickdraw:0,spiritCylinder:0,phaseRounds:0,foxstepMastery:0,ironBelly:0,scatterBore:0,guardianHide:0,capacitorBank:0,chainLogic:0,rapidCycle:0,moonEdge:0,secondPassage:0,cranePoise:0,permafrost:0,shatterpoint:0,oniPayload:0,blastChamber:0,razorCurrent:0,typhoonReach:0,cinderDrum:0,ruptureMagazine:0,cycloneEdge:0,crosswindRecall:0,lunarCapacitor:0,horizonBore:0,razorFang:0,hollowHex:0,spiritAegis:0},
     heartBonus: 0, stormBonus: 0,guardianBlessings:[],endingVow:null,victoryShardBonus:0,
-    gold:legacyGold,goldMultiplier:1,relics:[],shopPurchases:new Set(),discoveredRegions:new Set([room.id]),clearedRegions:new Set(),worldX:0,worldY:0,currentRegion:room.id,killHeal:0,damageTakenMultiplier:heroDef.damageTakenMultiplier,speedMultiplier:1,dashCooldownMultiplier:1,
+    gold:legacyGold,goldMultiplier:1,relics:[],shopPurchases:new Set(),discoveredRegions:new Set([room.id]),clearedRegions:new Set(),worldX:0,worldY:0,currentRegion:room.id,killHeal:0,damageTakenMultiplier:heroDef.damageTakenMultiplier,speedMultiplier:masteryBonus.speed,dashCooldownMultiplier:1,
     knockbackResistance:heroDef.knockbackResistance,knockbackMultiplier:1,braceTime:0,braceDelay:.72,braceDamageMultiplier:.8,braced:false,shieldDamageMultiplier:1,eliteDamageMultiplier:contractClaimed('eliteBreakers')?1.08:1,guardianDamageMultiplier:contractClaimed('guardianOath')?1.08:1,eliteGoldMultiplier:1,eliteKillHeal:0,statusDurationMultiplier:1,bleedOnHit:0,bleedSpread:false,curseOnCrit:0,cursePowerMultiplier:1,curseDurationMultiplier:1,spiritShield:0,maxSpiritShield:0,shieldTime:0,bonusProjectiles:0,bonusPierces:0,bonusRicochets:0,ricochetDamageRetention:.78,critBonus:0,critDamageMultiplier:1,arcChainBonus:0,arcChainPower:1,arcChainRange:0,glaiveReturnPower:1,glaiveReturnSpeed:1,glaiveReturnCrit:0,weaponEvolution:null,
     wildHeartTime: 0, ultimateFlash: 0, castTime: 0, castAbility: null,
     hitCount: 0, maxCombo: 0, comboDrop: 0, dashes: 0, hurtTime: 0, stunTime: 0, bleedTime:0, bleedTick:0, curseTime:0, curseMultiplier:1,
@@ -1284,8 +1303,8 @@ function resetGame() {
   Object.values(effects).forEach((list) => list.splice(0));
   camera.x = player.x; camera.y = player.y; camera.shake = 0; camera.kick = 0;
   encounter = { wave:-1, transitioning:false, transitionTime:0,bossActive:false,bossDefeated:false,storyBeat:'intro',rewardScale:1,nodeType:'combat',startWaveAfterUpgrade:null };roomMission=null;missionCheckpointClock=0;defeatReason='';corruptionDirector=null;
-  runTime = 0; runReward=0; hitStop = 0; clearDelay = -1; comboUiTimer = 0; pendingLevelUps = 0; currentUpgradeChoices = [];
-  levelupScreen.classList.remove('active');
+  runTime = 0; runReward=0; hitStop = 0; clearDelay = -1; comboUiTimer = 0; pendingLevelUps = 0; currentUpgradeChoices = [];endlessRoad={active:false,stage:0,bank:0,campaignBanked:false,campaignReward:0,unlocks:[]};
+  levelupScreen.classList.remove('active');endlessRoadScreen.classList.remove('active');
   tutorialActive=null;tutorialTracker.classList.remove('active','complete');storyScreen.classList.remove('active','tutorial-mode');routeScreen.classList.remove('active');shopScreen.classList.remove('active');eventScreen.classList.remove('active');guardianRewardScreen.classList.remove('active');relicDraftScreen.classList.remove('active');worldMapScreen.classList.remove('active');ui.bossPanel.classList.remove('active');currentGuardianRewards=[];pendingGuardianReward=null;currentRelicChoices=[];relicDraftContinuation=null;
   ui.waveLabel.textContent = `CHAPTER ${chapterIndex+1}  WAVE 1 / ${chapter.waves.length}`;
   ui.roomState.textContent = 'ENCOUNTER'; ui.roomState.style.color = '#ff38b5';
@@ -1342,8 +1361,9 @@ function resolveEnemyDamage(enemy,amount,incomingDirection=null,{consumeCurse=tr
 function eliteModifierFor(spawnIndex,waveIndex,nodeType){
   if(waveIndex<0)return null;
   const difficultyBonus=selectedDifficulty==='nightmare' ? .08 : selectedDifficulty==='spirited' ? -.04 : 0;
-  const chance=clamp(chapterIndex*.09+waveIndex*.06+difficultyBonus+(corruptionTier().elite||0)+coopPressure().elite+(nodeType==='elite' ? .38 : nodeType?.includes('Elite') ? .24 : 0),0,.84);
-  const guaranteed=nodeType==='elite'?2:nodeType?.includes('Elite')?1:0;
+  const endlessBonus=endlessRoad.active?Math.min(.44,endlessRoad.stage*.025):0;
+  const chance=clamp(chapterIndex*.09+waveIndex*.06+difficultyBonus+(corruptionTier().elite||0)+coopPressure().elite+endlessBonus+(nodeType==='elite' ? .38 : nodeType?.includes('Elite') ? .24 : 0),0,.92);
+  const guaranteed=nodeType==='elite'?2:nodeType?.includes('Elite')?1:endlessRoad.active&&endlessRoad.stage>=8?1:0;
   const roll=((spawnIndex*37+waveIndex*19+chapterIndex*23+11)%100)/100;
   if(spawnIndex>=guaranteed&&roll>=chance)return null;
   const ids=Object.keys(ELITE_MODIFIERS);return ids[(spawnIndex+waveIndex*2+chapterIndex)%ids.length];
@@ -1436,7 +1456,7 @@ function showStory(beat) {
 
 function continueStory() {
   storyScreen.classList.remove('active');
-  if(encounter.storyBeat==='epilogue')endGame(true);else if(encounter.storyBeat==='boss')spawnBoss();else if(encounter.storyBeat==='interlude2')openRoute(2);else if(encounter.storyBeat==='interlude4')openRoute(4);else if(chapterIndex===0&&!profile.tutorialComplete){startWave(0);showTutorialLesson(clamp(profile.tutorialStep||0,0,TUTORIAL_LESSONS.length-1));}else startWave(0);
+  if(encounter.storyBeat==='epilogue')openEndlessRoadDecision({campaignVictory:true});else if(encounter.storyBeat==='boss')spawnBoss();else if(encounter.storyBeat==='interlude2')openRoute(2);else if(encounter.storyBeat==='interlude4')openRoute(4);else if(chapterIndex===0&&!profile.tutorialComplete){startWave(0);showTutorialLesson(clamp(profile.tutorialStep||0,0,TUTORIAL_LESSONS.length-1));}else startWave(0);
 }
 
 const TUTORIAL_LESSONS=[
@@ -1491,18 +1511,18 @@ function startWave(index,modifiers={}) {
   const difficulty=activeDifficulty();
   Object.values(effects).forEach((list)=>list.splice(0));const requestedNodeType=modifiers.nodeType||'combat',targetRegion=modifiers.resumeRegion&&ROOMS[modifiers.resumeRegion]?modifiers.resumeRegion:roomForWave(index,requestedNodeType);activateRoom(targetRegion,{reposition:true,announce:true,waveIndex:index,subtitle:wave.name.toUpperCase()});
   if(player.maxSpiritShield>0)applyPlayerStatus('shield',14,player.maxSpiritShield);
-  encounter.wave=index; encounter.waveTime=0;encounter.transitioning=false; encounter.bossActive=false;encounter.nodeType=modifiers.nodeType||'combat';encounter.modifiers={...modifiers};encounter.biomePressureClock=biomePressureInterval(index)*.72;encounter.biomePressureCount=0;encounter.warpackClock=(CHAPTER_WARPACKS[chapter.id]?.interval||18)*.78;encounter.warpackCount=0;corruptionDirector=createCorruptionDirector(index,modifiers.corruption);const corruption=corruptionTier();encounter.rewardScale=(modifiers.rewardScale||1)*difficulty.rewardScale*corruption.reward;enemies=[];state='playing';roomInteractable=null;spawnRoomDestructibles(index,modifiers.brokenProps||[]);spawnRoomMission(wave.mission,modifiers.missionState);refreshCorruptionHud({surge:corruptionDirector.tier>=2});
+  encounter.wave=index; encounter.waveTime=0;encounter.transitioning=false; encounter.bossActive=false;encounter.endlessStage=Number(modifiers.endlessStage)||0;encounter.nodeType=modifiers.nodeType||'combat';encounter.modifiers={...modifiers};encounter.biomePressureClock=biomePressureInterval(index)*.72;encounter.biomePressureCount=0;encounter.warpackClock=(CHAPTER_WARPACKS[chapter.id]?.interval||18)*.78;encounter.warpackCount=0;corruptionDirector=createCorruptionDirector(index,modifiers.corruption);const corruption=corruptionTier();encounter.rewardScale=(modifiers.rewardScale||1)*difficulty.rewardScale*corruption.reward;enemies=[];state='playing';roomInteractable=null;spawnRoomDestructibles(index,modifiers.brokenProps||[]);spawnRoomMission(wave.mission,modifiers.missionState);refreshCorruptionHud({surge:corruptionDirector.tier>=2});
   if(PHYSICAL_ROUTE_NODES.has(encounter.nodeType)){spawnRoomInteractable(encounter.nodeType);if(modifiers.interactableUsed)roomInteractable.used=true;}
-  ui.waveLabel.textContent=`CHAPTER ${chapterIndex+1}  WAVE ${index+1} / ${chapter.waves.length}`;
+  ui.waveLabel.textContent=encounter.endlessStage?`ENDLESS ROAD ${encounter.endlessStage}  ${chapter.name.toUpperCase()}`:`CHAPTER ${chapterIndex+1}  WAVE ${index+1} / ${chapter.waves.length}`;
   const eliteNode=encounter.nodeType==='elite'||encounter.nodeType?.includes('Elite');ui.roomState.textContent=eliteNode?`MUTATED  ${wave.name.toUpperCase()}`:wave.name.toUpperCase();ui.roomState.style.color=eliteNode?'#f13b8c':index>=2?'#ff7448':'#ff38b5';
   ui.objective.textContent=roomMission?.title||`SURVIVE ${wave.name.toUpperCase()}`;
   const b=room.combatBounds;const party=coopPressure();
-  const authoredCount=wave.targetCount||wave.roster.length;const targetCount=Math.max(wave.roster.length,Math.ceil(authoredCount*(difficulty.enemyCountScale||1)*corruption.count*party.count));const scaledRoster=Array.from({length:targetCount},(_,i)=>wave.roster[i%wave.roster.length]);
+  const authoredCount=wave.targetCount||wave.roster.length;const targetCount=Math.max(wave.roster.length,Math.ceil(authoredCount*(difficulty.enemyCountScale||1)*corruption.count*party.count*(modifiers.countScale||1)));const scaledRoster=Array.from({length:targetCount},(_,i)=>wave.roster[i%wave.roster.length]);
   scaledRoster.forEach((type,i)=>{
     const spawn=spawnPositionFor(i,targetCount,b);
     const spawnDuration=Math.max(.42,1.35-index*.15-chapterIndex*.08);
     const rawSpeedScale=wave.speedScale*(modifiers.speedScale||1)*difficulty.speedScale*corruption.speed;const speedScale=rawSpeedScale<=1?rawSpeedScale:Math.min(2.35,1+(rawSpeedScale-1)*.58);
-    enemies.push(makeEnemy({type,eliteId:eliteModifierFor(i,index,encounter.nodeType),delay:spawnDuration+spawn.delay+i*wave.spawnRate/((difficulty.spawnRateScale||1)*corruption.spawn),spawnDuration,x:spawn.x,y:spawn.y,healthScale:wave.healthScale*(modifiers.healthScale||1)*difficulty.healthScale*corruption.health*party.health,speedScale,damageScale:wave.damageScale*(modifiers.damageScale||1)*difficulty.damageScale*corruption.damage*party.damage},i));
+    const enemy=makeEnemy({type,eliteId:eliteModifierFor(i,index,encounter.nodeType),delay:spawnDuration+spawn.delay+i*wave.spawnRate/((difficulty.spawnRateScale||1)*corruption.spawn*(modifiers.spawnRateScale||1)),spawnDuration,x:spawn.x,y:spawn.y,healthScale:wave.healthScale*(modifiers.healthScale||1)*difficulty.healthScale*corruption.health*party.health,speedScale,damageScale:wave.damageScale*(modifiers.damageScale||1)*difficulty.damageScale*corruption.damage*party.damage},i);if(encounter.endlessStage>12){const uncappedGrowth=1+(encounter.endlessStage-12)*.06;enemy.maxHealth=Math.round(enemy.maxHealth*uncappedGrowth);enemy.health=enemy.maxHealth;enemy.maxShield=Math.round(enemy.maxShield*uncappedGrowth);enemy.shield=enemy.maxShield;}enemies.push(enemy);
   });
   spawnWord(player.x,player.y-110,`WAVE ${index+1}!`,index>=2?'#ff6a43':'#56edff');
   if(roomMission?.type!=='eliminate')setTimeout(()=>{if(state==='playing'&&roomMission)spawnWord(player.x,player.y-145,roomMission.title,roomMission.color);},420);
@@ -1560,18 +1580,18 @@ function startStatusShowcase(){
   ui.waveLabel.textContent='COMBAT LAB  SHARED STATUS ENGINE';ui.roomState.textContent='BLEED  CURSE  WARD';ui.roomState.style.color='#ff5b86';ui.objective.textContent='MOVE WOUNDED TARGETS  SHATTER HEXES  BREAK WARDS';updateHud();
 }
 
-function spawnBoss({restoring=false}={}) {
+function spawnBoss({restoring=false,endlessStage=0}={}) {
   Object.values(effects).forEach((list)=>list.splice(0));roomInteractable=null;roomMission=null;destructibles=[];activateRoom(chapter.bossRoom||chapter.rooms?.at(-1)||chapter.room,{reposition:true,announce:true,waveIndex:chapter.waves.length,subtitle:'GUARDIAN CHAMBER'});
   const b=room.combatBounds; enemies=[]; encounter.bossActive=true; encounter.transitioning=false; state='playing';
-  const difficulty=activeDifficulty();corruptionDirector=createCorruptionDirector(chapter.waves.length);const corruption=corruptionTier(),party=coopPressure();refreshCorruptionHud({surge:true});
+  const difficulty=activeDifficulty();corruptionDirector=createCorruptionDirector(chapter.waves.length);const corruption=corruptionTier(),party=coopPressure(),road=endlessStage?endlessPressure(endlessStage):null;encounter.endlessStage=endlessStage;refreshCorruptionHud({surge:true});
   const bossEntranceY=b.y+(chapter.id==='shadowChapter'?445:chapter.id==='neonChapter'?430:chapter.id==='stormChapter'?410:chapter.id==='crimsonChapter'?390:280);
-  const boss=makeEnemy({type:chapter.boss,x:b.x+330,y:bossEntranceY,delay:.25,healthScale:difficulty.healthScale*corruption.health*party.health,speedScale:difficulty.speedScale*corruption.speed,damageScale:difficulty.damageScale*corruption.damage*party.damage},0);
+  const boss=makeEnemy({type:chapter.boss,x:b.x+330,y:bossEntranceY,delay:.25,healthScale:difficulty.healthScale*corruption.health*party.health*(road?.healthScale||1),speedScale:difficulty.speedScale*corruption.speed*(road?.speedScale||1),damageScale:difficulty.damageScale*corruption.damage*party.damage*(road?.damageScale||1)},0);if(endlessStage>12){const uncappedGrowth=1+(endlessStage-12)*.08;boss.maxHealth=Math.round(boss.maxHealth*uncappedGrowth);boss.health=boss.maxHealth;boss.maxShield=Math.round(boss.maxShield*uncappedGrowth);boss.shield=boss.maxShield;}
   boss.state='waiting'; boss.stateTime=.25;boss.domainClock=Number.POSITIVE_INFINITY; enemies.push(boss);
   const bossDef=ENEMIES[chapter.boss];
-  ui.waveLabel.textContent=`CHAPTER ${chapterIndex+1}  BOSS`; ui.roomState.textContent=chapter.id==='shadowChapter'?'HOLLOW MOON':chapter.id==='neonChapter'?'OVERRIDE PROTOCOL':chapter.id==='stormChapter'?'TEMPEST CROWN':chapter.id==='crimsonChapter'?'INFERNO OATH':chapter.id==='bambooChapter'?'MOON HUNGER':'SPIRIT FURY'; ui.roomState.style.color=bossDef.color;
+  ui.waveLabel.textContent=endlessStage?`ENDLESS ROAD ${endlessStage}  GUARDIAN`:`CHAPTER ${chapterIndex+1}  BOSS`; ui.roomState.textContent=chapter.id==='shadowChapter'?'HOLLOW MOON':chapter.id==='neonChapter'?'OVERRIDE PROTOCOL':chapter.id==='stormChapter'?'TEMPEST CROWN':chapter.id==='crimsonChapter'?'INFERNO OATH':chapter.id==='bambooChapter'?'MOON HUNGER':'SPIRIT FURY'; ui.roomState.style.color=bossDef.color;
   ui.objective.textContent=`DEFEAT ${bossDef.name.toUpperCase()}`; ui.bossName.textContent=bossDef.name.toUpperCase(); ui.bossPanel.classList.add('active');
   camera.shake=18;if(!restoring)player.health=Math.min(player.maxHealth,player.health+35);
-  saveRunCheckpoint({kind:'boss'});if(!coop.applyingSignal)coopSignal({kind:'boss',chapter:chapterIndex});
+  if(endlessStage)saveRunCheckpoint({kind:'boss',endlessStage});else saveRunCheckpoint({kind:'boss'});if(!coop.applyingSignal)coopSignal({kind:'boss',chapter:chapterIndex});
 }
 
 function beginWaveTransition() {
@@ -1592,6 +1612,7 @@ function updateEncounter(dt) {
   encounter.transitionTime-=dt;
   if(encounter.transitionTime>0)return;
   encounter.transitioning=false;
+  if(encounter.endlessStage){completeEndlessStage();return;}
   if(encounter.wave===1)showStory('interlude2');
   else if(encounter.wave===3)showStory('interlude4');
   else if(encounter.wave+1<chapter.waves.length) openRoute(encounter.wave+1);
@@ -2041,6 +2062,7 @@ function begin() {
   if(debugSystem==='forgeCollection'){profile.collectedWeapons=ARSENAL_BLUEPRINTS.map((entry)=>entry.id);profile.boundArsenal={...profile.boundArsenal,[selectedHeroId]:debugParams.get('weapon')||'frostbiteNeedle'};enterHub();openHubStation(HUB_STATIONS.find((station)=>station.id==='forge'));return;}
   if(debugSystem==='contracts'){if(debugParams.has('restore')){profile.spiritShards=764;profile.contractProgress={...DEFAULT_CONTRACT_PROGRESS};profile.claimedContracts=[];saveProfile();}if(debugParams.has('ready'))for(const contract of CAMPAIGN_CONTRACTS)profile.contractProgress[contract.id]=contract.target;enterHub();openHubStation(HUB_STATIONS.find((station)=>station.id==='missionBoard'));return;}
   if(debugSystem==='story'){const storyBeat=['intro','interlude2','interlude4','boss'].includes(debugParams.get('beat'))?debugParams.get('beat'):'interlude2';showStory(storyBeat);return;}
+  if(debugSystem==='endlessDecision'){if(debugParams.has('restoreShards')){profile.spiritShards=Math.max(0,Number(debugParams.get('restoreShards'))||0);saveProfile();}endlessDebugProfile=structuredClone(profile);player.level=12;player.maxHealth=900;player.health=900;player.damageMultiplier=2;player.endingVow='freedom';runActive=true;for(const id of Object.keys(ABILITIES))player.unlockedAbilities.add(id);endlessRoad={active:true,stage:Math.max(0,Number(debugParams.get('road'))||0),bank:debugParams.has('bank')?Math.max(0,Number(debugParams.get('bank'))||0):84,campaignBanked:true,campaignReward:145,unlocks:[]};openEndlessRoadDecision();return;}
   if(debugSystem==='tutorial'){startWave(0);showTutorialLesson(clamp(Number(debugParams.get('step')||1)-1,0,TUTORIAL_LESSONS.length-1));return;}
   if(debugSystem==='dojo'){enterDojo();return;}
   if(debugSystem==='crossfire'){
@@ -2089,31 +2111,36 @@ function completeChapter() {
   showStory('intro');updateHud();
 }
 
+function endlessPressure(stage){return {healthScale:1+stage*.22,damageScale:1+stage*.16,speedScale:1+Math.min(.65,stage*.035),countScale:1+Math.min(1.5,stage*.1),spawnRateScale:1+Math.min(1.2,stage*.07),rewardScale:1+Math.min(2,stage*.09)};}
+
+function bankCampaignVictory(){
+  if(endlessRoad.campaignBanked)return;const difficulty=activeDifficulty(),unlocks=[];runReward=Math.round((100+(player.victoryShardBonus||0))*difficulty.rewardScale);profile.spiritShards+=runReward;profile.highestLevel=Math.max(profile.highestLevel,player.level);profile.campaignClears++;const rank={spirited:1,ferocious:2,nightmare:3,ascension:4};if((rank[selectedDifficulty]||0)>(rank[profile.bestDifficulty]||0))profile.bestDifficulty=selectedDifficulty;
+  if(!profile.unlockedHeroes.includes('hopscotch')){profile.unlockedHeroes.push('hopscotch');unlocks.push('HOPSCOTCH');}if(!profile.unlockedHeroes.includes('nomi')){profile.unlockedHeroes.push('nomi');unlocks.push('NOMI');}if(profile.campaignClears>=2&&!profile.unlockedHeroes.includes('zap')){profile.unlockedHeroes.push('zap');unlocks.push('ZAP');}if(selectedDifficulty==='ascension'){profile.ascensionClears++;profile.ascensionRank=Math.min(10,(profile.ascensionRank||1)+1);if(!profile.unlockedHeroes.includes('rusty')){profile.unlockedHeroes.push('rusty');unlocks.push('RUSTY');}}
+  const mastery=bankMasteryProgress();endlessRoad.campaignBanked=true;endlessRoad.campaignReward=runReward;endlessRoad.campaignMasteryXp=mastery.xp;endlessRoad.unlocks=unlocks;saveProfile();refreshProfileUi();
+}
+
+function openEndlessRoadDecision({campaignVictory=false,resume=false}={}){
+  if(campaignVictory)bankCampaignVictory();endlessRoad.active=true;state='endlessDecision';const next=endlessRoad.stage+1,realm=ENCOUNTERS[CHAPTER_ORDER[(next-1)%CHAPTER_ORDER.length]],pressure=endlessPressure(next),guardian=next%6===0;ui.endlessRoadKicker.textContent=campaignVictory?'CAMPAIGN VICTORY BANKED':guardian?'A GUARDIAN BLOCKS THE ROAD':'THE SPIRIT ROAD DEEPENS';ui.endlessRoadTitle.textContent=endlessRoad.stage?'RISK THE NEXT ROAD?':'THE ROAD CONTINUES';ui.endlessRoadCopy.textContent=campaignVictory?'Tsukiko is defeated and your campaign rewards are already safe. Continue with this exact build, or return to Spirit Lantern Village.':guardian?'The next trial is a guardian battle. Bank every road shard now, or challenge it with the build you carried this far.':'Carry this exact build into a stronger realm. Road shards remain at risk until you bank them; falling saves only half.';ui.endlessRoadStage.textContent=`ROAD ${next} · ${realm.name.toUpperCase()}${guardian?' GUARDIAN':''}`;ui.endlessRoadPressure.textContent=`+${Math.round((pressure.healthScale-1)*100)}% HEALTH · +${Math.round((pressure.damageScale-1)*100)}% DAMAGE`;ui.endlessRoadBank.textContent=`${endlessRoad.bank} ROAD SHARDS`;endlessRoadScreen.classList.add('active');saveRunCheckpoint({kind:'endlessDecision'});if(!resume)playSfx('upgrade',.35,guardian?.72:.92);
+}
+
+function startEndlessStage(){
+  if(state!=='endlessDecision')return;endlessRoadScreen.classList.remove('active');const stage=endlessRoad.stage+1,realmIndex=(stage-1)%CHAPTER_ORDER.length;endlessRoad.stage=stage;endlessRoad.active=true;setChapter(realmIndex);player.health=Math.min(player.maxHealth,player.health+Math.max(14,Math.round(player.maxHealth*.12)));player.invulnerable=1.2;const pressure=endlessPressure(stage);if(stage%6===0){spawnBoss({endlessStage:stage});return;}const waveIndex=(stage-1)%chapter.waves.length;startWave(waveIndex,{nodeType:stage%4===0?'endlessElite':'endless',endlessStage:stage,...pressure});
+}
+
+function completeEndlessStage(){
+  clearDelay=-1;const guardian=endlessRoad.stage%6===0,reward=Math.round((10+endlessRoad.stage*3+(guardian?45:0))*activeDifficulty().rewardScale);endlessRoad.bank+=reward;player.health=Math.min(player.maxHealth,player.health+Math.max(10,Math.round(player.maxHealth*(guardian?.18:.08))));spawnWord(player.x,player.y-112,`+${reward} ROAD SHARDS`,'#fff08a');openEndlessRoadDecision();
+}
+
+function showRunResult(won,{mastery,roadReward=0}={}){
+  const endingResults={mercy:'You healed the Hollow Moon and returned every lost self to the six realms.',power:'You claimed Tsukiko’s throne and became keeper of every possible guardian road.',freedom:'You shattered the hollow throne, freed all six guardians, and returned every future to its living paws.'};state=won?'won':'lost';ui.resultTitle.textContent=won?(endlessRoad.stage?'ROAD REWARDS BANKED!':'RUN COMPLETE!'):(endlessRoad.campaignBanked?'ENDLESS ROAD BROKEN':`${heroDef.name.toUpperCase()} FALLS`);ui.resultKicker.textContent=won?'THE SPIRITS REMEMBER':endlessRoad.campaignBanked?'THE CAMPAIGN VICTORY IS SAFE':'THE SPIRITS STILL WATCH';ui.resultCopy.textContent=won?`${endingResults[player.endingVow]||'The six realms are free.'} ${endlessRoad.stage?`You reached Endless Road ${endlessRoad.stage} and returned with every road shard.`:'Permanent rewards are banked.'} ${endlessRoad.unlocks?.length?`${endlessRoad.unlocks.join(' AND ')} JOINED THE ROSTER.`:''}`:(endlessRoad.campaignBanked?`Tsukiko remains defeated. Half of the ${endlessRoad.bank} unbanked road shards survived the fall.`:defeatReason||'The curse grows stronger. Rebuild your powers and strike again.');ui.resultTime.textContent=formatTime(runTime);ui.resultCombo.textContent=String(player.maxCombo);ui.resultThirdLabel.textContent='MASTERY';ui.resultDashes.textContent=`+${mastery?.xp||0} XP`;ui.resultReward.textContent=`+${(endlessRoad.campaignReward||0)+roadReward} SPIRIT SHARDS  ${profile.spiritShards} TOTAL  ·  ${heroDef.name.toUpperCase()} RANK ${masteryRank()}`;resultScreen.classList.add('active');playSfx(won?'upgrade':'heavyImpact',won?.48:.4,won?.82:.6);
+}
+
+function finishEndlessRoad({fell=false}={}){
+  if(['won','lost'].includes(state))return;endlessRoadScreen.classList.remove('active');const roadReward=fell?Math.floor(endlessRoad.bank/2):endlessRoad.bank;let mastery;if(endlessDebugProfile){mastery={xp:player.masteryXpEarned||0,oldRank:masteryRank(),newRank:masteryRank()};profile=structuredClone(endlessDebugProfile);}else{profile.spiritShards+=roadReward;profile.highestLevel=Math.max(profile.highestLevel,player.level);mastery=bankMasteryProgress();saveProfile();}refreshProfileUi();runActive=false;clearRunCheckpoint();showRunResult(!fell,{mastery,roadReward});
+}
+
 function endGame(won) {
-  if(state==='won'||state==='lost')return;
-  runActive=false;clearRunCheckpoint();const difficulty=activeDifficulty();
-  runReward=Math.round(((won?100:Math.max(6,player.level*3))+(won?(player.victoryShardBonus||0):0))*difficulty.rewardScale);
-  profile.spiritShards+=runReward;profile.highestLevel=Math.max(profile.highestLevel,player.level);
-  const unlockedNames=[];
-  if(won){
-    profile.campaignClears++;const rank={spirited:1,ferocious:2,nightmare:3,ascension:4};if((rank[selectedDifficulty]||0)>(rank[profile.bestDifficulty]||0))profile.bestDifficulty=selectedDifficulty;
-    if(!profile.unlockedHeroes.includes('hopscotch')){profile.unlockedHeroes.push('hopscotch');unlockedNames.push('HOPSCOTCH');}
-    if(!profile.unlockedHeroes.includes('nomi')){profile.unlockedHeroes.push('nomi');unlockedNames.push('NOMI');}
-    if(profile.campaignClears>=2&&!profile.unlockedHeroes.includes('zap')){profile.unlockedHeroes.push('zap');unlockedNames.push('ZAP');}
-    if(selectedDifficulty==='ascension'){profile.ascensionClears++;profile.ascensionRank=Math.min(10,(profile.ascensionRank||1)+1);if(!profile.unlockedHeroes.includes('rusty')){profile.unlockedHeroes.push('rusty');unlockedNames.push('RUSTY');}}
-  }
-  saveProfile();refreshProfileUi();
-  state = won ? 'won' : 'lost';
-  ui.resultTitle.textContent = won ? 'RUN COMPLETE!' : `${heroDef.name.toUpperCase()} FALLS`;
-  ui.resultKicker.textContent = won ? 'THE HOLLOW MOON OPENS' : 'THE SPIRITS STILL WATCH';
-  const endingResults={mercy:'You healed the Hollow Moon and returned every lost self to the six realms.',power:'You claimed Tsukiko’s throne and became keeper of every possible guardian road.',freedom:'You shattered the hollow throne, freed all six guardians, and returned every future to its living paws.'};
-  ui.resultCopy.textContent = won ? `${endingResults[player.endingVow]||'Tsukiko releases the Hollow Moon and all six guardians bow.'} ${unlockedNames.length?`${unlockedNames.join(' AND ')} ${unlockedNames.length>1?'HAVE':'HAS'} JOINED THE ROSTER. `:''}${selectedDifficulty==='ascension'?`ASCENSION RANK ${profile.ascensionRank} NOW AWAITS. `:''}Permanent spirit rewards are banked, and a harder run awaits.` : defeatReason||'The curse grows stronger. Rebuild your powers and strike again.';
-  ui.resultTime.textContent = formatTime(runTime);
-  ui.resultCombo.textContent = String(player.maxCombo);
-  ui.resultDashes.textContent = String(player.dashes);
-  ui.resultReward.textContent=`+${runReward} SPIRIT SHARDS  ${profile.spiritShards} TOTAL${selectedDifficulty==='ascension'?`  ASCENSION ${profile.ascensionRank}`:''}`;
-  resultScreen.classList.add('active');
-  playSfx(won?'upgrade':'heavyImpact',won?.48:.4,won?.82:.6);
+  if(state==='won'||state==='lost')return;if(endlessRoad.active&&endlessRoad.campaignBanked){finishEndlessRoad({fell:!won});return;}if(won){bankCampaignVictory();finishEndlessRoad();return;}runActive=false;clearRunCheckpoint();runReward=Math.round(Math.max(6,player.level*3)*activeDifficulty().rewardScale);profile.spiritShards+=runReward;profile.highestLevel=Math.max(profile.highestLevel,player.level);const mastery=bankMasteryProgress();saveProfile();refreshProfileUi();showRunResult(false,{mastery,roadReward:runReward});
 }
 
 function resize() {
@@ -2518,6 +2545,7 @@ function killEnemy(enemy, direction) {
   if(enemy.practice){dojoState.kills++;dojoState.respawnTimer=.82;enemy.vx+=direction.x*220;enemy.vy+=direction.y*220;burst(enemy.x,enemy.y,'#72ef5b',34,390,7);spawnWord(enemy.x,enemy.y-90,'TARGET BROKEN!','#72ef5b');camera.shake=10;return;}
   if(enemy.def.behavior==='boss'){
     recordContractProgress('guardianOath');
+    player.masteryGuardians=(player.masteryGuardians||0)+1;player.masteryXpEarned=(player.masteryXpEarned||0)+180+chapterIndex*55+(endlessRoad.active?endlessRoad.stage*12:0);
     enemy.deathTime=2.8;encounter.bossDefeated=true;clearDelay=3.2;encounter.defeatedGuardianId=enemy.def.id;ui.bossPanel.classList.remove('active');
     const bamboo=enemy.def.id==='moonfangKomainu';const crimson=enemy.def.id==='pyreclawShogun';
     ui.roomState.textContent='GUARDIAN FREED';ui.roomState.style.color='#65ef80';ui.objective.textContent=crimson?'THE ONI GATE OPENS':bamboo?'THE HOLLOW BREATHES AGAIN':'THE JADE BELLS RING AGAIN';
@@ -2526,6 +2554,7 @@ function killEnemy(enemy, direction) {
     return;
   }
   recordContractProgress('spiritCull');if(enemy.eliteId)recordContractProgress('eliteBreakers');if(enemy.burnTime>0)recordContractProgress('foxfireHunt');
+  const masteryBase=enemy.def.behavior==='heavy'?7:['conductor','hacker','curser','summoner','bomber','assassin'].includes(enemy.def.behavior)?6:enemy.def.behavior==='ranged'?3:2;player.masteryKills=(player.masteryKills||0)+1;player.masteryXpEarned=(player.masteryXpEarned||0)+masteryBase*(enemy.eliteId?2:1);
   if(bleedSpread){const target=enemies.filter((candidate)=>candidate!==enemy&&!candidate.dead&&candidate.state!=='waiting').sort((a,b)=>distance(enemy,a)-distance(enemy,b))[0];if(target&&distance(enemy,target)<340){applyEnemyStatus(target,'bleed',bleedDuration,bleedPower*.72);effects.rings.push({x:enemy.x,y:enemy.y,radius:18,maxRadius:distance(enemy,target),color:'#ff365f',life:.34,maxLife:.34});spawnWord(target.x,target.y-62,'WOUND SPREAD!','#ff526f');}}
   recordCorruptionKill();
   if(foxfireSpread){
@@ -3238,7 +3267,7 @@ function update(dt, screen) {
       updateBiomePressure(dt);
       updateEncounter(dt);
       if(tutorialActive?.phase==='live')ui.objective.textContent=TUTORIAL_LESSONS[tutorialActive.index].task;
-      if (clearDelay >= 0) { clearDelay -= dt; if (clearDelay <= 0){clearDelay=-1;openGuardianReward(encounter.defeatedGuardianId||chapter.boss);} }
+      if (clearDelay >= 0) { clearDelay -= dt; if (clearDelay <= 0){clearDelay=-1;if(endlessRoad.active&&encounter.endlessStage)completeEndlessStage();else openGuardianReward(encounter.defeatedGuardianId||chapter.boss);} }
     }
     comboUiTimer = Math.max(0, comboUiTimer - dt);
     updateEffects(dt);
@@ -3248,7 +3277,7 @@ function update(dt, screen) {
     updateHub(dt);updateEffects(dt);updateCamera(dt,screen);updateHud();
   } else if(state==='dojo'){
     updateDojo(dt);updateCamera(dt,screen);updateHud();
-  } else if (!['levelup','hubMenu','codex','paused','settings'].includes(state)) {
+  } else if (!['levelup','hubMenu','codex','paused','settings'].includes(state)&&state!=='endlessDecision') {
     updateEffects(dt);
     camera.x = lerp(camera.x, room.playerSpawn.x, .03);
     camera.y = lerp(camera.y, room.playerSpawn.y - 80, .03);
@@ -3985,12 +4014,14 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 
-window.__BRAWLPAWS_QA__=()=>({state,room:room.id,player:player&&{x:player.x,y:player.y,worldX:player.worldX,worldY:player.worldY,currentRegion:player.currentRegion,discoveredRegions:player.discoveredRegions?.size||0,clearedRegions:player.clearedRegions?.size||0,vx:player.vx,vy:player.vy,facing:player.facing,aimFacing:player.aimFacing,moveFacing:player.moveFacing,aimLockTime:player.aimLockTime,attacking:Boolean(player.attack)},mapReady:layeredMapRuntime.ready,mapDebug:layeredMapRuntime.debug,mapRoom:layeredMapRuntime.activeRoomId,world:{id:EXPEDITION_WORLD.id,regions:EXPEDITION_WORLD.nodes.length,links:EXPEDITION_WORLD.links.length,neighbors:expeditionNeighbors(room.id)}});
+window.__BRAWLPAWS_QA__=()=>({state,room:room.id,player:player&&{x:player.x,y:player.y,worldX:player.worldX,worldY:player.worldY,currentRegion:player.currentRegion,discoveredRegions:player.discoveredRegions?.size||0,clearedRegions:player.clearedRegions?.size||0,vx:player.vx,vy:player.vy,facing:player.facing,aimFacing:player.aimFacing,moveFacing:player.moveFacing,aimLockTime:player.aimLockTime,attacking:Boolean(player.attack),masteryXpEarned:player.masteryXpEarned},mastery:{rank:masteryRank(),xp:masteryRecord().xp},endless:{...endlessRoad},mapReady:layeredMapRuntime.ready,mapDebug:layeredMapRuntime.debug,mapRoom:layeredMapRuntime.activeRoomId,world:{id:EXPEDITION_WORLD.id,regions:EXPEDITION_WORLD.nodes.length,links:EXPEDITION_WORLD.links.length,neighbors:expeditionNeighbors(room.id)}});
 
 window.addEventListener('resize', ()=>{lastDrawTime=0;resize();});
 window.addEventListener('keydown', (event) => {
   const key = event.key.toLowerCase();
   if(state==='worldMap'&&(key==='m'||key==='escape')){closeWorldMap();event.preventDefault();return;}
+  if(state==='endlessDecision'&&(key==='enter'||key===' ')){startEndlessStage();event.preventDefault();return;}
+  if(state==='endlessDecision'&&key==='escape'){finishEndlessRoad();event.preventDefault();return;}
   if(key==='m'&&['playing','hub','dojo'].includes(state)){openWorldMap();event.preventDefault();return;}
   if(key==='f3'){const active=layeredMapRuntime.toggleDebug();if(player)spawnWord(player.x,player.y-90,active?'MAP DEBUG ON':'MAP DEBUG OFF',active?'#45f4ff':'#9ea1ad');event.preventDefault();return;}
   if(state==='settings'&&(key==='escape'||key==='o')){closeSettings();event.preventDefault();return;}
@@ -4040,6 +4071,8 @@ document.querySelector('#world-map-button').addEventListener('click',openWorldMa
 document.querySelector('#close-world-map').addEventListener('click',closeWorldMap);
 for(const button of document.querySelectorAll('[data-codex-tab]'))button.addEventListener('click',()=>{activeCodexId=null;renderCodex(button.dataset.codexTab);});
 document.querySelector('#restart-button').addEventListener('click', begin);
+document.querySelector('#continue-endless-road').addEventListener('click',startEndlessStage);
+document.querySelector('#bank-endless-road').addEventListener('click',()=>finishEndlessRoad());
 document.querySelector('#story-button').addEventListener('click',()=>tutorialActive?.phase==='explain'?startTutorialLesson():continueStory());
 document.querySelector('#tutorial-skip').addEventListener('click',skipTutorial);
 document.querySelector('#tutorial-live-skip').addEventListener('click',()=>skipTutorialLesson('LESSON SKIPPED'));
