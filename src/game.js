@@ -3579,12 +3579,12 @@ function drawPhysicalRouteGates(){
 }
 
 function routeRoadPalette(){
-  if(room.id.startsWith('bamboo'))return {bed:'#132b25',stone:'#3d725b',edge:'#65ef9b',glow:'#74f1c7'};
-  if(room.id.startsWith('crimson'))return {bed:'#321611',stone:'#7e392d',edge:'#ff754e',glow:'#ffb24f'};
-  if(room.id.startsWith('storm'))return {bed:'#102536',stone:'#285e79',edge:'#4ceaff',glow:'#b7f8ff'};
-  if(room.id.startsWith('neon'))return {bed:'#17142f',stone:'#59346f',edge:'#ff49bd',glow:'#59f2ff'};
-  if(room.id.startsWith('shadow'))return {bed:'#1e102d',stone:'#563176',edge:'#bf68ff',glow:'#e5b8ff'};
-  return {bed:'#15271f',stone:'#345e48',edge:'#72ef83',glow:'#63efff'};
+  if(room.id.startsWith('bamboo'))return {bed:'#132b25',stone:'#3d725b',edge:'#65ef9b',glow:'#74f1c7',filter:'hue-rotate(18deg) saturate(1.12)'};
+  if(room.id.startsWith('crimson'))return {bed:'#321611',stone:'#7e392d',edge:'#ff754e',glow:'#ffb24f',filter:'sepia(.42) hue-rotate(328deg) saturate(1.45)'};
+  if(room.id.startsWith('storm'))return {bed:'#102536',stone:'#285e79',edge:'#4ceaff',glow:'#b7f8ff',filter:'hue-rotate(118deg) saturate(1.25) brightness(1.08)'};
+  if(room.id.startsWith('neon'))return {bed:'#17142f',stone:'#59346f',edge:'#ff49bd',glow:'#59f2ff',filter:'hue-rotate(210deg) saturate(1.65)'};
+  if(room.id.startsWith('shadow'))return {bed:'#1e102d',stone:'#563176',edge:'#bf68ff',glow:'#e5b8ff',filter:'hue-rotate(248deg) saturate(1.35) brightness(.82)'};
+  return {bed:'#15271f',stone:'#345e48',edge:'#72ef83',glow:'#63efff',filter:'none'};
 }
 
 function routeBezierPoint(startX,startY,controlX,controlY,endX,endY,t){
@@ -3604,16 +3604,21 @@ function drawAuthoredRouteRoads(){
     const atlasReady=assets.spiritRoads.complete&&assets.spiritRoads.naturalWidth,sw=atlasReady?assets.spiritRoads.naturalWidth/2:0,sh=atlasReady?assets.spiritRoads.naturalHeight/2:0;
     if(atlasReady)for(let step=0;step<=9;step++){
       const t=step/9,p=routeBezierPoint(startX,startY,controlX,controlY,endX,endY,t),ahead=routeBezierPoint(startX,startY,controlX,controlY,endX,endY,Math.min(1,t+.025)),angle=Math.atan2(ahead.y-p.y,ahead.x-p.x)-Math.PI/2,frame=(gate.index+step)%5===0?1:0,sx=(frame%2)*sw,sy=0,w=310,h=w*(sh/sw);
-      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(angle);ctx.globalAlpha=.9;ctx.shadowColor=palette.glow;ctx.shadowBlur=5;ctx.drawImage(assets.spiritRoads,sx,sy,sw,sh,-w/2,-h*.48,w,h);ctx.restore();
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(angle);ctx.globalAlpha=.9;ctx.filter=palette.filter;ctx.shadowColor=palette.glow;ctx.shadowBlur=5;ctx.drawImage(assets.spiritRoads,sx,sy,sw,sh,-w/2,-h*.48,w,h);ctx.restore();
     }
     for(let step=1;step<=5;step++){
       const t=step/6,p=routeBezierPoint(startX,startY,controlX,controlY,endX,endY,t),x=p.x,y=p.y,side=step%2?-1:1;
       ctx.globalAlpha=.68;ctx.fillStyle='#11101e';ctx.strokeStyle=palette.stone;ctx.lineWidth=4;ctx.beginPath();ctx.ellipse(x+side*78,y,20,13,side*.18,0,Math.PI*2);ctx.fill();ctx.stroke();
       const pulse=.55+Math.sin(time*3+step+gate.index)*.18;ctx.globalCompositeOperation='lighter';ctx.globalAlpha=pulse;ctx.fillStyle=gate.color||palette.glow;ctx.shadowColor=gate.color||palette.glow;ctx.shadowBlur=18;ctx.beginPath();ctx.arc(x+side*78,y-16,5,0,Math.PI*2);ctx.fill();ctx.globalCompositeOperation='source-over';ctx.shadowBlur=0;
     }
-    if(atlasReady){const marker=routeBezierPoint(startX,startY,controlX,controlY,endX,endY,.74),frame=gate.index%2?2:3,sx=(frame%2)*sw,sy=Math.floor(frame/2)*sh,w=gate.index%2?160:116,h=w*(sh/sw),side=gate.index%2?-1:1;ctx.save();ctx.translate(marker.x+side*126,marker.y+18);ctx.globalAlpha=.82;ctx.shadowColor=palette.glow;ctx.shadowBlur=12;ctx.drawImage(assets.spiritRoads,sx,sy,sw,sh,-w/2,-h*.78,w,h);ctx.restore();}
+    if(atlasReady){const marker=routeBezierPoint(startX,startY,controlX,controlY,endX,endY,.74),frame=gate.index%2?2:3,sx=(frame%2)*sw,sy=Math.floor(frame/2)*sh,w=gate.index%2?160:116,h=w*(sh/sw),side=gate.index%2?-1:1;ctx.save();ctx.translate(marker.x+side*126,marker.y+18);ctx.globalAlpha=.82;ctx.filter=palette.filter;ctx.shadowColor=palette.glow;ctx.shadowBlur=12;ctx.drawImage(assets.spiritRoads,sx,sy,sw,sh,-w/2,-h*.78,w,h);ctx.restore();}
   }
   ctx.restore();
+}
+
+function drawRouteForegroundLandmarks(){
+  if(!encounter?.awaitingRouteChoice||!encounter.routeGateChoices?.length||!assets.spiritRoads.complete||!assets.spiritRoads.naturalWidth)return;const palette=routeRoadPalette(),sw=assets.spiritRoads.naturalWidth/2,sh=assets.spiritRoads.naturalHeight/2;
+  for(const gate of encounter.routeGateChoices){if(gate.backtrack||gate.extract)continue;const side=gate.index%2?-1:1,x=gate.x+side*230,y=gate.y+265,near=distance(player,{x,y})<330,w=260,h=w*(sh/sw);ctx.save();ctx.translate(x,y);ctx.globalAlpha=near?.34:.82;ctx.filter=palette.filter;ctx.shadowColor=palette.glow;ctx.shadowBlur=near?5:11;ctx.drawImage(assets.spiritRoads,0,sh,sw,sh,-w/2,-h*.8,w,h);ctx.restore();}
 }
 
 function draw(screen) {
@@ -3660,6 +3665,7 @@ function draw(screen) {
   }
   if(room.id==='jadeCourtyard')for (const prop of props.filter((item) => item.foreground)) drawProp(prop, distance(player,prop)<360?.38:.82);
   if(room.mapRuntime==='phaser-tiled')for(const object of layeredMapRuntime.worldObjects('Foreground / Occlusion'))drawTiledMapObject(object,distance(player,object)<430?.28:.72);
+  drawRouteForegroundLandmarks();
   drawForegroundHaze();
   drawPhysicalRouteGates();
   drawEffects(true);

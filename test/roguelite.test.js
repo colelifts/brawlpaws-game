@@ -329,6 +329,9 @@ test('branching exits grow authored traversal roads through the live terrain',()
   assert.match(game,/road\.quadraticCurveTo\(/);
   assert.match(game,/drawAuthoredRouteRoads\(\);\s*if\(room\.id!==/);
   assert.match(game,/function routeRoadPalette\(\)/);
+  assert.match(game,/function drawRouteForegroundLandmarks\(\)/);
+  assert.match(game,/drawRouteForegroundLandmarks\(\);\s*drawForegroundHaze\(\)/);
+  assert.match(game,/filter:'hue-rotate\(118deg\)/);
   assert.match(game,/spiritRoads:\s*'assets\/environment\/spirit-roads-v1\.png'/);
   assert.match(game,/drawImage\(assets\.spiritRoads/);
   assert.match(game,/function beginRouteTravel\(choice\)/);
