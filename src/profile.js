@@ -1,8 +1,9 @@
 import { HEROES, WEAPONS, ENEMIES, DIFFICULTIES } from './data.js?v=20260813-expedition6';
 import { expeditionNode } from './expedition-world.js?v=20260813-world2';
 import { DEFAULT_BINDINGS, sanitizeBindings } from './controls.js?v=20260813-controls1';
+import { sanitizeMasteryCrests } from './mastery.js?v=20260813-prestige1';
 
-export const PROFILE_VERSION=4;
+export const PROFILE_VERSION=5;
 export const PROFILE_FORMAT='brawlpaws-save';
 export const DEFAULT_SETTINGS=Object.freeze({screenShake:1,flashIntensity:1,damageNumbers:true,ambientMotion:true,minimap:true,colorAssist:false,toggleFire:false,masterVolume:.8,musicVolume:.55,sfxVolume:.85,abilityVolume:.85,uiVolume:.7});
 export const DEFAULT_CONTRACT_PROGRESS=Object.freeze({spiritCull:0,eliteBreakers:0,foxfireHunt:0,sealRunner:0,guardianOath:0});
@@ -13,7 +14,7 @@ const unique=(value,predicate)=>[...new Set((Array.isArray(value)?value:[]).filt
 const identifier=(value)=>typeof value==='string'&&/^[a-zA-Z0-9_-]{1,64}$/.test(value);
 
 export function defaultHeroMastery(){return Object.fromEntries(Object.keys(HEROES).map((id)=>[id,{xp:0,highestRoad:0,kills:0,guardians:0}]));}
-export function createDefaultProfile(){return {schemaVersion:PROFILE_VERSION,spiritShards:0,campaignClears:0,runsStarted:0,expeditionsExtracted:0,bestExtractionDepth:0,bestDifficulty:'',lastDifficulty:'ferocious',selectedHero:'kitsune',highestLevel:1,tutorialComplete:false,tutorialStep:0,vitalityRank:0,forgeRank:0,attunementRank:0,purseRank:0,ascensionRank:1,ascensionClears:0,unlockedHeroes:['kitsune','bamboo'],collectedWeapons:[],boundArsenal:{},discoveredEnemies:['groveMinion'],discoveredGuardians:[],worldDiscoveries:['jadeCourtyard'],worldsCompleted:[],realmSeals:[],claimedExpeditionMilestones:[],heroMastery:defaultHeroMastery(),contractProgress:{...DEFAULT_CONTRACT_PROGRESS},claimedContracts:[],keyBindings:{...DEFAULT_BINDINGS},settings:{...DEFAULT_SETTINGS}};}
+export function createDefaultProfile(){return {schemaVersion:PROFILE_VERSION,spiritShards:0,campaignClears:0,runsStarted:0,expeditionsExtracted:0,bestExtractionDepth:0,bestDifficulty:'',lastDifficulty:'ferocious',selectedHero:'kitsune',highestLevel:1,tutorialComplete:false,tutorialStep:0,vitalityRank:0,forgeRank:0,attunementRank:0,purseRank:0,ascensionRank:1,ascensionClears:0,unlockedHeroes:['kitsune','bamboo'],collectedWeapons:[],boundArsenal:{},discoveredEnemies:['groveMinion'],discoveredGuardians:[],worldDiscoveries:['jadeCourtyard'],worldsCompleted:[],realmSeals:[],claimedExpeditionMilestones:[],heroMastery:defaultHeroMastery(),selectedMasteryCrests:sanitizeMasteryCrests({},Object.keys(HEROES)),contractProgress:{...DEFAULT_CONTRACT_PROGRESS},claimedContracts:[],keyBindings:{...DEFAULT_BINDINGS},settings:{...DEFAULT_SETTINGS}};}
 
 function migrateLegacy(raw){
   const source=raw&&typeof raw==='object'&&!Array.isArray(raw)?structuredClone(raw):{};
@@ -22,6 +23,7 @@ function migrateLegacy(raw){
   if(version<2){source.worldsCompleted=Array.isArray(source.worldsCompleted)?source.worldsCompleted:[];source.schemaVersion=2;}
   if(version<3){source.realmSeals=Array.isArray(source.realmSeals)?source.realmSeals:[];source.claimedExpeditionMilestones=Array.isArray(source.claimedExpeditionMilestones)?source.claimedExpeditionMilestones:[];source.schemaVersion=3;}
   if(version<4){source.keyBindings=sanitizeBindings(source.keyBindings);source.schemaVersion=4;}
+  if(version<5){source.selectedMasteryCrests=sanitizeMasteryCrests(source.selectedMasteryCrests,Object.keys(HEROES));source.schemaVersion=5;}
   return source;
 }
 
@@ -54,6 +56,7 @@ export function sanitizeProfile(raw){
   profile.claimedExpeditionMilestones=unique(source.claimedExpeditionMilestones,identifier);
   profile.heroMastery=defaultHeroMastery();
   for(const id of Object.keys(HEROES)){const saved=source.heroMastery?.[id]||{};profile.heroMastery[id]={xp:integer(saved.xp),highestRoad:integer(saved.highestRoad),kills:integer(saved.kills),guardians:integer(saved.guardians)};}
+  profile.selectedMasteryCrests=sanitizeMasteryCrests(source.selectedMasteryCrests,Object.keys(HEROES));
   for(const id of Object.keys(DEFAULT_CONTRACT_PROGRESS))profile.contractProgress[id]=integer(source.contractProgress?.[id]);
   profile.claimedContracts=unique(source.claimedContracts,identifier);
   profile.keyBindings=sanitizeBindings(source.keyBindings);

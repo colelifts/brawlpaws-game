@@ -21,6 +21,7 @@ test('legacy profiles migrate to the current schema without losing progression',
   assert.deepEqual(profile.realmSeals,[]);
   assert.deepEqual(profile.claimedExpeditionMilestones,[]);
   assert.equal(profile.keyBindings.attack,'j');
+  assert.equal(profile.selectedMasteryCrests.kitsune,'none');
 });
 
 test('profile sanitization rejects invalid ids and clamps untrusted values',()=>{

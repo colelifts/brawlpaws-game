@@ -59,6 +59,7 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - Color Assist adds patterned high-contrast hero/enemy/danger markers without replacing the game's elemental palette, and Fire Input can switch between hold and toggle behavior.
 - Settings persist locally and can be changed from the title or while the game is paused.
 - Profile v4 adds explicit legacy migration, guarded reset, JSON export/import, persistent remapping, and controller preferences without invalidating older saves.
+- Hero mastery now spans 100 ranks. Gameplay bonuses stop at rank 50; ranks 51–100 earn selectable animated prestige crests so the long grind stays visible without overpowering fresh runs.
 
 ## Included in this visual correction pass
 

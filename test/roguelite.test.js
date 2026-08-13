@@ -594,11 +594,15 @@ test('guardian victories open build-defining blessings and a three-vow epilogue'
 test('hero mastery and the post-Tsukiko endless road persist without overpowering the opening',()=>{
   for(const id of ['hero-mastery-rank','hero-mastery-fill','endless-road-screen','continue-endless-road','bank-endless-road'])assert.match(html,new RegExp(`id="${id}"`));
   for(const fn of ['masteryXpForRank','masteryRank','masteryStartingBonus','bankMasteryProgress','endlessPressure','bankCampaignVictory','openEndlessRoadDecision','startEndlessStage','completeEndlessStage','finishEndlessRoad'])assert.match(game,new RegExp(`function ${fn}\\(`));
-  assert.match(game,/const MASTERY_CAP=50/);
-  assert.match(game,/health:Math\.floor\(rank\/10\)\*2/);
+  assert.match(game,/MASTERY_CAP, MASTERY_POWER_CAP/);
+  assert.match(game,/health:Math\.floor\(powerRank\/10\)\*2/);
   assert.match(game,/stage%6===0/);
   assert.match(game,/Math\.floor\(endlessRoad\.bank\/2\)/);
   assert.match(game,/masteryXpEarned/);
+});
+
+test('post-rank-50 mastery becomes visible prestige instead of more permanent power',()=>{
+  assert.match(game,/Math\.min\(MASTERY_POWER_CAP,rank\)/);assert.match(game,/function drawMasteryCrest\(/);assert.match(game,/function masteryCrestCards\(/);assert.match(game,/data-mastery-crest/);
 });
 
 test('persistent accessibility controls change render behavior and remain pause-safe',()=>{
