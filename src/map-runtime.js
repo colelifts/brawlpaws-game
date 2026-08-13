@@ -180,6 +180,8 @@ export class LayeredMapRuntime {
 
   visibleRegions(){return [...this.entries.values()].filter((entry)=>entry.visible).map((entry)=>({roomId:entry.roomId,offsetX:entry.offsetX||0,offsetY:entry.offsetY||0,width:entry.map.widthInPixels,height:entry.map.heightInPixels}));}
 
+  viewBounds(){const regions=this.visibleRegions();if(!regions.length)return null;return {minX:Math.min(...regions.map((entry)=>entry.offsetX)),minY:Math.min(...regions.map((entry)=>entry.offsetY)),maxX:Math.max(...regions.map((entry)=>entry.offsetX+entry.width)),maxY:Math.max(...regions.map((entry)=>entry.offsetY+entry.height))};}
+
   entrySpawn(roomId,direction='back'){
     const entry=this.entries.get(roomId),gate=direction==='forward'?this.forwardGate(roomId):this.backGate(roomId);if(!entry||!gate)return this.playerSpawn(roomId);
     const inward=direction==='forward'?1:-1,x=gate.x+gate.width/2,y=gate.y+gate.height/2+inward*(gate.height/2+190);
@@ -191,7 +193,7 @@ export class LayeredMapRuntime {
     if(this.previewRoomId&&this.previewRoomId!==destinationRoomId)this.clearPreview();const exit=this.forwardGate(current.roomId),entrance=this.backGate(destinationRoomId);if(!exit||!entrance)return null;
     const offsetX=(exit.x+exit.width/2)-(entrance.x+entrance.width/2),offsetY=exit.y-(entrance.y+entrance.height)+24;
     this.setEntryOffset(destination,offsetX,offsetY);destination.visible=true;for(const object of destination.display)object.setVisible(object!==destination.debugGraphics||this.debug);this.previewRoomId=destinationRoomId;
-    const minX=Math.min(0,offsetX),minY=Math.min(0,offsetY),maxX=Math.max(current.map.widthInPixels,offsetX+destination.map.widthInPixels),maxY=Math.max(current.map.heightInPixels,offsetY+destination.map.heightInPixels);this.scene.cameras.main.setBounds(minX,minY,maxX-minX,maxY-minY);return {roomId:destinationRoomId,offsetX,offsetY};
+    const minX=Math.min(0,offsetX),minY=Math.min(0,offsetY),maxX=Math.max(current.map.widthInPixels,offsetX+destination.map.widthInPixels),maxY=Math.max(current.map.heightInPixels,offsetY+destination.map.heightInPixels);this.scene.cameras.main.setBounds(minX,minY,maxX-minX,maxY-minY);return {roomId:destinationRoomId,offsetX,offsetY,entryX:entrance.x+entrance.width/2+offsetX,entryY:entrance.y+entrance.height/2+offsetY,minX,minY,maxX,maxY};
   }
 
   clearPreview(){

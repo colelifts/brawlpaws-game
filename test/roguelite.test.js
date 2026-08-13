@@ -291,11 +291,14 @@ test('authored return gates revisit cleared regions without replaying combat',()
 
 test('authored regions stream across aligned gates and preserve entry direction',()=>{
   assert.match(mapRuntime,/previewNeighbor\(destinationRoomId\)/);
+  assert.match(mapRuntime,/viewBounds\(\)/);
   assert.match(mapRuntime,/entrySpawn\(roomId,direction='back'\)/);
   assert.match(mapRuntime,/const offsetX=\(exit\.x\+exit\.width\/2\)-\(entrance\.x\+entrance\.width\/2\),offsetY=exit\.y-\(entrance\.y\+entrance\.height\)\+24/);
   assert.match(mapRuntime,/this\.scene\.cameras\.main\.setBounds\(minX,minY,maxX-minX,maxY-minY\)/);
   assert.match(game,/entryGate:modifiers\.entryGate\|\|\(crossingRegion\?'back':null\)/);
   assert.match(game,/layeredMapRuntime\.previewNeighbor\(nearest\.destination\)/);
+  assert.match(game,/encounter\.routeCameraTarget=preview/);
+  assert.match(game,/layeredMapRuntime\.viewBounds\(\)/);
   assert.match(game,/entryGate:'forward'/);
 });
 

@@ -1,6 +1,6 @@
 import { clamp, lerp, normalize, distance, approachAngle, encounterActiveLimit, campaignPressureCurve, cappedWardPressure, normalizedEnemyScales, enemySpeedCeiling, enemyTelegraphFloor, incomingDamageLimit, guardianAttackTiming } from './math.js?v=20260812-guardians1';
 import { HEROES, WEAPONS, ABILITIES, STATUS_EFFECTS, ELITE_MODIFIERS, BOSS_PATTERNS, BOSS_PROFILES, ENEMIES, ENCOUNTERS, ROOMS, DIFFICULTIES } from './data.js?v=20260813-casts1';
-import { createLayeredMapRuntime } from './map-runtime.js?v=20260813-stream5';
+import { createLayeredMapRuntime } from './map-runtime.js?v=20260813-roadcamera1';
 import { EXPEDITION_WORLD, EXPEDITION_MILESTONES, expeditionNode, expeditionNeighbors, expeditionWorldPosition, expeditionProgress, expeditionRealmProgress, expeditionThreat, expeditionLoot } from './expedition-world.js?v=20260813-world3';
 import { PROFILE_VERSION, DEFAULT_SETTINGS, DEFAULT_CONTRACT_PROGRESS, createDefaultProfile, defaultHeroMastery, sanitizeProfile, createSaveArchive, parseSaveArchive } from './profile.js?v=20260813-prestige1';
 import { DEFAULT_BINDINGS, BINDING_LABELS, keyLabel, gamepadActions } from './controls.js?v=20260813-controls1';
@@ -1641,7 +1641,7 @@ function startWave(index,modifiers={}) {
   const difficulty=activeDifficulty();
   Object.values(effects).forEach((list)=>list.splice(0));const requestedNodeType=modifiers.nodeType||'combat',targetRegion=modifiers.resumeRegion&&ROOMS[modifiers.resumeRegion]?modifiers.resumeRegion:roomForWave(index,requestedNodeType),crossingRegion=targetRegion!==room.id;activateRoom(targetRegion,{reposition:true,announce:true,waveIndex:index,subtitle:wave.name.toUpperCase(),entryGate:modifiers.entryGate||(crossingRegion?'back':null)});
   if(player.maxSpiritShield>0)applyPlayerStatus('shield',14,player.maxSpiritShield);
-  encounter.wave=index; encounter.waveTime=0;encounter.transitioning=false;encounter.awaitingGate=false;encounter.awaitingRouteChoice=false;encounter.routeGateChoices=[];encounter.routeGateLock=0;encounter.bossActive=false;encounter.endlessStage=Number(modifiers.endlessStage)||0;encounter.nodeType=modifiers.nodeType||'combat';encounter.modifiers={...modifiers};encounter.regionThreat=expeditionThreat(room.id);encounter.biomePressureClock=biomePressureInterval(index)*.72;encounter.biomePressureCount=0;encounter.warpackClock=(CHAPTER_WARPACKS[chapter.id]?.interval||18)*.78;encounter.warpackCount=0;corruptionDirector=createCorruptionDirector(index,modifiers.corruption);const corruption=corruptionTier();encounter.rewardScale=(modifiers.rewardScale||1)*difficulty.rewardScale*corruption.reward;enemies=[];state='playing';roomInteractable=null;spawnRoomDestructibles(index,modifiers.brokenProps||[]);spawnRoomMission(wave.mission,modifiers.missionState);refreshCorruptionHud({surge:corruptionDirector.tier>=2});
+  encounter.wave=index; encounter.waveTime=0;encounter.transitioning=false;encounter.awaitingGate=false;encounter.awaitingRouteChoice=false;encounter.routeGateChoices=[];encounter.routeGateLock=0;encounter.routeCameraTarget=null;encounter.bossActive=false;encounter.endlessStage=Number(modifiers.endlessStage)||0;encounter.nodeType=modifiers.nodeType||'combat';encounter.modifiers={...modifiers};encounter.regionThreat=expeditionThreat(room.id);encounter.biomePressureClock=biomePressureInterval(index)*.72;encounter.biomePressureCount=0;encounter.warpackClock=(CHAPTER_WARPACKS[chapter.id]?.interval||18)*.78;encounter.warpackCount=0;corruptionDirector=createCorruptionDirector(index,modifiers.corruption);const corruption=corruptionTier();encounter.rewardScale=(modifiers.rewardScale||1)*difficulty.rewardScale*corruption.reward;enemies=[];state='playing';roomInteractable=null;spawnRoomDestructibles(index,modifiers.brokenProps||[]);spawnRoomMission(wave.mission,modifiers.missionState);refreshCorruptionHud({surge:corruptionDirector.tier>=2});
   if(PHYSICAL_ROUTE_NODES.has(encounter.nodeType)){spawnRoomInteractable(encounter.nodeType);if(modifiers.interactableUsed)roomInteractable.used=true;}
   ui.waveLabel.textContent=encounter.endlessStage?(endlessRoad.worldTwo?`WORLD II  REGION ${encounter.endlessStage} / ${WORLD_TWO_LENGTH}  ${chapter.name.toUpperCase()}`:`ENDLESS ROAD ${encounter.endlessStage}  ${chapter.name.toUpperCase()}`):`CHAPTER ${chapterIndex+1}  WAVE ${index+1} / ${chapter.waves.length}`;
   const eliteNode=encounter.nodeType==='elite'||encounter.nodeType?.includes('Elite');ui.roomState.textContent=eliteNode?`MUTATED  ${wave.name.toUpperCase()}`:wave.name.toUpperCase();ui.roomState.style.color=eliteNode?'#f13b8c':index>=2?'#ff7448':'#ff38b5';
@@ -1781,7 +1781,7 @@ function updatePhysicalRoute(dt){
   encounter.routeGateLock=Math.max(0,(encounter.routeGateLock||0)-dt);if(encounter.routeGateLock>0)return;
   const choices=encounter.routeGateChoices||[];let nearest=null,nearestDistance=Infinity;
   for(const choice of choices){const d=distance(player,choice);if(d<nearestDistance){nearest=choice;nearestDistance=d;}if(d<=choice.radius+player.radius*.72){if(coop.connected&&!coopIsHost()){spawnWord(player.x,player.y-78,'HOST CHOOSES THE ROAD','#9cf4ff');encounter.routeGateLock=1;return;}encounter.awaitingRouteChoice=false;encounter.routeGateChoices=[];player.vx=0;player.vy=0;if(choice.extract)extractExpedition({fromWorld:true});else if(choice.backtrack)returnToClearedRegion(choice.destination);else commitRouteChoice(choice);return;}}
-  if(nearest?.destination&&nearestDistance<620)layeredMapRuntime.previewNeighbor(nearest.destination);else layeredMapRuntime.clearPreview();
+  if(nearest?.destination&&nearestDistance<620){const preview=layeredMapRuntime.previewNeighbor(nearest.destination);encounter.routeCameraTarget=preview?{x:preview.entryX,y:preview.entryY,blend:clamp(1-nearestDistance/720,.12,.82)}:null;}else{layeredMapRuntime.clearPreview();encounter.routeCameraTarget=null;}
   if(nearest&&nearestDistance<340)ui.objective.textContent=nearest.extract?`ENTER TO EXTRACT  ·  BANK ${player.expeditionShards||0} SHARDS`:`${nearest.name.toUpperCase()}  ·  ${ROOMS[nearest.destination]?.name.toUpperCase()||'SPIRIT ROAD'}`;
   else ui.objective.textContent=coop.connected&&!coopIsHost()?'FOLLOW THE HOST TO THE NEXT ROAD':'WALK INTO A SPIRIT ROAD  ·  M OPENS WORLD MAP';
 }
@@ -3446,8 +3446,10 @@ function updateCamera(dt, screen) {
   const viewHeight = screen.height / camera.zoom;
   const lookX = player.vx * .16 + Math.cos(player.facing) * camera.kick;
   const lookY = player.vy * .11 + Math.sin(player.facing) * camera.kick * .7;
-  const targetX = clamp(player.x + lookX, viewWidth / 2, room.width - viewWidth / 2);
-  const targetY = clamp(player.y + lookY, viewHeight / 2, room.height - viewHeight / 2);
+  const routeFocus=encounter.routeCameraTarget,focusBlend=routeFocus?.blend||0,focusX=lerp(player.x+lookX,routeFocus?.x??player.x,focusBlend),focusY=lerp(player.y+lookY,routeFocus?.y??player.y,focusBlend),worldBounds=room.mapRuntime==='phaser-tiled'?layeredMapRuntime.viewBounds():null;
+  const minX=(worldBounds?.minX||0)+viewWidth/2,maxX=(worldBounds?.maxX||room.width)-viewWidth/2,minY=(worldBounds?.minY||0)+viewHeight/2,maxY=(worldBounds?.maxY||room.height)-viewHeight/2;
+  const targetX = clamp(focusX,Math.min(minX,maxX),Math.max(minX,maxX));
+  const targetY = clamp(focusY,Math.min(minY,maxY),Math.max(minY,maxY));
   camera.x = lerp(camera.x, targetX, 1 - Math.exp(-4.7 * dt));
   camera.y = lerp(camera.y, targetY, 1 - Math.exp(-4.7 * dt));
   camera.shake = Math.max(0, camera.shake - dt * 29);
