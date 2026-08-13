@@ -56,6 +56,7 @@ To play co-op, one player selects **Create Party** and shares the five-character
 - Active campaigns save a versioned checkpoint at the beginning of every story beat, route choice, combat room, and guardian room.
 - **Continue Run** restores the selected hero, difficulty, build, ability unlocks, relics, resources, chapter, and room. Combat restarts from the room boundary so enemy and projectile state is always safe.
 - Screen shake and combat flashes support full, reduced, and off modes. Damage numbers and ambient scenery motion can be toggled independently.
+- Color Assist adds patterned high-contrast hero/enemy/danger markers without replacing the game's elemental palette, and Fire Input can switch between hold and toggle behavior.
 - Settings persist locally and can be changed from the title or while the game is paused.
 - Profile v4 adds explicit legacy migration, guarded reset, JSON export/import, persistent remapping, and controller preferences without invalidating older saves.
 

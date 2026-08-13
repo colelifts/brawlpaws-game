@@ -2,7 +2,7 @@ import { clamp, lerp, normalize, distance, approachAngle, encounterActiveLimit, 
 import { HEROES, WEAPONS, ABILITIES, STATUS_EFFECTS, ELITE_MODIFIERS, BOSS_PATTERNS, BOSS_PROFILES, ENEMIES, ENCOUNTERS, ROOMS, DIFFICULTIES } from './data.js?v=20260813-expedition6';
 import { createLayeredMapRuntime } from './map-runtime.js?v=20260813-expedition6';
 import { EXPEDITION_WORLD, EXPEDITION_MILESTONES, expeditionNode, expeditionNeighbors, expeditionWorldPosition, expeditionProgress, expeditionRealmProgress, expeditionThreat, expeditionLoot } from './expedition-world.js?v=20260813-world3';
-import { PROFILE_VERSION, DEFAULT_SETTINGS, DEFAULT_CONTRACT_PROGRESS, createDefaultProfile, defaultHeroMastery, sanitizeProfile, createSaveArchive, parseSaveArchive } from './profile.js?v=20260813-save4';
+import { PROFILE_VERSION, DEFAULT_SETTINGS, DEFAULT_CONTRACT_PROGRESS, createDefaultProfile, defaultHeroMastery, sanitizeProfile, createSaveArchive, parseSaveArchive } from './profile.js?v=20260813-access1';
 import { DEFAULT_BINDINGS, BINDING_LABELS, keyLabel, gamepadActions } from './controls.js?v=20260813-controls1';
 
 const canvas = document.querySelector('#game');
@@ -388,7 +388,7 @@ function selectDifficulty(id){
   selectedDifficulty=id;profile.lastDifficulty=id;saveProfile();refreshProfileUi();
 }
 
-const input = { keys: new Set(), pressed: new Set(), pointer: { x: 0, y: 0, active: false }, attack: false, attackHeld: false, gamepad:{index:null,held:new Set(),pressed:new Set(),move:{x:0,y:0,magnitude:0},aim:{x:0,y:0,magnitude:0}} };
+const input = { keys: new Set(), pressed: new Set(), pointer: { x: 0, y: 0, active: false }, attack: false, attackHeld: false, attackToggled:false, gamepad:{index:null,held:new Set(),pressed:new Set(),move:{x:0,y:0,magnitude:0},aim:{x:0,y:0,magnitude:0}} };
 const bound=(action)=>profile.keyBindings?.[action]||DEFAULT_BINDINGS[action];
 const keyHeld=(action)=>input.keys.has(bound(action));
 const keyPressed=(action)=>input.pressed.has(bound(action));
@@ -713,7 +713,7 @@ function openSettings(returnState=state){
 function closeSettings(){if(state!=='settings')return;settingsScreen.classList.remove('active');state=settingsReturnState||'preview';lastTime=performance.now();}
 
 function changeSetting(key,raw){
-  if(!(key in DEFAULT_SETTINGS))return;profile.settings[key]=raw==='true'?true:raw==='false'?false:Number(raw);saveProfile();refreshSettingsUi();applyAudioMix();
+  if(!(key in DEFAULT_SETTINGS))return;profile.settings[key]=raw==='true'?true:raw==='false'?false:Number(raw);if(key==='toggleFire'&&!profile.settings.toggleFire)input.attackToggled=false;saveProfile();refreshSettingsUi();applyAudioMix();
 }
 function saveDataStatus(message,tone=''){const element=document.querySelector('#save-data-status');if(!element)return;element.textContent=message;element.classList.remove('error','success');if(tone)element.classList.add(tone);}
 function exportProfileSave(){
@@ -2410,7 +2410,9 @@ function updatePlayer(dt) {
   if (keyPressed('foxfire')||input.gamepad.pressed.has('foxfire')) useAbility('foxfireVolley');
   if (keyPressed('wildHeart')||input.gamepad.pressed.has('wildHeart')) useAbility('wildHeart');
   if (keyPressed('ultimate')||input.gamepad.pressed.has('ultimate')) useAbility('shockPaws');
-  if (input.attack || input.attackHeld || keyHeld('attack') || keyPressed('attack') || input.gamepad.held.has('attack')) requestAttack();
+  if(profile.settings.toggleFire&&(keyPressed('attack')||input.gamepad.pressed.has('attack'))){input.attackToggled=!input.attackToggled;spawnWord(player.x,player.y-80,input.attackToggled?'AUTO FIRE ON':'AUTO FIRE OFF',input.attackToggled?'#45eaff':'#a89aad');}
+  const firingInput=input.attack||(!profile.settings.toggleFire&&(input.attackHeld||keyHeld('attack')||input.gamepad.held.has('attack')))||(profile.settings.toggleFire&&input.attackToggled);
+  if(firingInput)requestAttack();
 
   const move = movementVector();
   if (move.x || move.y) player.moveFacing = Math.atan2(move.y, move.x);
@@ -3717,6 +3719,7 @@ function drawHero(entity, alpha = 1, afterimage = false) {
   if (!authoredState&&stateName === 'hit') rotation = Math.sin(time * 45) * .08;
   const bamboo=selectedHeroId==='bamboo';const hopscotch=selectedHeroId==='hopscotch';const rusty=selectedHeroId==='rusty';const zap=selectedHeroId==='zap';const nomi=selectedHeroId==='nomi';const baseH=bamboo?(firing?142:136):hopscotch?(firing?126:122):rusty?(firing?124:120):zap?(firing?126:122):nomi?(firing?140:132):(firing?112:108);const h=authoredState?(bamboo?154:hopscotch?142:rusty?140:zap?142:nomi?152:136):baseH;const w=h*(sw/sh);
   drawContactShadow(entity.x,entity.y+(bamboo?15:hopscotch||rusty||zap||nomi?13:12),entity.dashTime>0?(bamboo?16:hopscotch||rusty||zap||nomi?12:13):(bamboo?24:hopscotch?18:rusty?19:zap?18:nomi?18:19),entity.dashTime>0?(bamboo?4.4:3.5):(bamboo?6.4:hopscotch?5:rusty?5.2:zap?4.8:nomi?4.9:5.5),.34*alpha);
+  drawColorAssistMarker(entity.x,entity.y+10,bamboo?31:25,true,false,alpha);
   if (!afterimage && entity.wildHeartTime > 0) {
     const pulse = .2 + Math.sin(time * 7) * .035;
     if (!drawAtlasFrame(assets.wildHeartVfx, 5, entity.x, entity.y + 5, 104, 78, 0, pulse, '#62f05f')) {
@@ -3843,6 +3846,7 @@ function drawSpecialEnemy(enemy){
 
 function drawEnemy(enemy) {
   if (enemy.state === 'waiting') return;
+  drawColorAssistMarker(enemy.x,enemy.y+12,enemy.def.behavior==='boss'?enemy.radius*1.14:enemy.radius*1.2,false,enemy.state.toLowerCase().includes('windup'),enemy.dead?clamp(enemy.deathTime/.72,0,1):1);
   if(enemy.eliteId&&!enemy.dead)drawEliteAura(enemy);
   if(enemy.def.behavior==='boss'){drawBoss(enemy);return;}
   if(['bellweaverCat','powderkegToad','gatewardenRhino','mistclawLynx','tidechantHeron','kernelHackerTanuki','moonveilSeer'].includes(enemy.type)){drawSpecialEnemy(enemy);return;}
@@ -3880,6 +3884,10 @@ function drawContactShadow(x, y, radiusX, radiusY, alpha) {
   const gradient=ctx.createRadialGradient(0,0,1,0,0,radiusX);
   gradient.addColorStop(0,`rgba(0,0,7,${alpha})`); gradient.addColorStop(.52,`rgba(0,0,7,${alpha*.72})`); gradient.addColorStop(1,'rgba(0,0,7,0)');
   ctx.fillStyle=gradient; ctx.beginPath(); ctx.arc(0,0,radiusX,0,Math.PI*2); ctx.fill(); ctx.restore();
+}
+
+function drawColorAssistMarker(x,y,radius,hero=false,danger=false,alpha=1){
+  if(!profile.settings.colorAssist)return;ctx.save();ctx.translate(x,y);ctx.scale(1,.45);ctx.globalAlpha=.68*alpha;ctx.strokeStyle=hero?'#ecffff':danger?'#fff06a':'#ff9a38';ctx.shadowColor=hero?'#24efff':danger?'#ff3158':'#ff7a2d';ctx.shadowBlur=12;ctx.lineWidth=hero?4:3;ctx.setLineDash(hero?[16,7]:danger?[5,5]:[3,7]);ctx.lineDashOffset=(hero?-1:1)*performance.now()/42;ctx.beginPath();ctx.arc(0,0,radius,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);if(danger){ctx.rotate(Math.PI/4);ctx.lineWidth=2;for(let i=-radius;i<=radius;i+=12){ctx.beginPath();ctx.moveTo(i,-Math.sqrt(Math.max(0,radius*radius-i*i)));ctx.lineTo(i,Math.sqrt(Math.max(0,radius*radius-i*i)));ctx.stroke();}}ctx.restore();
 }
 
 function drawEnemyTelegraph(enemy) {
@@ -4128,7 +4136,7 @@ window.addEventListener('gamepaddisconnected',(event)=>{if(input.gamepad.index==
 canvas.addEventListener('pointermove', (event) => {
   const rect = canvas.getBoundingClientRect(); input.pointer.x = event.clientX - rect.left; input.pointer.y = event.clientY - rect.top; input.pointer.active = true;document.documentElement.dataset.inputDevice='mouse';
 });
-canvas.addEventListener('pointerdown', (event) => { if (event.button === 0) { const rect=canvas.getBoundingClientRect();input.pointer.x=event.clientX-rect.left;input.pointer.y=event.clientY-rect.top;input.pointer.active=true;input.attack = true; input.attackHeld = true; ensureAudio();requestAttack(); } });
+canvas.addEventListener('pointerdown', (event) => { if (event.button === 0) { const rect=canvas.getBoundingClientRect();input.pointer.x=event.clientX-rect.left;input.pointer.y=event.clientY-rect.top;input.pointer.active=true;if(profile.settings.toggleFire){input.attackToggled=!input.attackToggled;input.attackHeld=false;}else{input.attack=true;input.attackHeld=true;}ensureAudio();if(!profile.settings.toggleFire||input.attackToggled)requestAttack(); } });
 window.addEventListener('pointerup', (event) => { if (event.button === 0) input.attackHeld = false; });
 canvas.addEventListener('contextmenu', (event) => event.preventDefault());
 document.querySelector('#start-button').addEventListener('click', begin);

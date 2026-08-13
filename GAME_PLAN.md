@@ -219,7 +219,7 @@ Initial upgrade set:
 - Play/loadout screen with hero, weapon, starting ability, charms, relics, biome, difficulty, and run summary
 - In-run HUD, pause, codex, minimap, objective tracker, shop, level-up, route selection, death, victory, and results
 - Brush-edged dark panels, neon borders, illustrated cards, controller/keyboard prompts, and accessibility settings
-- Keyboard remapping plus twin-stick controller combat/menu navigation is playable and profile-persistent; remaining options are color assistance and hold/toggle fire
+- Keyboard remapping, twin-stick controller combat/menu navigation, hold/toggle fire, and patterned high-contrast combat markers are playable and profile-persistent
 
 **Exit gate:** every screen matches the concept's visual hierarchy, remains usable at supported resolutions, and can be navigated with mouse/keyboard and controller.
 

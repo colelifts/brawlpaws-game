@@ -16,6 +16,8 @@ test('legacy profiles migrate to the current schema without losing progression',
   assert.equal(profile.heroMastery.kitsune.kills,44);
   assert.equal(profile.settings.musicVolume,.2);
   assert.equal(profile.settings.sfxVolume,.85);
+  assert.equal(profile.settings.colorAssist,false);
+  assert.equal(profile.settings.toggleFire,false);
   assert.deepEqual(profile.realmSeals,[]);
   assert.deepEqual(profile.claimedExpeditionMilestones,[]);
   assert.equal(profile.keyBindings.attack,'j');
@@ -56,4 +58,9 @@ test('settings expose visible export, import, and guarded reset controls',()=>{
 test('settings expose persistent remapping and controller input contracts',()=>{
   for(const id of ['binding-grid','binding-status','reset-bindings'])assert.match(html,new RegExp(`id="${id}"`));
   assert.match(game,/function pollGamepad\(/);assert.match(game,/function renderBindingControls\(/);assert.match(game,/input\.gamepad\.aim\.magnitude/);assert.match(game,/const actionOwnsFacing = input\.gamepad\.aim\.magnitude/);
+});
+
+test('combat accessibility offers persistent color assistance and toggle fire',()=>{
+  for(const setting of ['colorAssist','toggleFire'])assert.match(html,new RegExp(`data-setting="${setting}"`));
+  assert.match(game,/function drawColorAssistMarker\(/);assert.match(game,/profile\.settings\.toggleFire&&\(keyPressed\('attack'\)/);assert.match(game,/profile\.settings\.colorAssist/);
 });

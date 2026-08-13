@@ -227,6 +227,18 @@
               <button data-setting="minimap" data-value="true">ON</button><button data-setting="minimap" data-value="false">OFF</button>
             </div>
           </article>
+          <article class="setting-row">
+            <div><strong>COLOR ASSIST</strong><p>Adds bright hero and enemy silhouette rings plus patterned danger warnings without changing combat colors.</p></div>
+            <div class="setting-options" data-setting-group="colorAssist">
+              <button data-setting="colorAssist" data-value="true">ON</button><button data-setting="colorAssist" data-value="false">OFF</button>
+            </div>
+          </article>
+          <article class="setting-row">
+            <div><strong>FIRE INPUT</strong><p>Hold continuously or click/press once to toggle ranged fire until pressed again.</p></div>
+            <div class="setting-options" data-setting-group="toggleFire">
+              <button data-setting="toggleFire" data-value="false">HOLD</button><button data-setting="toggleFire" data-value="true">TOGGLE</button>
+            </div>
+          </article>
           <article class="setting-row audio-setting-row">
             <div><strong>MASTER AUDIO</strong><p>Controls the entire BrawlPaws mix.</p></div>
             <label class="audio-slider"><input type="range" min="0" max="1" step="0.01" data-audio-setting="masterVolume"><output data-audio-output="masterVolume">80%</output></label>
@@ -418,6 +430,6 @@
     <div id="loading">AWAKENING THE GROVE…</div>
   </main>
   <script src="vendor/phaser-3.90.0.min.js"></script>
-    <script type="module" src="src/game.js?v=20260813-controls1"></script>
+    <script type="module" src="src/game.js?v=20260813-access1"></script>
 </body>
 </html>

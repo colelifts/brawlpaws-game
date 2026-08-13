@@ -4,7 +4,7 @@ import { DEFAULT_BINDINGS, sanitizeBindings } from './controls.js?v=20260813-con
 
 export const PROFILE_VERSION=4;
 export const PROFILE_FORMAT='brawlpaws-save';
-export const DEFAULT_SETTINGS=Object.freeze({screenShake:1,flashIntensity:1,damageNumbers:true,ambientMotion:true,minimap:true,masterVolume:.8,musicVolume:.55,sfxVolume:.85,abilityVolume:.85,uiVolume:.7});
+export const DEFAULT_SETTINGS=Object.freeze({screenShake:1,flashIntensity:1,damageNumbers:true,ambientMotion:true,minimap:true,colorAssist:false,toggleFire:false,masterVolume:.8,musicVolume:.55,sfxVolume:.85,abilityVolume:.85,uiVolume:.7});
 export const DEFAULT_CONTRACT_PROGRESS=Object.freeze({spiritCull:0,eliteBreakers:0,foxfireHunt:0,sealRunner:0,guardianOath:0});
 
 const finite=(value,fallback=0)=>Number.isFinite(Number(value))?Number(value):fallback;
@@ -61,6 +61,7 @@ export function sanitizeProfile(raw){
   profile.settings.screenShake=[0,.35,1].includes(finite(source.settings?.screenShake))?finite(source.settings.screenShake):1;
   profile.settings.flashIntensity=[0,.35,1].includes(finite(source.settings?.flashIntensity))?finite(source.settings.flashIntensity):1;
   for(const key of ['damageNumbers','ambientMotion','minimap'])profile.settings[key]=source.settings?.[key]!==false;
+  for(const key of ['colorAssist','toggleFire'])profile.settings[key]=source.settings?.[key]===true;
   for(const key of ['masterVolume','musicVolume','sfxVolume','abilityVolume','uiVolume'])profile.settings[key]=Math.max(0,Math.min(1,finite(source.settings?.[key],DEFAULT_SETTINGS[key])));
   return profile;
 }
