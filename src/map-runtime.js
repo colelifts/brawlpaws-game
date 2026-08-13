@@ -81,6 +81,7 @@ const SHADOW_MAPS=[
 const LAYERED_MAPS=[...JADE_MAPS.map((entry)=>({...entry,tilesetName:'jade-ground',tilesetKey:'jade-ground'})),...BAMBOO_MAPS,...CRIMSON_MAPS,...STORM_MAPS,...NEON_MAPS,...SHADOW_MAPS];
 
 const objectProperties=(object)=>Object.fromEntries((object.properties||[]).map((entry)=>[entry.name,entry.value]));
+const biomePresentation=(roomId)=>roomId.startsWith('bamboo')?{tint:0xb8ffd0,particles:[0x86ff9d,0x55e8ff,0xd879ff],gravity:16}:roomId.startsWith('crimson')?{tint:0xffc18d,particles:[0xff8b35,0xff3f72,0xffd76c],gravity:-24}:roomId.startsWith('storm')?{tint:0xa8f5ff,particles:[0x62efff,0x8ea7ff,0xffffff],gravity:54}:roomId.startsWith('neon')?{tint:0xd7c5ff,particles:[0x45efff,0xff42be,0xf9ee6c],gravity:38}:roomId.startsWith('shadow')?{tint:0xd3b2ff,particles:[0xc36aff,0x5eeaff,0xe7ceff],gravity:-12}:{tint:0xffffff,particles:[0xff72c8,0xd785ff,0x74e9ff],gravity:22};
 
 export class LayeredMapRuntime {
   constructor(parentId='phaser-map'){
@@ -138,28 +139,31 @@ export class LayeredMapRuntime {
   }
 
   createLowProps(scene,entry){
+    const presentation=biomePresentation(entry.roomId);
     for(const object of entry.objects['Props Below Player']){
       const p=object.properties,sprite=scene.add.image(object.x,object.y,'jade-props').setOrigin(.5,p.originY??1).setCrop(p.cropX,p.cropY,p.cropW,p.cropH).setScale(p.scale??1).setDepth(-1200+object.y*.01).setVisible(false);
-      sprite.setData('mapObject',object.name);entry.display.push(sprite);
+      sprite.setTint(presentation.tint);sprite.setData('mapObject',object.name);entry.display.push(sprite);
     }
   }
 
   createGateArt(scene,entry){
+    const presentation=biomePresentation(entry.roomId);
     for(const gate of entry.gates){
       const cx=gate.x+gate.width/2,foot=gate.y+gate.height+100;
-      gate.sprite=scene.add.image(cx,foot,'jade-props').setOrigin(.5,.82).setCrop(690,520,380,430).setScale(1.38).setDepth(-850+foot*.01).setVisible(false);
+      gate.sprite=scene.add.image(cx,foot,'jade-props').setOrigin(.5,.82).setCrop(690,520,380,430).setScale(1.38).setTint(presentation.tint).setDepth(-850+foot*.01).setVisible(false);
       gate.seal=scene.add.graphics().setDepth(-700+foot*.01).setBlendMode('ADD').setVisible(false);gate.cx=cx;gate.foot=foot;entry.display.push(gate.sprite,gate.seal);
     }
   }
 
   createAmbient(scene,entry){
+    const presentation=biomePresentation(entry.roomId);
     for(const anchor of entry.objects['VFX Anchors']){
       const p=anchor.properties;let sprite=null;
       if(p.effect==='spiritWisp')sprite=scene.add.sprite(anchor.x,anchor.y,'spirit-wisp').setDisplaySize(150,150).setAlpha(.58).setBlendMode('ADD').setDepth(-1000+anchor.y*.01).play('map-wisp');
       if(p.effect==='lanternGlow')sprite=scene.add.sprite(anchor.x,anchor.y,'lantern-flame').setDisplaySize(260,210).setAlpha(.42).setBlendMode('ADD').setDepth(-1000+anchor.y*.01).play('map-flame');
       if(sprite){sprite.setVisible(false);entry.display.push(sprite);}
     }
-    const petalAnchor=entry.objects['VFX Anchors'].find((anchor)=>anchor.properties.effect==='fallingPetals');if(petalAnchor){const emitter=scene.add.particles(petalAnchor.x,petalAnchor.y,'spirit-wisp',{frame:5,x:{min:-(petalAnchor.properties.radius||1200),max:petalAnchor.properties.radius||1200},y:{min:-720,max:120},lifespan:{min:5200,max:8400},frequency:150,quantity:1,scale:{start:.026,end:.009},alpha:{start:.46,end:0},speedX:{min:-24,max:34},speedY:{min:42,max:82},rotate:{min:0,max:360},tint:[0xff72c8,0xd785ff,0x74e9ff],blendMode:'ADD'}).setDepth(-980).setVisible(false);entry.display.push(emitter);}
+    const petalAnchor=entry.objects['VFX Anchors'].find((anchor)=>anchor.properties.effect==='fallingPetals');if(petalAnchor){const emitter=scene.add.particles(petalAnchor.x,petalAnchor.y,'spirit-wisp',{frame:5,x:{min:-(petalAnchor.properties.radius||1200),max:petalAnchor.properties.radius||1200},y:{min:-720,max:120},lifespan:{min:5200,max:8400},frequency:150,quantity:1,scale:{start:.026,end:.009},alpha:{start:.46,end:0},speedX:{min:-24,max:34},speedY:{min:42+presentation.gravity,max:82+presentation.gravity},rotate:{min:0,max:360},tint:presentation.particles,blendMode:'ADD'}).setDepth(-980).setVisible(false);entry.display.push(emitter);}
   }
 
   createDebug(scene,entry){entry.debugGraphics=scene.add.graphics().setDepth(100000).setVisible(false);entry.display.push(entry.debugGraphics);}

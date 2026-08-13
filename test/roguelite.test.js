@@ -312,6 +312,8 @@ test('layered regions composite production-painted scenery beneath live world la
   assert.match(game,/drawLayeredWorldBackdrop\(screen,layeredMapActive\)/);
   assert.match(mapRuntime,/petalAnchor=entry\.objects\['VFX Anchors'\]/);
   assert.match(mapRuntime,/scene\.add\.particles\(petalAnchor\.x,petalAnchor\.y,'spirit-wisp'/);
+  for(const biome of ['bamboo','crimson','storm','neon','shadow'])assert.match(mapRuntime,new RegExp(`roomId\\.startsWith\\('${biome}'\\)`));
+  assert.match(mapRuntime,/tint:presentation\.particles/);
 });
 
 test('spirit roads use authored world-gate art instead of abstract portal rings',()=>{
