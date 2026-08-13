@@ -412,7 +412,7 @@ test('shared combat statuses support player and enemy ownership plus build choic
   for(const relic of ['crimsonThread','moonMirror','lanternWard'])assert.match(game,new RegExp(`id:'${relic}'`));
   assert.match(game,/player\.spiritShield=Math\.max/);
   assert.match(game,/if\(player\.bleedTime>0\)/);
-  assert.match(game,/applyPlayerStatus\('curse',projectile\.curseDuration/);
+  assert.match(game,/hurtCombatTarget\(target,projectile\.damage\|\|8,projectile,0,projectile\.curseDuration\?'curse':null,projectile\.curseDuration/);
   assert.match(game,/debugSystem==='statuses'/);
 });
 
@@ -508,6 +508,15 @@ test('co-op defeat uses synchronized ally revives and a full-party wipe',()=>{
   assert.match(game,/payload\.kind==='partyWipe'/);
   assert.match(game,/member\.downed\|\|member\.health<=0/);
   assert.match(game,/debugSystem==='coopRevive'/);
+});
+
+test('party-aware hazards and specialists preserve their full status payloads',()=>{
+  assert.match(game,/function pressureTargets\(\)\{return combatTargets\(\);\}/);
+  for(const signature of ['castTidechantSurge(enemy,target)','plantKernelSnare(enemy,target)','castMoonveilCurse(enemy,target)'])assert.match(game,new RegExp(signature.replace(/[()]/g,'\\$&')));
+  assert.match(game,/for\(const target of pressureTargets\(\)\)/);
+  assert.match(game,/statusDuration,statusPower,sprintDrain/);
+  assert.match(game,/packet\.payload\.sprintDrain/);
+  assert.match(game,/target=enemyTarget\(enemy\)\|\|player/);
 });
 
 test('specialist enemies use dedicated animation and attack assets',()=>{
