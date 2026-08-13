@@ -569,6 +569,7 @@ function handleCoopMessage(raw){
   if(packet.type==='roster'){coop.hostId=packet.hostId;coop.members=new Map(packet.members.map((member)=>[member.id,member]));for(const member of packet.members)if(member.id!==coop.id)coop.remotePlayers.set(member.id,member);for(const id of coop.remotePlayers.keys())if(!coop.members.has(id))coop.remotePlayers.delete(id);refreshCoopUi();return;}
   if(packet.type==='presence'&&packet.member?.id!==coop.id){const previous=coop.remotePlayers.get(packet.member.id)||coop.members.get(packet.member.id)||{};const member={...previous,...packet.member,remoteAttack:previous.remoteAttack,remoteCast:previous.remoteCast,wildHeartTime:Math.max(previous.wildHeartTime||0,packet.member.wildHeartTime||0)};coop.members.set(member.id,member);coop.remotePlayers.set(member.id,member);return;}
   if(packet.type==='damage'&&packet.payload?.targetId===coop.id){const source={x:packet.payload.sourceX,y:packet.payload.sourceY,boss:packet.payload.boss,def:{behavior:packet.payload.behavior||'basic'}};coop.applyingDamage=true;const struck=hurtPlayer(packet.payload.amount,source,packet.payload.stun||0);coop.applyingDamage=false;if(struck&&packet.payload.status==='bleed')applyPlayerStatus('bleed',3.8,1+chapterIndex*.12);if(struck&&packet.payload.status==='curse')applyPlayerStatus('curse',packet.payload.statusDuration||3.5,packet.payload.statusPower||1.35);return;}
+  if(packet.type==='reward'){const reward=packet.payload||{};if(reward.gold)player.gold+=Math.max(0,Math.round(reward.gold));if(reward.xp)gainXp(Math.max(0,Math.round(reward.xp)));if(reward.expedition)player.expeditionShards=(player.expeditionShards||0)+Math.max(0,Math.round(reward.expedition));spawnWord(player.x,player.y-94,`PARTY +${reward.gold||0} GOLD · +${reward.xp||0} XP`,'#ffe36b');updateHud();return;}
   if(packet.type==='action'&&packet.playerId!==coop.id)applyRemoteAction(packet.playerId,packet.hero,packet.payload); 
   if(packet.type==='signal'&&!coopIsHost())applyCoopSignal(packet.payload);
   if(packet.type==='snapshot'&&!coopIsHost())applyCoopSnapshot(packet.payload);
@@ -576,7 +577,7 @@ function handleCoopMessage(raw){
 function applyRemoteAction(playerId,heroId,payload={}){
   const member=coop.members.get(playerId);if(!member)return;member.hero=HEROES[heroId]?heroId:member.hero;member.facing=Number(payload.facing)||member.facing||0;
   if(payload.kind==='attackStart'){
-    const remoteWeapon=WEAPONS[payload.weaponId]||WEAPONS[member.weaponId]||WEAPONS[HEROES[member.hero]?.weapon];if(!remoteWeapon)return;member.weaponId=remoteWeapon.id;member.remoteAttack={elapsed:0,duration:remoteWeapon.attackDuration||.14,releaseAt:remoteWeapon.releaseDelay||0,released:false};return;
+    const remoteWeapon=WEAPONS[payload.weaponId]||WEAPONS[member.weaponId]||WEAPONS[HEROES[member.hero]?.weapon];if(!remoteWeapon)return;member.weaponId=remoteWeapon.id;member.remoteBuild=payload.build||member.remoteBuild||{};member.remoteAttack={elapsed:0,duration:remoteWeapon.attackDuration||.14,releaseAt:remoteWeapon.releaseDelay||0,released:false};return;
   }
   if(payload.kind==='attackRelease'){const remoteWeapon=WEAPONS[payload.weaponId]||WEAPONS[member.weaponId]||WEAPONS[HEROES[member.hero]?.weapon];if(!remoteWeapon)return;const origin={x:Number.isFinite(payload.x)?payload.x:member.x,y:Number.isFinite(payload.y)?payload.y:member.y};spawnRemoteWeaponVolley(member,remoteWeapon,origin,member.facing);return;}
   if(payload.kind==='abilityStart'){
@@ -585,8 +586,8 @@ function applyRemoteAction(playerId,heroId,payload={}){
   if(payload.kind==='abilityRelease')spawnRemoteAbility(member,payload);
 }
 function spawnRemoteWeaponVolley(member,remoteWeapon,origin,angle){
-  if(!member||member.room!==room.id)return;const direction={x:Math.cos(angle),y:Math.sin(angle)},pellets=remoteWeapon.shots||1,volleys=remoteWeapon.baseVolleys||1;member.remoteAttack&&(member.remoteAttack.released=true);
-  for(let volley=0;volley<volleys;volley++)for(let i=0;i<pellets;i++){const side=volleys===1?0:(volley?1:-1),shotAngle=angle+(i-(pellets-1)/2)*(remoteWeapon.spread||0)+side*.035,type=remoteWeapon.projectileType,glaive=type==='glaive',gale=type==='gale',chakram=type==='chakram';effects.playerShots.push({x:origin.x+direction.x*48-direction.y*side*12,y:origin.y+direction.y*48-7+direction.x*side*12,vx:Math.cos(shotAngle)*remoteWeapon.projectileSpeed,vy:Math.sin(shotAngle)*remoteWeapon.projectileSpeed,radius:remoteWeapon.projectileRadius||9,damage:remoteWeapon.damage*.78,baseDamage:remoteWeapon.damage*.78,color:remoteWeapon.color,arrow:type==='arrow',trickshot:type==='trickshot',arc:type==='arc',frost:type==='frost',mortar:type==='mortar',glaive,gale,chakram,embercoil:type==='embercoil',railbow:type==='railbow',knockback:remoteWeapon.knockback,criticalChance:remoteWeapon.criticalChance,blastRadius:remoteWeapon.blastRadius,blastDamage:(remoteWeapon.blastDamage||0)*.78,remoteOwner:glaive||gale||chakram?member:null,returnSpeed:remoteWeapon.returnSpeed||1100,ricochets:remoteWeapon.ricochets||0,ricochetRetention:.78,pierces:glaive||gale||chakram?99:remoteWeapon.pierces||0,hitIds:new Set(),life:remoteWeapon.projectileLife,maxLife:remoteWeapon.projectileLife});}
+  if(!member||member.room!==room.id)return;const build=member.remoteBuild||{},direction={x:Math.cos(angle),y:Math.sin(angle)},pellets=(remoteWeapon.shots||1)+clamp(Math.round(build.bonusProjectiles||0),0,5),volleys=remoteWeapon.baseVolleys||1,damageMultiplier=clamp(Number(build.damageMultiplier)||1,.55,6),critBonus=clamp(Number(build.critBonus)||0,0,.75),bonusPierces=clamp(Math.round(build.bonusPierces||0),0,12),bonusRicochets=clamp(Math.round(build.bonusRicochets||0),0,8);member.remoteAttack&&(member.remoteAttack.released=true);
+  for(let volley=0;volley<volleys;volley++)for(let i=0;i<pellets;i++){const side=volleys===1?0:(volley?1:-1),shotAngle=angle+(i-(pellets-1)/2)*(remoteWeapon.spread||0)+side*.035,type=remoteWeapon.projectileType,glaive=type==='glaive',gale=type==='gale',chakram=type==='chakram',shotDamage=remoteWeapon.damage*damageMultiplier*.78;effects.playerShots.push({x:origin.x+direction.x*48-direction.y*side*12,y:origin.y+direction.y*48-7+direction.x*side*12,vx:Math.cos(shotAngle)*remoteWeapon.projectileSpeed,vy:Math.sin(shotAngle)*remoteWeapon.projectileSpeed,radius:remoteWeapon.projectileRadius||9,damage:shotDamage,baseDamage:shotDamage,color:remoteWeapon.color,arrow:type==='arrow',trickshot:type==='trickshot',arc:type==='arc',frost:type==='frost',mortar:type==='mortar',glaive,gale,chakram,embercoil:type==='embercoil',railbow:type==='railbow',knockback:remoteWeapon.knockback,criticalChance:clamp((remoteWeapon.criticalChance||0)+critBonus,0,.9),blastRadius:remoteWeapon.blastRadius,blastDamage:(remoteWeapon.blastDamage||0)*damageMultiplier*.78,remoteOwner:glaive||gale||chakram?member:null,returnSpeed:remoteWeapon.returnSpeed||1100,ricochets:(remoteWeapon.ricochets||0)+bonusRicochets,ricochetRetention:.78,pierces:glaive||gale||chakram?99:(remoteWeapon.pierces||0)+bonusPierces,hitIds:new Set(),life:remoteWeapon.projectileLife,maxLife:remoteWeapon.projectileLife});}
   burst(origin.x+direction.x*44,origin.y+direction.y*44,remoteWeapon.impactColor,10,220,3);playSfx(remoteWeapon.projectileType==='arrow'||remoteWeapon.projectileType==='railbow'?'arrow':remoteWeapon.projectileType==='mortar'?'stomp':remoteWeapon.projectileType==='arc'?'lightning':'blaster',.16,1.08);
 }
 function spawnRemoteAbility(member,payload){
@@ -2456,7 +2457,7 @@ function startAttack() {
   const direction = { x: Math.cos(player.facing), y: Math.sin(player.facing) };
   player.attack = { index: 0, definition: { duration: weapon.attackDuration||.14 }, time: 0, released:false, facing:player.facing };
   player.shotCooldown = weapon.fireRate * player.fireRateMultiplier;
-  if(coop.connected)sendCoop('action',{payload:{kind:'attackStart',x:player.x,y:player.y,facing:player.facing,weaponId:weapon.id}});
+  if(coop.connected)sendCoop('action',{payload:{kind:'attackStart',x:player.x,y:player.y,facing:player.facing,weaponId:weapon.id,build:{damageMultiplier:player.damageMultiplier,critBonus:player.critBonus,bonusProjectiles:player.bonusProjectiles,bonusPierces:player.bonusPierces,bonusRicochets:player.bonusRicochets}}});
   if(!weapon.releaseDelay)releaseWeaponVolley();
 }
 
@@ -2788,19 +2789,18 @@ function killEnemy(enemy, direction) {
     spawnWord(enemy.x,enemy.y-82,'SPIRIT SPLIT!',enemy.eliteDef.color);effects.rings.push({x:enemy.x,y:enemy.y,radius:18,maxRadius:145,color:enemy.eliteDef.color,life:.5,maxLife:.5});
   }
     const goldBase=['conductor','hacker','curser'].includes(enemy.def.behavior)?24:enemy.def.behavior==='shield'?22:enemy.def.behavior==='summoner'?14:enemy.def.behavior==='assassin'?12:enemy.def.behavior==='bomber'?11:enemy.def.behavior==='heavy'?18:enemy.def.behavior==='ranged'?8:enemy.def.behavior==='melee'?7:4;
-  const regionThreat=encounter.regionThreat||expeditionThreat(room.id),goldReward=Math.round(goldBase*regionThreat.gold*player.goldMultiplier*(encounter.rewardScale||1)*enemy.eliteRewardScale*(enemy.eliteId?player.eliteGoldMultiplier:1));player.gold+=goldReward;
+  const regionThreat=encounter.regionThreat||expeditionThreat(room.id),goldReward=Math.round(goldBase*regionThreat.gold*player.goldMultiplier*(encounter.rewardScale||1)*enemy.eliteRewardScale*(enemy.eliteId?player.eliteGoldMultiplier:1)),shardCount=(enemy.def.behavior==='heavy'?12:enemy.def.behavior==='ranged'?6:5)+(enemy.eliteId?4:0),xpReward=shardCount*Math.max(1,Math.round(3*regionThreat.xp)),specialist=['heavy','conductor','hacker','curser','summoner','bomber','assassin','shield'].includes(enemy.def.behavior),roadRarity=enemy.eliteId||specialist?expeditionLoot(room.id,enemy.id||enemies.indexOf(enemy)):null,roadValue=roadRarity?Math.max(1,Math.round((enemy.eliteId?3:1)*regionThreat.cache*roadRarity.multiplier)):0;player.gold+=goldReward;if(coop.connected&&coopIsHost()){gainXp(xpReward);if(roadValue)player.expeditionShards=(player.expeditionShards||0)+roadValue;sendCoop('reward',{payload:{gold:goldReward,xp:xpReward,expedition:roadValue}});}
   if(enemy.eliteId&&player.eliteKillHeal>0)player.health=Math.min(player.maxHealth,player.health+player.eliteKillHeal);
   if(player.killHeal>0)player.health=Math.min(player.maxHealth,player.health+player.killHeal);
   effects.numbers.push({x:enemy.x+24,y:enemy.y-56,vx:0,vy:-70,text:`+${goldReward}`,color:'#ffd13a',life:.8,maxLife:.8,size:19});
   enemy.vx += direction.x * 330; enemy.vy += direction.y * 330;
   burst(enemy.x, enemy.y, '#11101e', 24, 360, 8);
   burst(enemy.x, enemy.y, enemy.def.color, enemy.def.behavior === 'heavy' ? 42 : 25, 430, 6);
-  const shardCount=(enemy.def.behavior==='heavy'?12:enemy.def.behavior==='ranged'?6:5)+(enemy.eliteId?4:0);
   for (let i = 0; i < shardCount; i++) {
     const angle = Math.random() * Math.PI * 2; const speed = 80 + Math.random() * 170;
     effects.shards.push({ x: enemy.x, y: enemy.y - 10, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, color: i % 2 ? '#33e9ff' : '#ad45ff', life: 4, maxLife: 4, delay: .38 + Math.random() * .38, size: 5 + Math.random() * 4,xpValue:Math.max(1,Math.round(3*regionThreat.xp)) });
   }
-  const specialist=['heavy','conductor','hacker','curser','summoner','bomber','assassin','shield'].includes(enemy.def.behavior);if(enemy.eliteId||specialist){const rarity=expeditionLoot(room.id,enemy.id||enemies.indexOf(enemy)),roadValue=Math.max(1,Math.round((enemy.eliteId?3:1)*regionThreat.cache*rarity.multiplier));effects.shards.push({x:enemy.x,y:enemy.y-28,vx:(Math.random()-.5)*180,vy:-120-Math.random()*80,color:rarity.color,life:4.6,maxLife:4.6,delay:.65,size:10,expeditionValue:roadValue,rarity:rarity.name});}
+  if(roadValue)effects.shards.push({x:enemy.x,y:enemy.y-28,vx:(Math.random()-.5)*180,vy:-120-Math.random()*80,color:roadRarity.color,life:4.6,maxLife:4.6,delay:.65,size:10,expeditionValue:roadValue,rarity:roadRarity.name});
 }
 
 function hurtPlayer(amount, source, stunDuration = 0) {
@@ -3402,7 +3402,7 @@ function updateEffects(dt) {
       shard.vx = lerp(shard.vx, direction.x * speed, clamp(dt * 8, 0, 1));
       shard.vy = lerp(shard.vy, direction.y * speed, clamp(dt * 8, 0, 1));
       shard.x += shard.vx * dt; shard.y += shard.vy * dt;
-      if (distance(shard, player) < 27) { shard.life = 0;if(shard.expeditionValue){player.expeditionShards=(player.expeditionShards||0)+shard.expeditionValue;effects.numbers.push({x:player.x+24,y:player.y-62,vx:0,vy:-60,text:`+${shard.expeditionValue} ROAD`,color:shard.color,life:.85,maxLife:.85,size:17});}else gainXp(shard.xpValue||Math.max(1,Math.round(3*expeditionThreat(room.id).xp)));burst(player.x,player.y-12,shard.color,5,120,2); effects.rings.push({x:player.x,y:player.y,radius:4,maxRadius:22,color:shard.color,life:.14,maxLife:.14}); playSfx('upgrade',.08,1.38,35);updateHud(); }
+      if (distance(shard, player) < 27) { shard.life = 0;if(shard.expeditionValue){if(!coop.connected)player.expeditionShards=(player.expeditionShards||0)+shard.expeditionValue;effects.numbers.push({x:player.x+24,y:player.y-62,vx:0,vy:-60,text:`+${shard.expeditionValue} ROAD`,color:shard.color,life:.85,maxLife:.85,size:17});}else if(!coop.connected||!coopIsHost())gainXp(shard.xpValue||Math.max(1,Math.round(3*expeditionThreat(room.id).xp)));burst(player.x,player.y-12,shard.color,5,120,2); effects.rings.push({x:player.x,y:player.y,radius:4,maxRadius:22,color:shard.color,life:.14,maxLife:.14}); playSfx('upgrade',.08,1.38,35);updateHud(); }
     }
   }
   for (const list of Object.values(effects)) {

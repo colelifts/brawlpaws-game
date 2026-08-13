@@ -488,6 +488,17 @@ test('host-authoritative enemies target and damage every living party member',()
   assert.match(game,/prepareBossSignature\(enemy,profile,target\)/);
 });
 
+test('online party members earn shared rewards while keeping individual combat builds',()=>{
+  assert.match(game,/packet\.type==='reward'/);
+  assert.match(game,/sendCoop\('reward',\{payload:\{gold:goldReward,xp:xpReward/);
+  assert.match(game,/kind:'attackStart'[\s\S]{0,280}damageMultiplier:player\.damageMultiplier/);
+  assert.match(game,/member\.remoteBuild=payload\.build/);
+  assert.match(game,/damageMultiplier=clamp\(Number\(build\.damageMultiplier\)\|\|1,\.55,6\)/);
+  assert.match(game,/pellets=\(remoteWeapon\.shots\|\|1\)\+clamp\(Math\.round\(build\.bonusProjectiles\|\|0\),0,5\)/);
+  assert.match(game,/expedition:roadValue/);
+  assert.match(game,/if\(!coop\.connected\|\|!coopIsHost\(\)\)gainXp/);
+});
+
 test('specialist enemies use dedicated animation and attack assets',()=>{
   for(const id of ['bellweaverCat','powderkegToad','gatewardenRhino','mistclawLynx'])assert.match(data,new RegExp(`${id}: \\{`));
   for(const fn of ['summonBellweaverGuard','throwPowderkegBomb','drawSpecialEnemy','startSpecialistShowcase'])assert.match(game,new RegExp(`function ${fn}\\(`));
