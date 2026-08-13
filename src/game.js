@@ -2,7 +2,7 @@ import { clamp, lerp, normalize, distance, approachAngle, encounterActiveLimit, 
 import { HEROES, WEAPONS, ABILITIES, STATUS_EFFECTS, ELITE_MODIFIERS, BOSS_PATTERNS, BOSS_PROFILES, ENEMIES, ENCOUNTERS, ROOMS, DIFFICULTIES } from './data.js?v=20260813-expedition6';
 import { createLayeredMapRuntime } from './map-runtime.js?v=20260813-expedition6';
 import { EXPEDITION_WORLD, EXPEDITION_MILESTONES, expeditionNode, expeditionNeighbors, expeditionWorldPosition, expeditionProgress, expeditionRealmProgress, expeditionThreat, expeditionLoot } from './expedition-world.js?v=20260813-world3';
-import { PROFILE_VERSION, DEFAULT_SETTINGS, DEFAULT_CONTRACT_PROGRESS, createDefaultProfile, defaultHeroMastery, sanitizeProfile, createSaveArchive, parseSaveArchive } from './profile.js?v=20260813-save1';
+import { PROFILE_VERSION, DEFAULT_SETTINGS, DEFAULT_CONTRACT_PROGRESS, createDefaultProfile, defaultHeroMastery, sanitizeProfile, createSaveArchive, parseSaveArchive } from './profile.js?v=20260813-save3';
 
 const canvas = document.querySelector('#game');
 const ctx = canvas.getContext('2d', { alpha: true });
@@ -3652,6 +3652,26 @@ function drawSpiritGates() {
   }ctx.restore();
 }
 
+function heroAttackMotion(entity){
+  if(!entity.attack)return {stage:0,offsetX:0,offsetY:0,scaleX:1,scaleY:1,rotation:0};const duration=Math.max(.1,entity.attack.definition.duration),release=Math.min(duration*.78,Math.max(.025,weapon.releaseDelay||duration*.22)),elapsed=clamp(entity.attack.time,0,duration),facing=entity.attack.facing??entity.facing;
+  if(!entity.attack.released){const p=clamp(elapsed/release,0,1),ease=p*p*(3-2*p),drawDistance=selectedHeroId==='hopscotch'||weapon.projectileType==='railbow'?10:weapon.projectileType==='glaive'||weapon.projectileType==='chakram'?7:4;return {stage:0,offsetX:-Math.cos(facing)*drawDistance*ease,offsetY:-Math.sin(facing)*drawDistance*ease-2*Math.sin(p*Math.PI),scaleX:1-.045*ease,scaleY:1+.055*ease,rotation:Math.cos(facing)*.035*ease};}
+  const recoilWindow=Math.max(.08,duration-release),p=clamp((elapsed-release)/recoilWindow,0,1),kick=Math.sin(Math.min(1,p*1.45)*Math.PI)*(.75+.25*(1-p)),recoil=clamp((weapon.recoil||35)/7,3,17);return {stage:p>.82?0:2,offsetX:-Math.cos(facing)*recoil*kick,offsetY:-Math.sin(facing)*recoil*kick-Math.sin(p*Math.PI)*3,scaleX:1+.1*kick,scaleY:1-.075*kick,rotation:-Math.cos(facing)*.065*kick};
+}
+
+function enemyAttackMotion(enemy){
+  const heavy=enemy.def.behavior==='heavy',flip=Math.cos(enemy.facing)<0?-1:1;if(enemy.state==='windup'){const total=Math.max(.2,(enemy.def.windup||.7)*(enemy.windupScale||1)),p=clamp(1-enemy.stateTime/total,0,1),ease=p*p*(3-2*p);return {scaleX:1-.08*ease,scaleY:1+.12*ease,rotation:-flip*(heavy?.08:.13)*ease,offsetX:-Math.cos(enemy.facing)*(heavy?13:8)*ease,offsetY:-Math.sin(enemy.facing)*(heavy?13:8)*ease};}
+  if(enemy.state==='strike'||enemy.state==='slam'){const total=enemy.state==='slam'?.52:.4,p=clamp(1-enemy.stateTime/total,0,1),hit=Math.sin(Math.min(1,p*1.45)*Math.PI);return {scaleX:1+(heavy?.2:.26)*hit,scaleY:1-(heavy?.14:.18)*hit,rotation:flip*(heavy?.055:.1)*hit,offsetX:Math.cos(enemy.facing)*(heavy?22:18)*hit,offsetY:Math.sin(enemy.facing)*(heavy?22:18)*hit};}
+  if(enemy.state==='recover'){const p=clamp(enemy.stateTime/.72,0,1),settle=Math.sin(p*Math.PI);return {scaleX:1+.055*settle,scaleY:1-.04*settle,rotation:flip*.035*settle,offsetX:0,offsetY:3*settle};}
+  return {scaleX:1,scaleY:1,rotation:0,offsetX:0,offsetY:0};
+}
+
+function guardianAttackMotion(enemy){
+  const windup=enemy.state.startsWith('bossWindup');if(windup){const total=Math.max(.25,enemy.patternWindup||1),p=clamp(1-enemy.stateTime/total,0,1),ease=p*p*(3-2*p),slam=enemy.state.includes('Slam');return {scaleX:1-(slam?.1:.06)*ease,scaleY:1+(slam?.15:.09)*ease,rotation:-Math.cos(enemy.facing)*(slam?.055:.085)*ease,offsetX:-Math.cos(enemy.facing)*(slam?22:14)*ease,offsetY:-Math.sin(enemy.facing)*(slam?22:14)*ease};}
+  const committed=['bossSweep','bossSlam','bossCrossfire','bossSignature'].includes(enemy.state);if(committed){const pattern=BOSS_PATTERNS[enemy.activePattern]||BOSS_PATTERNS.sweep,total=Math.max(.2,pattern.action||.6),p=clamp(1-enemy.stateTime/total,0,1),strike=Math.sin(Math.min(1,p*1.35)*Math.PI);return {scaleX:1+.16*strike,scaleY:1-.11*strike,rotation:Math.cos(enemy.facing)*.065*strike,offsetX:Math.cos(enemy.facing)*26*strike,offsetY:Math.sin(enemy.facing)*20*strike};}
+  if(enemy.counterTime>0){const settle=Math.sin(clamp(enemy.counterTime/Math.max(.1,BOSS_PROFILES[enemy.def.id]?.counterDuration||1),0,1)*Math.PI);return {scaleX:1+.035*settle,scaleY:1-.025*settle,rotation:0,offsetX:0,offsetY:5*settle};}
+  return {scaleX:1,scaleY:1,rotation:0,offsetX:0,offsetY:0};
+}
+
 function drawHero(entity, alpha = 1, afterimage = false) {
   const moveSheet=assets[heroDef.moveAsset];const fireSheet=assets[heroDef.fireAsset];const stateSheet=assets[heroDef.stateAsset];
   if(!moveSheet?.complete||!moveSheet.naturalWidth)return;
@@ -3667,7 +3687,7 @@ function drawHero(entity, alpha = 1, afterimage = false) {
   const sheet=authoredState?stateSheet:firing?fireSheet:moveSheet;
   const sw = sheet.naturalWidth / 4; const sh = sheet.naturalHeight / (authoredState?2:4);
   const useRunFrame = !firing && (stateName === 'dash' || (stateName === 'run' && Math.floor(time * 10) % 2 === 1));
-  const fireStage = firing && entity.attack?.time > (weapon.releaseDelay||.045) ? 2 : 0;
+  const attackMotion=heroAttackMotion(entity);const fireStage = firing ? attackMotion.stage : 0;
   const sx = authoredState?(specialFrame%4)*sw:(direction % 4) * sw; const sy = authoredState?Math.floor(specialFrame/4)*sh:(Math.floor(direction / 4) + (firing ? fireStage : useRunFrame ? 2 : 0)) * sh;
   const runBob = stateName === 'run' ? Math.sin(time * animation.fps * Math.PI*(entity.sprinting?1.5:1)) * (entity.sprinting?5:3) : 0;
   const speedLean = clamp(moving / heroDef.speed, 0, 1) * .06;
@@ -3675,9 +3695,7 @@ function drawHero(entity, alpha = 1, afterimage = false) {
   if (stateName === 'run') { const pace=entity.sprinting?30:20;scaleX = 1 + Math.sin(time * pace) * (entity.sprinting?.065:.035); scaleY = 1 - Math.sin(time * pace) * (entity.sprinting?.055:.03); rotation = Math.cos(entity.moveFacing ?? entity.facing) * speedLean*(entity.sprinting?1.8:1); }
   if (stateName === 'dash') { scaleX = 1.28; scaleY = .88; rotation = Math.cos(entity.facing) * .08; }
   if (firing) {
-    const p = clamp(entity.attack?.time / entity.attack?.definition.duration || .5, 0, 1);
-    scaleX = 1 + Math.sin(p * Math.PI) * .1; scaleY = 1 - Math.sin(p * Math.PI) * .06;
-    rotation = -Math.cos(entity.facing) * Math.sin(p * Math.PI) * .06;
+    scaleX = attackMotion.scaleX; scaleY = attackMotion.scaleY; rotation = attackMotion.rotation;
   }
   if (!authoredState&&stateName === 'hit') rotation = Math.sin(time * 45) * .08;
   const bamboo=selectedHeroId==='bamboo';const hopscotch=selectedHeroId==='hopscotch';const rusty=selectedHeroId==='rusty';const zap=selectedHeroId==='zap';const nomi=selectedHeroId==='nomi';const baseH=bamboo?(firing?142:136):hopscotch?(firing?126:122):rusty?(firing?124:120):zap?(firing?126:122):nomi?(firing?140:132):(firing?112:108);const h=authoredState?(bamboo?154:hopscotch?142:rusty?140:zap?142:nomi?152:136):baseH;const w=h*(sw/sh);
@@ -3690,7 +3708,7 @@ function drawHero(entity, alpha = 1, afterimage = false) {
       ctx.beginPath(); ctx.arc(0, 0, 31 + Math.sin(time * 6) * 3, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
     }
   }
-  ctx.save(); ctx.globalAlpha = alpha; ctx.translate(entity.x, entity.y);
+  ctx.save(); ctx.globalAlpha = alpha; ctx.translate(entity.x+attackMotion.offsetX, entity.y+attackMotion.offsetY);
   ctx.translate(0, runBob); ctx.rotate(rotation); ctx.scale((authoredState&&Math.cos(entity.facing)<0?-1:1)*scaleX, scaleY);
   ctx.shadowColor=afterimage?'#8f3dff':entity.dashTime>0?heroDef.accent:(bamboo?'#63ef79':hopscotch?'#ff4fa5':rusty?'#ff9b32':'#ff4d76');ctx.shadowBlur=afterimage?24:entity.dashTime>0?16:4;
   ctx.filter = afterimage ? 'hue-rotate(68deg) saturate(1.8) brightness(1.4)' : entity.flash > 0 ? 'brightness(2.4) saturate(.4)' : 'none';
@@ -3740,7 +3758,7 @@ function drawBoss(enemy){
   const time=performance.now()/1000;const alpha=enemy.dead?clamp(enemy.deathTime/2.8,0,1):1;const bamboo=enemy.def.biome==='bamboo';const crimson=enemy.def.biome==='crimson';const storm=enemy.def.biome==='storm';const neon=enemy.def.biome==='neon';const shadow=enemy.def.biome==='shadow';const bossColor=enemy.def.color;
   const stateFrames={enter:0,bossIdle:0,bossWindupSweep:1,bossSweep:2,bossWindupSlam:1,bossSlam:3,bossChannel:4,bossWindupCrossfire:4,bossCrossfire:3,bossWindupSignature:4,bossSignature:3,bossEnrage:5};
   const frame=enemy.dead?5:(stateFrames[enemy.state]??0);
-  const motion=enemyMotion(enemy);drawContactShadow(enemy.x,enemy.y+26,shadow?106:neon?100:storm?94:crimson?88:bamboo?82:76,shadow?21:neon?20:storm?19:crimson?18:bamboo?17:16,.42*alpha);drawEnemyStatusBack(enemy,shadow?430:neon?405:storm?380:340,shadow?310:neon?292:storm?272:245);
+  const motion=enemyMotion(enemy),attackMotion=guardianAttackMotion(enemy);drawContactShadow(enemy.x,enemy.y+26,shadow?106:neon?100:storm?94:crimson?88:bamboo?82:76,shadow?21:neon?20:storm?19:crimson?18:bamboo?17:16,.42*alpha);drawEnemyStatusBack(enemy,shadow?430:neon?405:storm?380:340,shadow?310:neon?292:storm?272:245);
   if(enemy.counterTime>0){const profile=BOSS_PROFILES[enemy.def.id],pulse=1+Math.sin(time*12)*.08;ctx.save();ctx.translate(enemy.x,enemy.y+18);ctx.scale(1,.52);ctx.globalAlpha=.72;ctx.strokeStyle='#ffe36a';ctx.shadowColor='#ffe36a';ctx.shadowBlur=28;ctx.lineWidth=8;ctx.setLineDash([28,11,6,11]);ctx.lineDashOffset=-performance.now()/28;ctx.beginPath();ctx.arc(0,0,enemy.radius*1.45*pulse,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();ctx.save();ctx.translate(enemy.x,enemy.y-230);ctx.textAlign='center';ctx.font='italic 900 18px Impact';ctx.lineWidth=7;ctx.strokeStyle='#10040d';ctx.strokeText(`COUNTER x${profile.counterMultiplier.toFixed(2)}`,0,0);ctx.fillStyle='#fff2a8';ctx.fillText(`COUNTER x${profile.counterMultiplier.toFixed(2)}`,0,0);ctx.restore();}
   ctx.save();ctx.translate(enemy.x,enemy.y);
   if(enemy.state==='bossWindupSweep'){
@@ -3757,7 +3775,7 @@ function drawBoss(enemy){
   }
   ctx.restore();
   const bob=enemy.state==='bossIdle'?Math.sin(time*2.3)*4:0;const pulse=enemy.state==='bossEnrage'?1+Math.sin(time*15)*.035:1;
-  ctx.save();ctx.filter=enemy.flash>0?'brightness(2.2) saturate(.35)':motion.filter;ctx.globalAlpha=alpha;ctx.translate(enemy.x+motion.x,enemy.y+bob+motion.y);ctx.rotate(motion.rotation);ctx.scale(pulse*motion.scaleX,pulse*motion.scaleY);
+  ctx.save();ctx.filter=enemy.flash>0?'brightness(2.2) saturate(.35)':motion.filter;ctx.globalAlpha=alpha;ctx.translate(enemy.x+motion.x+attackMotion.offsetX,enemy.y+bob+motion.y+attackMotion.offsetY);ctx.rotate(motion.rotation+attackMotion.rotation);ctx.scale(pulse*motion.scaleX*attackMotion.scaleX,pulse*motion.scaleY*attackMotion.scaleY);
   const bossSheet=shadow?assets.tsukikoEmpress:neon?assets.daikyoOni:storm?assets.raijinKirin:crimson?assets.pyreclawShogun:bamboo?assets.moonfangKomainu:assets.jadeguardTanuki;
   const moveSheet=shadow?assets.tsukikoEmpressMove:neon?assets.daikyoOniMove:storm?assets.raijinKirinMove:crimson?assets.pyreclawShogunMove:bamboo?assets.moonfangKomainuMove:assets.jadeguardTanukiMove;
   const bossSize=shadow?730:neon?690:storm?650:crimson?600:bamboo?540:500;const useMove=motion.moving&&enemy.state==='bossIdle'&&moveSheet?.complete&&moveSheet.naturalWidth;const bossYOffset=shadow?-154:neon?-145:storm?-138:crimson?-125:bamboo?-112:-104;
@@ -3776,15 +3794,12 @@ function drawBambooEnemy(enemy) {
   const sheet=useMove?moveSheet:baseSheet;const frame=definition.spriteColumn+(attacking?3:useMove?walkRow*3:0);
   const sw=sheet.naturalWidth/3,sh=sheet.naturalHeight/2;
   const sx=(frame%3)*sw,sy=Math.floor(frame/3)*sh;const lateAtlas=definition.biome==='storm'||definition.biome==='neon'||definition.biome==='shadow';const baseH=(lateAtlas?(definition.behavior==='heavy'?112:102):(definition.behavior==='heavy'?148:138))*definition.scale;const baseW=baseH*(sw/sh);
-  const flip=Math.cos(enemy.facing)<0?-1:1;let scaleX=1,scaleY=1,rotation=0;
+  const flip=Math.cos(enemy.facing)<0?-1:1;const attackMotion=enemyAttackMotion(enemy);let scaleX=attackMotion.scaleX,scaleY=attackMotion.scaleY,rotation=attackMotion.rotation;
   if(enemy.state==='enter'){scaleX=1;scaleY=1;}
-  if(enemy.state==='windup'){scaleX=1.08;scaleY=.92;}
-  if(enemy.state==='strike'){scaleX=1.22;scaleY=.86;rotation=flip*.07;}
-  if(enemy.state==='slam'){scaleX=1.18;scaleY=.84;}
   if(enemy.state==='stagger'){rotation=-flip*.12;scaleX=.92;scaleY=1.08;}
   if(enemy.dead){rotation=flip*(1-alpha)*1.05;scaleY=.7+alpha*.3;}
   scaleX*=motion.scaleX;scaleY*=motion.scaleY;rotation+=motion.rotation;drawContactShadow(enemy.x,enemy.y+13,definition.behavior==='heavy'?26:15,definition.behavior==='heavy'?6:4,.31*alpha);drawEnemyStatusBack(enemy,definition.behavior==='heavy'?175:125,definition.behavior==='heavy'?130:90);
-  ctx.save();ctx.globalAlpha=enemy.state==='enter'?alpha*clamp(1-enemy.stateTime/(enemy.spawnDuration||1.35),0,1):alpha;ctx.translate(enemy.x+motion.x,enemy.y+motion.y);drawEnemyTelegraph(enemy);ctx.rotate(rotation);ctx.scale(flip*scaleX,scaleY);
+  ctx.save();ctx.globalAlpha=enemy.state==='enter'?alpha*clamp(1-enemy.stateTime/(enemy.spawnDuration||1.35),0,1):alpha;ctx.translate(enemy.x+motion.x+attackMotion.offsetX,enemy.y+motion.y+attackMotion.offsetY);drawEnemyTelegraph(enemy);ctx.rotate(rotation);ctx.scale(flip*scaleX,scaleY);
   ctx.shadowColor=definition.color;ctx.shadowBlur=enemy.state==='windup'?18:5;ctx.filter=enemy.flash>0?'brightness(2.6) saturate(.2)':motion.filter;
   ctx.drawImage(sheet,sx,sy,sw,sh,-baseW/2,-baseH*.78,baseW,baseH);ctx.restore();ctx.filter='none';ctx.globalAlpha=1;
   if(!enemy.dead)drawEnemyHealth(enemy);
@@ -3802,9 +3817,9 @@ function drawSpecialEnemy(enemy){
   const moving=!attacking&&!enemy.dead&&enemy.state==='chase';const poseOffset=attacking?4:moving?2:0;
   const sw=sheet.naturalWidth/4,sh=sheet.naturalHeight/6;const sx=(direction%4)*sw,sy=(Math.floor(direction/4)+poseOffset)*sh;
   const lateSpecial=['conductor','hacker','curser'].includes(definition.behavior);const baseH=definition.behavior==='shield'?176:lateSpecial?158:definition.behavior==='bomber'?148:definition.behavior==='assassin'?142:152;const baseW=baseH*(sw/sh);const motion=enemyMotion(enemy);
-  let scaleX=motion.scaleX,scaleY=motion.scaleY,rotation=motion.rotation;if(enemy.state==='windup'){scaleX*=1.06;scaleY*=.94;}if(enemy.state==='strike'){scaleX*=1.15;scaleY*=.88;}if(enemy.state==='stagger'){rotation-=.1;scaleX*=.94;scaleY*=1.06;}if(enemy.dead){rotation=(1-alpha)*.92;scaleY=.7+alpha*.3;}
+  const attackMotion=enemyAttackMotion(enemy);let scaleX=motion.scaleX*attackMotion.scaleX,scaleY=motion.scaleY*attackMotion.scaleY,rotation=motion.rotation+attackMotion.rotation;if(enemy.state==='stagger'){rotation-=.1;scaleX*=.94;scaleY*=1.06;}if(enemy.dead){rotation=(1-alpha)*.92;scaleY=.7+alpha*.3;}
   const shadowX=definition.behavior==='shield'?28:19;drawContactShadow(enemy.x,enemy.y+13,shadowX,shadowX*.21,.32*alpha);drawEnemyStatusBack(enemy,definition.behavior==='shield'?175:130,definition.behavior==='shield'?128:94);
-  const mistAlpha=definition.behavior==='assassin'&&enemy.state==='windup' ? .32+clamp(enemy.stateTime/definition.windup,0,1)*.58 : 1;ctx.save();ctx.translate(enemy.x,enemy.y);drawEnemyTelegraph(enemy);ctx.restore();ctx.save();ctx.globalAlpha=alpha*mistAlpha*(enemy.state==='enter'?clamp(1-enemy.stateTime/(enemy.spawnDuration||1.35),0,1):1);ctx.translate(enemy.x+motion.x,enemy.y+motion.y);ctx.rotate(rotation);ctx.scale(scaleX,scaleY);ctx.filter=enemy.flash>0?'brightness(2.55) saturate(.3)':motion.filter;ctx.shadowColor=definition.color;ctx.shadowBlur=enemy.state==='windup'?18:5;ctx.drawImage(sheet,sx,sy,sw,sh,-baseW/2,-baseH*.79,baseW,baseH);ctx.restore();ctx.filter='none';ctx.globalAlpha=1;
+  const mistAlpha=definition.behavior==='assassin'&&enemy.state==='windup' ? .32+clamp(enemy.stateTime/definition.windup,0,1)*.58 : 1;ctx.save();ctx.translate(enemy.x,enemy.y);drawEnemyTelegraph(enemy);ctx.restore();ctx.save();ctx.globalAlpha=alpha*mistAlpha*(enemy.state==='enter'?clamp(1-enemy.stateTime/(enemy.spawnDuration||1.35),0,1):1);ctx.translate(enemy.x+motion.x+attackMotion.offsetX,enemy.y+motion.y+attackMotion.offsetY);ctx.rotate(rotation);ctx.scale(scaleX,scaleY);ctx.filter=enemy.flash>0?'brightness(2.55) saturate(.3)':motion.filter;ctx.shadowColor=definition.color;ctx.shadowBlur=enemy.state==='windup'?18:5;ctx.drawImage(sheet,sx,sy,sw,sh,-baseW/2,-baseH*.79,baseW,baseH);ctx.restore();ctx.filter='none';ctx.globalAlpha=1;
   if(definition.behavior==='shield'&&enemy.shield>0&&!enemy.dead){const ratio=enemy.shield/enemy.maxShield;ctx.save();ctx.translate(enemy.x,enemy.y-12);ctx.rotate(enemy.facing);ctx.scale(1,.72);ctx.globalAlpha=.34+ratio*.38;ctx.strokeStyle='#ff5b3a';ctx.shadowColor='#ff3828';ctx.shadowBlur=20;ctx.lineWidth=7;ctx.setLineDash([18,7]);ctx.lineDashOffset=-performance.now()/45;ctx.beginPath();ctx.arc(0,0,69,-.78,.78);ctx.stroke();ctx.setLineDash([]);ctx.restore();}
   if(!enemy.dead)drawEnemyHealth(enemy);
 }
@@ -3830,14 +3845,11 @@ function drawEnemy(enemy) {
   const column = inAttack || directionalMove ? direction % 4 : definition.spriteColumn;
   const flip = inAttack || directionalMove ? 1 : Math.cos(enemy.facing) < 0 ? -1 : 1;
   const baseH = 104 * definition.scale; const w = baseH * (sw / sh);const motion=enemyMotion(enemy);
-  let scaleX = motion.scaleX, scaleY = motion.scaleY, rotation = motion.rotation;
-  if (enemy.state === 'windup') { scaleX = 1.1; scaleY = .9; }
-  if (enemy.state === 'strike') { scaleX = 1.2; scaleY = .88; rotation = flip * .08; }
-  if (enemy.state === 'slam') { scaleX = 1.22; scaleY = .82; rotation = flip * .04; }
+  const attackMotion=enemyAttackMotion(enemy);let scaleX = motion.scaleX*attackMotion.scaleX, scaleY = motion.scaleY*attackMotion.scaleY, rotation = motion.rotation+attackMotion.rotation;
   if (enemy.state === 'stagger') { rotation = -flip * .12; scaleX = .92; scaleY = 1.08; }
   if (enemy.dead) { rotation = flip * (1 - alpha) * 1.05; scaleY = .72 + alpha * .28; }
   drawContactShadow(enemy.x, enemy.y + 12, definition.behavior === 'heavy' ? 23 : 14, definition.behavior === 'heavy' ? 5.5 : 3.7, .32 * alpha);drawEnemyStatusBack(enemy,definition.behavior==='heavy'?160:115,definition.behavior==='heavy'?120:86);
-  ctx.save(); ctx.globalAlpha = alpha*(enemy.state==='enter'?clamp(1-enemy.stateTime/(enemy.spawnDuration||1.35),0,1):1); ctx.translate(enemy.x+motion.x, enemy.y+motion.y); drawEnemyTelegraph(enemy);
+  ctx.save(); ctx.globalAlpha = alpha*(enemy.state==='enter'?clamp(1-enemy.stateTime/(enemy.spawnDuration||1.35),0,1):1); ctx.translate(enemy.x+motion.x+attackMotion.offsetX, enemy.y+motion.y+attackMotion.offsetY); drawEnemyTelegraph(enemy);
   ctx.rotate(rotation); ctx.scale(flip * scaleX, scaleY);
   ctx.shadowColor = definition.color; ctx.shadowBlur = enemy.state === 'windup' ? 18 : 5;
   ctx.filter = enemy.flash > 0 ? 'brightness(2.6) saturate(.2)' : motion.filter;

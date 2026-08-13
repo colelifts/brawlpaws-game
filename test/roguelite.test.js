@@ -84,6 +84,19 @@ test('ranged facing is independent from locomotion so strafing cannot flip the s
   assert.doesNotMatch(game,/else if \(!player\.attack\) \{\s*player\.facing = approachAngle\(player\.facing, Math\.atan2\(move\.y, move\.x\)/);
 });
 
+test('hero and enemy attacks animate through anticipation release recoil and recovery',()=>{
+  for(const fn of ['heroAttackMotion','enemyAttackMotion','guardianAttackMotion'])assert.match(game,new RegExp(`function ${fn}\\(`));
+  assert.match(game,/const attackMotion=heroAttackMotion\(entity\)/);
+  assert.match(game,/entity\.attack\.released/);
+  assert.match(game,/offsetX:-Math\.cos\(facing\)\*drawDistance/);
+  assert.match(game,/offsetX:-Math\.cos\(facing\)\*recoil\*kick/);
+  assert.match(game,/if\(enemy\.state==='windup'\)/);
+  assert.match(game,/if\(enemy\.state==='strike'\|\|enemy\.state==='slam'\)/);
+  assert.match(game,/if\(enemy\.state==='recover'\)/);
+  assert.match(game,/enemy\.state\.startsWith\('bossWindup'\)/);
+  assert.match(game,/const committed=\['bossSweep','bossSlam','bossCrossfire','bossSignature'\]/);
+});
+
 test('Jade Grove owns ten real Phaser and Tiled layered map templates',()=>{
   assert.match(html,/phaser-3\.90\.0\.min\.js/);
   assert.match(html,/id="phaser-map"/);
@@ -473,7 +486,7 @@ test('Hopscotch is an earned directional archer with a timed piercing release',(
   assert.match(game,/weapon\.releaseDelay/);
   assert.match(game,/shot\.pierces--/);
   assert.match(game,/shot\.arrow\?assets\.hopscotchArrow/);
-  assert.match(game,/fireStage = firing && entity\.attack\?\.time > \(weapon\.releaseDelay\|\|\.045\)/);
+  assert.match(game,/const attackMotion=heroAttackMotion\(entity\);const fireStage = firing \? attackMotion\.stage : 0/);
   for(const id of ['moonPiercer','perfectDraw','glassFang','spiritMomentum','guardianHunter','deepReserves'])assert.match(game,new RegExp(`id:'${id}'`));
   for(const relic of ['moonPearl','phoenixPlume','riverMirror','guardianFang'])assert.match(game,new RegExp(`id:'${relic}'`));
   assert.match(game,/guardianDamageMultiplier/);
