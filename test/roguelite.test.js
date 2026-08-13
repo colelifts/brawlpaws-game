@@ -1027,6 +1027,9 @@ test('combat effects preserve readable player and enemy silhouettes',()=>{
   assert.match(game,/drawCombatantReadabilityPlates\(renderables\)/);
   assert.match(game,/const signatureAlpha=clamp\(signature\.life\/\.12,0,1\)\*\(impact\?\.58:\.3\)/);
   assert.match(game,/Attack art belongs in the world, behind readable character silhouettes/);
+  assert.match(game,/distance\(player,object\)<430\?\.28:\.72/);
+  assert.match(game,/\*1\.16/);
+  assert.match(game,/const wordSize=clamp\(46-Math\.max/);
 });
 
 test('first-run tutorial explains, verifies, saves, skips, and cannot soft-lock',()=>{
