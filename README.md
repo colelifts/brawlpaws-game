@@ -4,6 +4,10 @@ A dependency-free playable browser roguelite with a walkable hub, permanent prof
 
 Runs begin with the selected hero's signature weapon and earned abilities. At level 3, Arsenal Awakening offers a mandatory three-way pivot: Frostbite Needle (Chill/Freeze), Oni Mortar (area demolition), or Gale War Fan (outward/return control). Level 7 forces a second Legend Arsenal pivot into Embercoil Repeater (burst Burn/rupture), Tempest Chakram (wide outbound/return control), or Moonpiercer Railbow (charged line execution). Each legend weapon has two exclusive upgrade branches and persistent collection discovery, while fresh runs still begin at base power.
 
+Combat uses explicit balance contracts instead of unbounded stat stacking. Opening scouts take roughly 1.6â€“2.4 seconds of sustained starter fire; ordinary pursuers pressure walking but lose to a committed sprint; assassins can briefly exceed walking speed only after a readable warning; and single-hit damage is bounded by attack role as a share of current maximum health. Chapter, corruption, co-op, and difficulty multipliers are compressed before reaching health, speed, or damage, so late challenge comes from overlapping telegraphed threats and mixed enemy roles rather than unavoidable one-shots.
+
+Treasure and relic events open a three-card Relic Draft with authored art, exact effects, role labels, and a real build-match cue. The chosen relic persists in run checkpoints; completing the relic pool converts future drafts to gold.
+
 ## Run it
 
 ```powershell

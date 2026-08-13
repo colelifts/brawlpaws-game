@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { clamp, normalize, segmentCircleHit, shortestAngle, withinArc, encounterActiveLimit, campaignPressureCurve, cappedWardPressure } from '../src/math.js';
+import { clamp, normalize, segmentCircleHit, shortestAngle, withinArc, encounterActiveLimit, campaignPressureCurve, cappedWardPressure, COMBAT_BALANCE_TARGETS, normalizedEnemyScales, enemySpeedCeiling, enemyTelegraphFloor, incomingDamageLimit } from '../src/math.js';
 import { HEROES, WEAPONS, ABILITIES, STATUS_EFFECTS, ELITE_MODIFIERS, BOSS_PATTERNS, BOSS_PROFILES, ENEMIES, ENCOUNTERS, ROOMS, DIFFICULTIES } from '../src/data.js';
 
 test('math helpers support movement and spatial hit tests', () => {
@@ -28,8 +28,23 @@ test('campaign pressure grows from readable scouts into a relentless late army',
   const opening=campaignPressureCurve({chapterIndex:0,waveIndex:0,elapsed:0,difficultyId:'ferocious'});
   const finale=campaignPressureCurve({chapterIndex:5,waveIndex:5,elapsed:12,difficultyId:'ferocious'});
   assert.equal(opening.reserveRate,1);assert.equal(opening.pursuit,1);assert.equal(opening.recovery,1);
-  assert.ok(finale.activeRamp>=80);assert.ok(finale.reserveRate>=2);assert.ok(finale.pursuit>=1.55);assert.ok(finale.attackTempo>=1.4);assert.ok(finale.recovery<=.66);
+  assert.ok(finale.activeRamp>=80);assert.ok(finale.reserveRate>=2);assert.ok(finale.pursuit>=1.3);assert.ok(finale.attackTempo>=1.2);assert.ok(finale.attackTempo<=1.32);assert.ok(finale.recovery>=.72);
   assert.equal(encounterActiveLimit({chapterIndex:5,waveIndex:5,difficultyId:'nightmare'}),24);
+});
+
+test('combat balance contracts bound speed, burst damage, and unreadable late scaling',()=>{
+  const late=normalizedEnemyScales({healthScale:7.5,speedScale:4.2,damageScale:5.8});
+  assert.ok(late.health<=4.2);assert.ok(late.speed<=1.65);assert.ok(late.damage<=2.05);
+  const walk=HEROES.kitsune.speed;
+  assert.ok(enemySpeedCeiling({playerWalkSpeed:walk,behavior:'melee'})<walk);
+  assert.ok(enemySpeedCeiling({playerWalkSpeed:walk,behavior:'assassin',hunting:true})>walk);
+  assert.ok(enemySpeedCeiling({playerWalkSpeed:walk,behavior:'assassin',hunting:true})<walk*1.2);
+  assert.ok(enemyTelegraphFloor({behavior:'assassin',difficultyId:'nightmare'})>=.5);
+  assert.ok(incomingDamageLimit({maxHealth:120,kind:'standard',chapterIndex:0})<=16);
+  assert.ok(incomingDamageLimit({maxHealth:120,kind:'boss',chapterIndex:5,difficultyId:'nightmare'})<41);
+  const starterDps=WEAPONS.spiritBlaster.damage/WEAPONS.spiritBlaster.fireRate;
+  const openingTtk=ENEMIES.groveMinion.maxHealth/starterDps;
+  assert.ok(openingTtk>=COMBAT_BALANCE_TARGETS.openingTtk[0]&&openingTtk<=COMBAT_BALANCE_TARGETS.openingTtk[1]);
 });
 
 test('Phase 1 definitions are internally valid', () => {

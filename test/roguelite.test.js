@@ -631,6 +631,18 @@ test('discovered Arsenal blueprints bind per hero without bypassing the low-powe
   assert.match(styles,/\.forge-collection-card\.selected/);
 });
 
+test('relic rewards are visible three-choice build decisions',()=>{
+  assert.match(game,/function openRelicDraft\(/);
+  assert.match(game,/currentRelicChoices=pool\.slice\(0,3\)/);
+  assert.match(game,/function relicBuildScore\(/);
+  assert.match(game,/BUILD MATCH/);
+  assert.match(game,/function chooseRelic\(/);
+  assert.match(game,/state==='relicDraft'&&\['1','2','3'\]\.includes\(key\)/);
+  assert.match(game,/continuation:\(\)=>finishRouteEvent/);
+  assert.match(styles,/\.relic-draft-card/);
+  assert.match(styles,/choice-atlas-v1\.png/);
+});
+
 test('chapters attack with distinct readable warpack formations',()=>{
   for(const id of ['jadeChapter','bambooChapter','crimsonChapter','stormChapter','neonChapter','shadowChapter'])assert.match(game,new RegExp(`${id}:\\{name:`));
   for(const formation of ['arc','pincer','wall','cross','mirror'])assert.match(game,new RegExp(`formation:'${formation}'`));

@@ -7,6 +7,41 @@ export const normalize = (x, y) => {
 };
 export const shortestAngle = (from, to) => Math.atan2(Math.sin(to - from), Math.cos(to - from));
 export const approachAngle = (from, to, amount) => from + shortestAngle(from, to) * amount;
+export const COMBAT_BALANCE_TARGETS=Object.freeze({
+  openingTtk:[1.6,2.4],standardPursuitRatio:.9,huntingPursuitRatio:1.06,
+  minimumTelegraph:{basic:.48,melee:.46,ranged:.54,heavy:.78,assassin:.58,specialist:.66,boss:.72},
+  maxHealthPerHit:{standard:.13,heavy:.19,specialist:.17,boss:.25,hazard:.16}
+});
+
+export function normalizedEnemyScales({healthScale=1,speedScale=1,damageScale=1,boss=false}={}){
+  const compress=(value,weight,ceiling)=>value<=1?Math.max(.5,value):Math.min(ceiling,1+(value-1)*weight);
+  return {
+    health:compress(healthScale,boss?.72:.55,boss?5.4:4.2),
+    speed:compress(speedScale,.32,boss?1.42:1.65),
+    damage:compress(damageScale,.36,boss?2.35:2.05)
+  };
+}
+
+export function enemySpeedCeiling({playerWalkSpeed=300,behavior='melee',hunting=false,difficultyId='ferocious'}={}){
+  const roleRatio=behavior==='heavy'?.7:behavior==='ranged'?.8:behavior==='summoner'?.76:['conductor','hacker','curser'].includes(behavior)?.78:behavior==='assassin'?1.02:behavior==='boss'?.84:COMBAT_BALANCE_TARGETS.standardPursuitRatio;
+  const huntRatio=hunting?Math.max(roleRatio,behavior==='assassin'?1.12:COMBAT_BALANCE_TARGETS.huntingPursuitRatio):roleRatio;
+  const difficulty=difficultyId==='ascension'?1.06:difficultyId==='nightmare'?1.035:difficultyId==='spirited'?.96:1;
+  return playerWalkSpeed*huntRatio*difficulty;
+}
+
+export function enemyTelegraphFloor({behavior='melee',difficultyId='ferocious',boss=false}={}){
+  const specialist=['summoner','bomber','conductor','hacker','curser'].includes(behavior);
+  const key=boss||behavior==='boss'?'boss':specialist?'specialist':COMBAT_BALANCE_TARGETS.minimumTelegraph[behavior]!=null?behavior:'melee';
+  const difficulty=difficultyId==='ascension'?.86:difficultyId==='nightmare'?.91:difficultyId==='spirited'?1.08:1;
+  return COMBAT_BALANCE_TARGETS.minimumTelegraph[key]*difficulty;
+}
+
+export function incomingDamageLimit({maxHealth=100,kind='standard',chapterIndex=0,difficultyId='ferocious'}={}){
+  const base=COMBAT_BALANCE_TARGETS.maxHealthPerHit[kind]??COMBAT_BALANCE_TARGETS.maxHealthPerHit.standard;
+  const campaign=Math.min(.045,Math.max(0,chapterIndex)*.009);
+  const difficulty=difficultyId==='ascension'?.055:difficultyId==='nightmare'?.035:difficultyId==='spirited'?-.018:0;
+  return Math.max(1,maxHealth*(base+campaign+difficulty));
+}
 export const circleOverlap = (a, b) => distance(a, b) < a.radius + b.radius;
 export const withinArc = (origin, facing, target, range, arc) => {
   const dx = target.x - origin.x;
@@ -28,9 +63,9 @@ export function campaignPressureCurve({ chapterIndex = 0, waveIndex = 0, elapsed
     progress,
     activeRamp:Math.max(4,Math.round((8+chapter*4+wave*2+time*(1.5+wave*.55+chapter*.25))*difficulty)),
     reserveRate:1+(chapter*.14+wave*.09)*difficulty,
-    pursuit:1+(chapter*.075+wave*.045)*difficulty,
-    attackTempo:1+(chapter*.055+wave*.035)*difficulty,
-    recovery:clamp(1-(chapter*.045+wave*.025)*difficulty,.58,1)
+    pursuit:1+(chapter*.038+wave*.025)*difficulty,
+    attackTempo:Math.min(1.32,1+(chapter*.03+wave*.018)*difficulty),
+    recovery:clamp(1-(chapter*.026+wave*.016)*difficulty,.72,1)
   };
 }
 export function cappedWardPressure(rawDamagePerSecond, maxHealth, duration) {

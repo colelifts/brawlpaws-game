@@ -245,22 +245,22 @@ export const BOSS_PROFILES = {
 
 export const ENEMIES = {
   groveMinion: {
-    id: 'groveMinion', name: 'Grove Minion', maxHealth: 58, speed: 118,
+    id: 'groveMinion', name: 'Grove Minion', maxHealth: 58, speed: 220,
     radius: 27, contactDamage: 6, windup: .62, attackRange: 108,
     attackCooldown: 1.55, color: '#75dd55', spriteColumn: 0, scale: .88, behavior: 'basic'
   },
   jadeBrawler: {
-    id: 'jadeBrawler', name: 'Jade Brawler', maxHealth: 96, speed: 168,
+    id: 'jadeBrawler', name: 'Jade Brawler', maxHealth: 96, speed: 252,
     radius: 29, contactDamage: 10, windup: 0.44, attackRange: 250,
     attackCooldown: 1.25, color: '#ef435e', spriteColumn: 0, scale: 1, behavior: 'melee'
   },
   spiritArcher: {
-    id: 'spiritArcher', name: 'Spirit Archer', maxHealth: 72, speed: 148,
+    id: 'spiritArcher', name: 'Spirit Archer', maxHealth: 72, speed: 184,
     radius: 27, contactDamage: 9, windup: 0.58, attackRange: 430,
     attackCooldown: 1.72, color: '#30dff5', spriteColumn: 1, scale: .96, behavior: 'ranged'
   },
   armoredBoar: {
-    id: 'armoredBoar', name: 'Jadebreaker', maxHealth: 240, speed: 94,
+    id: 'armoredBoar', name: 'Jadebreaker', maxHealth: 240, speed: 132,
     radius: 43, contactDamage: 18, windup: 1.25, attackRange: 148,
     attackCooldown: 2.75, slamRadius: 128, stunDuration: 1.05,
     color: '#ff9a24', spriteColumn: 2, scale: 1.36, behavior: 'heavy'
@@ -284,7 +284,7 @@ export const ENEMIES = {
     color: '#8cff39', scale: 3.8, behavior: 'boss'
   },
   bambooStalker: {
-    id: 'bambooStalker', name: 'Bamboo Stalker', maxHealth: 118, speed: 205,
+    id: 'bambooStalker', name: 'Bamboo Stalker', maxHealth: 118, speed: 262,
     radius: 28, contactDamage: 12, windup: .34, attackRange: 255,
     attackCooldown: 1.04, color: '#42f5a7', spriteColumn: 0, scale: 1.04,
     behavior: 'melee', biome: 'bamboo'
@@ -315,7 +315,7 @@ export const ENEMIES = {
     color: '#41f5da', scale: 4.1, behavior: 'boss', biome: 'bamboo'
   },
   emberAkita: {
-    id: 'emberAkita', name: 'Ember Akita', maxHealth: 152, speed: 228,
+    id: 'emberAkita', name: 'Ember Akita', maxHealth: 152, speed: 278,
     radius: 30, contactDamage: 15, windup: .3, attackRange: 275,
     attackCooldown: .94, color: '#ff5a2d', spriteColumn: 0, scale: 1.08,
     behavior: 'melee', biome: 'crimson'

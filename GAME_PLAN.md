@@ -2,6 +2,16 @@
 
 This document turns the master brief and concept art into a staged production plan. The concept images remain the visual source of truth. Every phase must preserve the distant 3/4 camera, small detailed fighters, saturated Jade Grove lighting, brush-edged UI, readable telegraphs, and comic-impact combat language.
 
+## Combat balance contract
+
+- Opening time-to-kill target: 1.6â€“2.4 seconds of sustained starter weapon fire against a basic scout.
+- Standard pursuit: close enough to pressure walking, slow enough that committed sprinting creates escape space.
+- Burst pursuit: assassins may exceed walk speed only behind a visible windup and remain below sprint escape speed.
+- Telegraph floors: every enemy role retains a minimum readable warning even when late difficulty and elites stack.
+- Damage budget: standard, heavy, specialist, boss, and ambient-hazard hits each have a maximum share of current hero max health.
+- Late challenge: denser combinations, formations, status interactions, and shorter safe windowsâ€”not simultaneous exponential health, speed, damage, count, and spawn-rate inflation.
+- Relic rewards: always a three-choice build decision with exact effects and build-fit feedback; never an invisible random grant.
+
 ## Implemented milestone: Arsenal Awakening
 
 - Level 3 forces a clear, non-skippable run-weapon decision: Frostbite Needle, Oni Mortar, or Gale War Fan.

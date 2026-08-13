@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#080817" />
   <link rel="icon" href="data:," />
   <title>BrawlPaws — Six-Chapter Roguelite Campaign</title>
-  <link rel="stylesheet" href="styles.css?v=20260812-arsenal1" />
+  <link rel="stylesheet" href="styles.css?v=20260812-balance1" />
 </head>
 <body>
   <main id="game-shell" aria-label="BrawlPaws roguelite campaign">
@@ -325,6 +325,16 @@
       </div>
     </section>
 
+    <section id="relic-draft-screen" class="overlay relic-draft-screen" aria-labelledby="relic-draft-title">
+      <div class="relic-draft-panel">
+        <p id="relic-draft-kicker">AN ANCIENT TREASURE ANSWERS</p>
+        <h2 id="relic-draft-title">CHOOSE A RELIC</h2>
+        <p id="relic-draft-copy">Claim one run-changing charm. The other spirits return to the road.</p>
+        <div id="relic-draft-grid" class="relic-draft-grid"></div>
+        <p class="relic-draft-hint">PRESS <kbd>1</kbd>, <kbd>2</kbd>, OR <kbd>3</kbd> TO CLAIM</p>
+      </div>
+    </section>
+
     <section id="result-screen" class="overlay">
       <div class="result-card brush-panel">
         <p id="result-kicker">THE GROVE FALLS SILENT</p>
@@ -342,6 +352,6 @@
 
     <div id="loading">AWAKENING THE GROVE…</div>
   </main>
-  <script type="module" src="src/game.js?v=20260812-arsenal1"></script>
+  <script type="module" src="src/game.js?v=20260812-balance1"></script>
 </body>
 </html>
