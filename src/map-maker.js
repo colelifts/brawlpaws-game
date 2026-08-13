@@ -3,6 +3,7 @@ import {MAP_ATLASES,MAP_ASSETS,MAP_LAYERS,assetById,cloneMapDocument,createMapIm
 const canvas=document.querySelector('#map-canvas'),ctx=canvas.getContext('2d',{alpha:false}),stage=document.querySelector('#maker-stage');
 const assetGrid=document.querySelector('#asset-grid'),layerList=document.querySelector('#layer-list'),fileInput=document.querySelector('#map-file');
 const images=createMapImages();let documentModel=loadMapDocument(),activeTool='select',activePalette='terrain',activeLayer='ground',selectedAssetId='terrain-0',selectedId=null;
+for(const image of Object.values(images)){image.addEventListener('load',()=>render(),{once:true});image.addEventListener('error',()=>render(),{once:true});}
 let gridVisible=true,snapEnabled=true,playtesting=false,spaceHeld=false,pointer=null,gesture=null,saveTimer=null;
 let camera={x:documentModel.width/2,y:documentModel.height/2,zoom:.3};
 const history=[],future=[],keys=new Set(),testPlayer={x:2400,y:1480,vx:0,vy:0,radius:28,facing:0};
